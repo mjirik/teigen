@@ -2,10 +2,10 @@ import numpy as np
 
 
 def translate(point, vector, length=None):
-    vector = np.array(vector)
+    vector = np.asarray(vector)
     if length is not None:
         vector = length * vector / np.linalg.norm(vector)
-    return (np.array(point) + vector).tolist()
+    return (np.asarray(point) + vector).tolist()
 
 
 def circle(center, perp_vect, radius, element_number=10):
