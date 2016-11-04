@@ -15,9 +15,10 @@ import logging
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
-import ..geometry3 as g3
-
-
+# import ..geometry3 as g3
+# from ..geometry3d import plane_fit
+from .. import geometry3d as g3
+import os.path
 
 
 def __half_plane(self, perp, plane_point, point):
@@ -29,7 +30,9 @@ def __half_plane(self, perp, plane_point, point):
 
 class CylinderGenerator:
 
-    def __init__(self, gtree=None,
+    def __init__(self,
+                 build=True,
+                 gtree=None,
                  endDistMultiplicator=1,
                  use_joints=True
                  ):
@@ -37,15 +40,88 @@ class CylinderGenerator:
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
+        self.build = build
         # input of geometry and topology
-        self.V = []
-        self.CV = []
-        self.joints = {}
-        self.joints_lar = []
-        self.gtree = gtree
-        self.endDistMultiplicator = endDistMultiplicator
-        self.use_joints = use_joints
-        pass
+        # self.V = []
+        # self.CV = []
+        # self.joints = {}
+        # self.joints_lar = []
+        # self.gtree = gtree
+        # self.endDistMultiplicator = endDistMultiplicator
+        # self.use_joints = use_joints
+
+
+        tree_data = {
+
+        }
+        element_number = 80
+        np.random.seed(0)
+        pts = np.random.random([element_number, 3]) * 100
+
+        # construct voronoi
+        import scipy.spatial
+        import itertools
+        vor3 = scipy.spatial.Voronoi(pts)
+
+
+        # for i, two_points in enumerate(vor3.ridge_points):
+        for i, simplex in enumerate(vor3.ridge_vertices):
+            simplex = np.asarray(simplex)
+            # fallowing line removes all ridges with oulayers
+            simplex = simplex[simplex > 0]
+            if np.all(simplex >= 0):
+
+                x = vor3.vertices[simplex, 0]
+                y = vor3.vertices[simplex, 1]
+                z = vor3.vertices[simplex, 2]
+                for two_points in itertools.combinations(simplex, 2):
+
+
+                    edge = {
+                        # "nodeA_ZYX_mm": vor3.vertices[simplex],
+                        # "nodeB_ZYX_mm": vor3.vertices[simplex],
+                        "nodeA_ZYX_mm": vor3.vertices[two_points[0]],
+                        "nodeB_ZYX_mm": vor3.vertices[two_points[1]],
+                        "radius_mm": 2
+                    }
+                    tree_data[i] = edge
+            else:
+                pass
+
+        show_input_points = False
+        if show_input_points:
+            length = len(tree_data)
+            for i in range(element_number):
+                edge = {
+                    #         #"nodeA_ZYX_mm": np.random.random(3) * 100,
+                    "nodeA_ZYX_mm": pts[i-1],
+                    "nodeB_ZYX_mm": pts[i],
+                    #         "nodeB_ZYX_mm": np.random.random(3) * 100,
+                    "radius_mm": 1
+                }
+                tree_data[i+length] = edge
+        if self.build:
+            from ..tree import TreeBuilder
+
+            tvg = TreeBuilder('vtk')
+            # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
+            # tvg.importFromYaml(yaml_path)
+            tvg.voxelsize_mm = [1, 1, 1]
+            tvg.shape = [100, 100, 100]
+            tvg.tree_data = tree_data
+            output = tvg.buildTree() # noqa
+            # tvg.show()
+            tvg.saveToFile("tree_output.vtk")
+
+
+            tvgvol = TreeBuilder('vol')
+            tvgvol.voxelsize_mm = [1, 1, 1]
+            tvgvol.shape = [100, 100, 100]
+            tvgvol.tree_data = tree_data
+            outputvol = tvgvol.buildTree()
+            tvgvol.saveToFile("tree_volume.pklz")
+        # self.assertTrue(False)
+
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
 
@@ -107,7 +183,7 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     parser.add_argument(
         '-i', '--inputfile',
         default=None,
-        required=True,
+        # required=True,
         help='input file, yaml file'
     )
     parser.add_argument(
@@ -155,7 +231,7 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    startTime = datetime.now()
+    # startTime = datetime.now()
 
     generator_params = None
     generator_class = args.generator
@@ -164,25 +240,26 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     #     import gen_vtk_tree
     #     gen_vtk_tree.vt2vtk_file(args.inputfile, args.outputfile)
     #     return
+    cylgen = CylinderGenerator()
 
-    tg = TreeBuilder(generator_class, generator_params)
-    tg.importFromYaml(args.inputfile)
-    tg.voxelsize_mm = args.voxelsize
-    tg.shape = args.datashape
-    tg.use_lar = args.useLar
-    data3d = tg.buildTree()
-
-    logger.info("TimeUsed:" + str(datetime.now() - startTime))
-    # volume_px = sum(sum(sum(data3d)))
-    # volume_mm3 = volume_px * \
-    #     (tg.voxelsize_mm[0] * tg.voxelsize_mm[1] * tg.voxelsize_mm[2])
-    # logger.info("Volume px:" + str(volume_px))
-    # logger.info("Volume mm3:" + str(volume_mm3))
-
-    # vizualizace
-    logger.debug("before visualization")
-    tg.show()
-    logger.debug("after visualization")
+    # tg = TreeBuilder(generator_class, generator_params)
+    # tg.importFromYaml(args.inputfile)
+    # tg.voxelsize_mm = args.voxelsize
+    # tg.shape = args.datashape
+    # tg.use_lar = args.useLar
+    # data3d = tg.buildTree()
+    #
+    # logger.info("TimeUsed:" + str(datetime.now() - startTime))
+    # # volume_px = sum(sum(sum(data3d)))
+    # # volume_mm3 = volume_px * \
+    # #     (tg.voxelsize_mm[0] * tg.voxelsize_mm[1] * tg.voxelsize_mm[2])
+    # # logger.info("Volume px:" + str(volume_px))
+    # # logger.info("Volume mm3:" + str(volume_mm3))
+    #
+    # # vizualizace
+    # logger.debug("before visualization")
+    # tg.show()
+    # logger.debug("after visualization")
 
     # ukládání do souboru
     if args.outputfile is not None:
