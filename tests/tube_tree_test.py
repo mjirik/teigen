@@ -108,13 +108,28 @@ class TubeTreeTest(unittest.TestCase):
         tvg.shape = [150, 150, 150]
         data3d = tvg.buildTree()
 
+    def test_cylinders_generator(self):
+        from teigen.generators.cylinders import CylinderGenerator
+
+        cg = CylinderGenerator()
+        cg.run()
+
+
+    def test_get_line_nodes(self):
+        import teigen.geometry3d as g3
+        nodes = g3.get_points_in_line_segment([10, 13, 22], [1, 13, 22], 3)
+        expected_x = [10, 7, 4, 1]
+
+        self.assertAlmostEqual(nodes[1][0], expected_x[1])
+        self.assertAlmostEqual(nodes[2][0], expected_x[2])
+        self.assertAlmostEqual(nodes[3][0], expected_x[3])
 
     def test_tree_generator(self):
         import numpy as np
         tree_data = {
 
         }
-        element_number = 80
+        element_number = 10
         np.random.seed(0)
         pts = np.random.random([element_number, 3]) * 100
 

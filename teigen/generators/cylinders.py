@@ -34,13 +34,18 @@ class CylinderGenerator:
                  build=True,
                  gtree=None,
                  endDistMultiplicator=1,
-                 use_joints=True
+                 use_joints=True,
+                 element_number=60
                  ):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
         self.build = build
+        self.area_shape = np.ones([3]) * 100
+        self.max_radius = 3
+        self.element_number = element_number
+        self._cylinder_nodes = []
         # input of geometry and topology
         # self.V = []
         # self.CV = []
@@ -49,20 +54,42 @@ class CylinderGenerator:
         # self.gtree = gtree
         # self.endDistMultiplicator = endDistMultiplicator
         # self.use_joints = use_joints
+        self.surface = 0
+
+
+    def _check_cylinder_position(self, pt1, pt2, step):
+
+        if pt1 is not None \
+            and self._is_in_area(pt1) \
+            and self._is_in_area(pt2):
+
+            if len(self._cylinder_nodes) == 0:
+                return True
+            else:
+                line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
+                safe_dist2 = (self.max_radius * 1.5)**2
+                for node in line_nodes:
+                    dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
+                    if dist_closest < safe_dist2:
+                        return False
+                return True
+        return False
+
+    def run(self):
 
 
         tree_data = {
 
         }
-        element_number = 80
         np.random.seed(0)
-        pts = np.random.random([element_number, 3]) * 100
+        pts = np.random.random([self.element_number, 3]) * 100
 
         # construct voronoi
         import scipy.spatial
         import itertools
         vor3 = scipy.spatial.Voronoi(pts)
 
+        radius = self.max_radius
 
         # for i, two_points in enumerate(vor3.ridge_points):
         for i, simplex in enumerate(vor3.ridge_vertices):
@@ -74,24 +101,32 @@ class CylinderGenerator:
                 x = vor3.vertices[simplex, 0]
                 y = vor3.vertices[simplex, 1]
                 z = vor3.vertices[simplex, 2]
-                for two_points in itertools.combinations(simplex, 2):
+                for two_points_id in itertools.combinations(simplex, 2):
+                    pt1 = vor3.vertices[two_points_id[0]]
+                    pt2 = vor3.vertices[two_points_id[1]]
+                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*2)
+                    pt1 = np.asarray(pt1)
+                    pt2 = np.asarray(pt2)
+                    if self._check_cylinder_position(pt1, pt2, radius):
 
 
-                    edge = {
-                        # "nodeA_ZYX_mm": vor3.vertices[simplex],
-                        # "nodeB_ZYX_mm": vor3.vertices[simplex],
-                        "nodeA_ZYX_mm": vor3.vertices[two_points[0]],
-                        "nodeB_ZYX_mm": vor3.vertices[two_points[1]],
-                        "radius_mm": 2
-                    }
-                    tree_data[i] = edge
+                        edge = {
+                            "nodeA_ZYX_mm": pt1,
+                            "nodeB_ZYX_mm": pt2,
+                            "radius_mm": radius
+                        }
+                        tree_data[i] = edge
+                        line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
+                        self._cylinder_nodes.extend(line_nodes)
+                        surf = 2 * np.pi * (radius + np.linalg.norm(pt1 - pt2))
+                        self.surface += surf
             else:
                 pass
 
         show_input_points = False
         if show_input_points:
             length = len(tree_data)
-            for i in range(element_number):
+            for i in range(self.element_number):
                 edge = {
                     #         #"nodeA_ZYX_mm": np.random.random(3) * 100,
                     "nodeA_ZYX_mm": pts[i-1],
@@ -121,6 +156,37 @@ class CylinderGenerator:
             outputvol = tvgvol.buildTree()
             tvgvol.saveToFile("tree_volume.pklz")
         # self.assertTrue(False)
+
+        print "Surface: ", self.surface
+
+    def _make_cylinder_shorter(self, nodeA, nodeB, radius): #, radius, cylinder_id):
+        vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
+        if np.linalg.norm(vector) < 2*radius:
+            return None, None
+
+        # mov circles to center of cylinder by size of radius because of joint
+        nodeA = g3.translate(nodeA, vector,
+                             -radius) # * self.endDistMultiplicator)
+        nodeB = g3.translate(nodeB, vector,
+                             radius) #  * self.endDistMultiplicator)
+        return nodeA, nodeB
+
+    def _is_in_area(self, node, radius=None):
+        """
+        check if point is in area with considering eventual maximum radius
+        :param node:
+        :param radius:
+        :return:
+        """
+        node = np.asarray(node)
+        if radius is None:
+            radius = self.max_radius
+
+        if np.all(node > (0 + radius)) and np.all(node < (self.area_shape - radius)):
+            return  True
+        else:
+            return False
+
 
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
@@ -241,6 +307,7 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     #     gen_vtk_tree.vt2vtk_file(args.inputfile, args.outputfile)
     #     return
     cylgen = CylinderGenerator()
+    cylgen.run()
 
     # tg = TreeBuilder(generator_class, generator_params)
     # tg.importFromYaml(args.inputfile)

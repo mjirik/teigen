@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial.distance import cdist
 
 
 def translate(point, vector, length=None):
@@ -6,6 +7,47 @@ def translate(point, vector, length=None):
     if length is not None:
         vector = length * vector / np.linalg.norm(vector)
     return (np.asarray(point) + vector).tolist()
+
+
+
+def closest_node_2d(node, nodes, return_more=False):
+    """
+
+    :param node:
+    :param nodes:
+    :param return_more: return closest_node, id, dist
+    :return:
+    """
+    dst = cdist([node], nodes)
+    id = dst.argmin()
+    if return_more:
+        return nodes[id], id, dst.min()
+    return nodes[id]
+
+def closest_node(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.argmin(dist_2)
+
+def closest_node_square_dist(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.min(dist_2)
+
+def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
+    nodeA = np.asarray(nodeA)
+    nodeB = np.asarray(nodeB)
+    nodes = []
+    nodes.append(nodeA)
+    vector = (nodeA - nodeB).tolist()
+    dist = np.linalg.norm(vector)
+    while dist > step:
+        nodeA = translate(nodeA, vector, -step)
+        nodes.append(nodeA)
+        vector = (nodeA - nodeB).tolist()
+        dist = np.linalg.norm(vector)
+    nodes.append(nodeB)
+    return nodes
 
 
 def circle(center, perp_vect, radius, element_number=10):
