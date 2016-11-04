@@ -35,7 +35,7 @@ class CylinderGenerator:
                  gtree=None,
                  endDistMultiplicator=1,
                  use_joints=True,
-                 element_number=60
+                 element_number=30
                  ):
         """
         gtree is information about input data structure.
@@ -113,7 +113,8 @@ class CylinderGenerator:
                         edge = {
                             "nodeA_ZYX_mm": pt1,
                             "nodeB_ZYX_mm": pt2,
-                            "radius_mm": radius
+                            # "radius_mm": radius
+                            "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
                         }
                         tree_data[i] = edge
                         line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
