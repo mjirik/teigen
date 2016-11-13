@@ -69,6 +69,7 @@ class CylinderGenerator:
         self.random_seed = 0
         self.radius_generator = self._const
         self.radius_generator_args=[radius_mean]
+        self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
         if uniform_radius:
             pass
         # input of geometry and topology

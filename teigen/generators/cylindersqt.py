@@ -68,14 +68,16 @@ class CylindersWidget(QtGui.QWidget):
 
     def _show_stats(self):
         df = self.gen.getStats()
-        dfdescribe = df.describe()
-        # TODO take care about redrawing
         from .. import tablewidget
-        tw = tablewidget.TableWidget(self, dataframe=dfdescribe)
 
+        dfmerne = df[["length", "radius", "surface"]].sum() / self.gen.area_volume
+        print "merne"
+        print dfmerne
+        dfmernef = dfmerne.to_frame()
+        dfmernef.insert(0, "", dfmernef.index)
+        import ipdb; ipdb.set_trace()
+        tw = tablewidget.TableWidget(self, dataframe=dfmernef)
         self.mainLayout.addWidget(tw)
-        tw.show()
-        tw.raise_()
 
         from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
         # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
@@ -96,6 +98,14 @@ class CylindersWidget(QtGui.QWidget):
         plt.subplot(144)
         df[["volume"]].boxplot()
 
+        # TODO take care about redrawing
+        dfdescribe = df.describe()
+        dfdescribe.insert(0, "", dfdescribe.index)
+        tw = tablewidget.TableWidget(self, dataframe=dfdescribe)
+        tw.show()
+        tw.raise_()
+
+        self.mainLayout.addWidget(tw)
         self.resize(600,700)
 
 
