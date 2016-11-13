@@ -21,7 +21,12 @@ class TableModel(QtCore.QAbstractTableModel):
     def update(self, dataIn):
         print 'Updating Model'
         self.datatable = dataIn
+        self.headerdata = list(dataIn.keys())
+        self.indexdata = list(dataIn.index)
         print 'Datatable : {0}'.format(self.datatable)
+        print self.headerdata
+        print self.indexdata
+
 
 
     def rowCount(self, parent=QtCore.QModelIndex()):
@@ -44,6 +49,18 @@ class TableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         return QtCore.Qt.ItemIsEnabled
 
+    def headerData(self, col, orientation, role):
+        # return str(self.headerdata[col])
+        from PyQt4.QtCore import QVariant, Qt
+        import PyQt4
+
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return QVariant(self.headerdata[col])
+        # print "col ", col, orientation, role
+        # return QVariant(self.headerdata[0])
+        # if orientation == Qt.Horizontal:# and role == Qt.DisplayRole:
+        #     return QVariant(str("self.indexdata[col]"))
+        return QVariant()
 
 class TableView(QtGui.QTableView):
     """

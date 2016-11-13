@@ -66,6 +66,41 @@ class CylindersWidget(QtGui.QWidget):
         self.gen = cylinders.CylinderGenerator(self.config)
         self.gen.run()
 
+    def _show_stats(self):
+        df = self.gen.getStats()
+        dfdescribe = df.describe()
+        # TODO take care about redrawing
+        from .. import tablewidget
+        tw = tablewidget.TableWidget(self, dataframe=dfdescribe)
+
+        self.mainLayout.addWidget(tw)
+        tw.show()
+        tw.raise_()
+
+        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+        # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+        import matplotlib.pyplot as plt
+
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        # self.toolbar = NavigationToolbar(self.canvas, self)
+        self.mainLayout.addWidget(self.canvas)
+        plt.subplot(141)
+        df[["length"]].boxplot()
+        plt.subplot(142)
+        df[['radius']].boxplot()
+
+        plt.subplot(143)
+        df[["surface"]].boxplot()
+
+        plt.subplot(144)
+        df[["volume"]].boxplot()
+
+        self.resize(600,700)
+
+
+
+
     def complicated_to_yaml(self, cfg):
         import yaml
         # convert values to json
@@ -103,6 +138,7 @@ class CylindersWidget(QtGui.QWidget):
         logger.debug(str(self.config))
         logger.debug(str(self.configwg.config_as_dict()))
         self.run()
+        self._show_stats()
         filename = QtGui.QFileDialog.getSaveFileName(
             self,
             "Save file",

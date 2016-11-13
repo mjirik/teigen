@@ -98,8 +98,8 @@ class DictWidget(QtGui.QWidget):
             self.config.add_handler(key, sb)
             gd_max_i += 1
 
-        text_col = (self.ncols * 2) + 3
-        gd.setColumnMinimumWidth(text_col, 500)
+        # text_col = (self.ncols * 2) + 3
+        # gd.setColumnMinimumWidth(text_col, 500)
 
         if self.accept_button:
             btn_accept = QPushButton("Accept", self)
