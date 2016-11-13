@@ -37,6 +37,7 @@ class TBVolume:
         self.shape = gtree.shape
         self.data3d = np.zeros(gtree.shape, dtype=np.int)
         self.voxelsize_mm = gtree.voxelsize_mm
+        self.output_intensity = 200
 
     def add_cylinder(self, p1m, p2m, rad, id):
         """
@@ -119,14 +120,29 @@ class TBVolume:
         return self.data3d
 
     def save(self, outputfile, filetype='pklz'):
+        import io3d
         import io3d.misc
+        import numpy as np
         data = {
-            'data3d': self.data3d,
-            'voxelsize_mm': self.voxelsize_mm
+            'data3d': self.data3d.astype(np.uint8) * self.output_intensity,
+            'voxelsize_mm': self.voxelsize_mm,
+            # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
         }
 
-        io3d.misc.obj_to_file(data, outputfile, filetype=filetype)
-        print "saved"
+        # data3d = np.zeros([10,10,10])
+        # segmentation = np.zeros([10,10,10])
+        #
+        # data3d [2:7,:3:5, :6] = 100
+        # datap = {
+        #     "data3d": data3d,
+        #     "segmentation": segmentation,
+        #     "voxelsize_mm": [1,1,1]
+        # }
+        # io3d.write(datap, "file1.pklz")
+        # import ipdb; ipdb.set_trace()
+
+        io3d.write(data, outputfile)
+        # io3d.misc.obj_to_file(data, outputfile, filetype=filetype)
         #dw = datawriter.DataWriter()
         #dw.Write3DData(self.data3d, outputfile, filetype)
 

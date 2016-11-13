@@ -197,6 +197,32 @@ class TubeTreeTest(unittest.TestCase):
 
 
 
+    def test_io3d(self):
+        import io3d
+        data3d = np.zeros([10,10,10])
+        segmentation = np.zeros([10,10,10])
+
+        data3d [2:7,:3:5, :6] = 100
+        datap = {
+            "data3d": data3d,
+            # "segmentation": segmentation,
+            "voxelsize_mm": [1,1,1]
+        }
+        io3d.write(datap, "file1.pklz")
+
+    def test_skimage_io_imsave(self):
+        import skimage.io
+        data3d = np.zeros([10,10,10])
+        segmentation = np.zeros([10,10,10])
+
+        data3d [2:7,:3:5, :6] = 100
+        datap = {
+            "data3d": data3d,
+            # "segmentation": segmentation,
+            "voxelsize_mm": [1,1,1]
+        }
+        skimage.io.imsave("skiamge.png", data3d[0])
+
 def dist_to_vectors(v1, vlist):
     import numpy as np
     out = []

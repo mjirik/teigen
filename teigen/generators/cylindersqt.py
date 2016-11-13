@@ -32,8 +32,9 @@ import cylinders
 
 from pyqtconfig import ConfigManager
 import inspect
+import collections
 
-def generate_widget(obj):
+def get_default_args(obj):
     argspec = inspect.getargspec(obj.__init__)
     args = argspec.args[1:]
     defaults = argspec.defaults
@@ -41,7 +42,8 @@ def generate_widget(obj):
     print args
     print defaults
     # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
-    dc = dict(zip(args, defaults))
+    # dc = dict(zip(args, defaults))
+    dc = collections.OrderedDict(zip(args, defaults))
     return dc
 
 
@@ -52,12 +54,16 @@ class CylindersWidget(QtGui.QWidget):
         self.config_in = config_in
         self.ncols = ncols
 
-        self.config = generate_widget(cylinders.CylinderGenerator)
+        self.config = get_default_args(cylinders.CylinderGenerator)
+        print "default args"
+        print self.config
         self.init_ui()
 
 
     def run(self):
-        self.gen = cylinders.CylinderGenerator(self.conf)
+        print "generator args"
+        print self.config
+        self.gen = cylinders.CylinderGenerator(self.config)
         self.gen.run()
 
     def complicated_to_yaml(self, cfg):
@@ -83,40 +89,30 @@ class CylindersWidget(QtGui.QWidget):
         self.configwg = dictwidgetqt.DictWidget(self.config)
         self.mainLayout.addWidget(self.configwg)
 
-        # gd_max_i = 0
-        # for key, value in self.config_in.iteritems():
-        #     if type(value) is int:
-        #         sb = QSpinBox()
-        #         sb.setRange(-100000, 100000)
-        #     elif type(value) is float:
-        #         sb = QDoubleSpinBox()
-        #     elif type(value) is str:
-        #         sb = QLineEdit()
-        #     elif type(value) is bool:
-        #         sb = QCheckBox()
-        #     else:
-        #         logger.error("Unexpected type in config dictionary")
-        #
-        #
-        #     row = gd_max_i / self.ncols
-        #     col = (gd_max_i % self.ncols) * 2
-        #
-        #     gd.addWidget(QLabel(key),row, col +1)
-        #     gd.addWidget(sb, row, col + 2)
-        #     self.config.add_handler(key, sb)
-        #     gd_max_i += 1
-        #
-        # text_col = (self.ncols * 2) + 3
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
-        btn_accept = QPushButton("Accept", self)
+        btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
         # self.config.updated.connect(self.on_config_update)
 
     def btnAccept(self):
-        print self.config_as_dict()
+
+        logger.debug("btnAccept")
+        logger.debug(str(self.config))
+        logger.debug(str(self.configwg.config_as_dict()))
+        self.run()
+        filename = QtGui.QFileDialog.getSaveFileName(
+            self,
+            "Save file",
+            "file{:05d}.jpg",
+            # ".jpg"
+        )
+        filename = str(filename)
+        self.gen.saveVolumeToFile(filename=filename)
+
+
 
     def on_config_update(self):
         pass

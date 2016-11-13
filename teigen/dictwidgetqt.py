@@ -30,7 +30,7 @@ from pyqtconfig import ConfigManager
 
 
 class DictWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2, captions={}):
+    def __init__(self, config_in, ncols=2, captions={}, accept_button=False):
         """
 
         :param config_in:  dictionary
@@ -41,6 +41,7 @@ class DictWidget(QtGui.QWidget):
         self.config_in = config_in
         self.ncols = ncols
         self.captions = captions
+        self.accept_button = accept_button
         self.config = ConfigManager()
         self.init_ui()
 
@@ -80,6 +81,7 @@ class DictWidget(QtGui.QWidget):
                 sb = QCheckBox()
             else:
                 logger.error("Unexpected type in config dictionary")
+                continue
 
             if key in self.captions.keys():
                 caption = self.captions[key]
@@ -99,9 +101,10 @@ class DictWidget(QtGui.QWidget):
         text_col = (self.ncols * 2) + 3
         gd.setColumnMinimumWidth(text_col, 500)
 
-        btn_accept = QPushButton("Accept", self)
-        btn_accept.clicked.connect(self.btnAccept)
-        gd.addWidget(btn_accept, (gd_max_i / 2), text_col)
+        if self.accept_button:
+            btn_accept = QPushButton("Accept", self)
+            btn_accept.clicked.connect(self.btnAccept)
+            gd.addWidget(btn_accept, (gd_max_i / 2), text_col)
 
         self.config.updated.connect(self.on_config_update)
 
@@ -161,7 +164,7 @@ def main():
 
 
     app = QApplication(sys.argv)
-    cfg = {"bool": True, "int":1, 'str': 'strdrr'}
+    cfg = {"bool": True, "int":5, 'str': 'strdrr'}
     captions = {"int": "toto je int"}
     cw = DictWidget(cfg, captions=captions)
     cw.show()

@@ -33,20 +33,44 @@ class CylinderGenerator:
     def __init__(self,
                  build=True,
                  gtree=None,
-                 endDistMultiplicator=1,
-                 use_joints=True,
-                 element_number=30
+                 # endDistMultiplicator=1,
+                 # use_joints=True,
+                 voxelsize_mm_z=1.0,
+                 voxelsize_mm_x=1.0,
+                 voxelsize_mm_y=1.0,
+                 area_shape_z=100,
+                 area_shape_x=100,
+                 area_shape_y=100,
+                 element_number=30,
+                 uniform_radius=False,
+                 normal_radius=False,
+                 fixed_radius=False,
+                 radius_minimum=2.0,
+                 radius_maximum=5.0,
+                 radius_mean=5.0,
+                 radius_standard_deviation=5.0,
                  ):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
+        area_shape = [area_shape_z,area_shape_x, area_shape_y]
+        voxelsize_mm = [
+            voxelsize_mm_z,
+            voxelsize_mm_x,
+            voxelsize_mm_y
+        ]
         self.build = build
-        self.area_shape = np.ones([3]) * 100
-        self.max_radius = 3
+        self.area_shape = np.asarray(area_shape)
+        self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
+        self.radius_maximum = radius_maximum
         self._cylinder_nodes = []
         self.random_seed = 0
+        self.radius_generator = self._const
+        self.radius_generator_args=[radius_mean]
+        if uniform_radius:
+            pass
         # input of geometry and topology
         # self.V = []
         # self.CV = []
@@ -56,6 +80,10 @@ class CylinderGenerator:
         # self.endDistMultiplicator = endDistMultiplicator
         # self.use_joints = use_joints
         self.surface = 0
+        self.tree_data = {}
+
+    def _const(self, value):
+        return value
 
 
     def _check_cylinder_position(self, pt1, pt2, step):
@@ -68,7 +96,7 @@ class CylinderGenerator:
                 return True
             else:
                 line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
-                safe_dist2 = (self.max_radius * 1.5)**2
+                safe_dist2 = (self.radius_maximum * 1.5) ** 2
                 for node in line_nodes:
                     dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
                     if dist_closest < safe_dist2:
@@ -89,8 +117,15 @@ class CylinderGenerator:
         import scipy.spatial
         import itertools
         vor3 = scipy.spatial.Voronoi(pts)
+        self.geometry_data = {
+            "length":[],
+            "radius":[],
+            "volume":[],
+            "surface":[],
+            "vector":[]
+        }
 
-        radius = self.max_radius
+        radius = self.radius_maximum
 
         # for i, two_points in enumerate(vor3.ridge_points):
         for i, simplex in enumerate(vor3.ridge_vertices):
@@ -115,12 +150,22 @@ class CylinderGenerator:
                             "nodeA_ZYX_mm": pt1,
                             "nodeB_ZYX_mm": pt2,
                             # "radius_mm": radius
-                            "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
+                            # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
+                            "radius_mm": self.radius_generator(*self.radius_generator_args)
                         }
                         tree_data[i] = edge
                         line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
                         self._cylinder_nodes.extend(line_nodes)
-                        surf = 2 * np.pi * (radius + np.linalg.norm(pt1 - pt2))
+                        length = np.linalg.norm(pt1 - pt2)
+                        surf = 2 * np.pi * (radius + length)
+                        volume =  np.pi * radius**2 * length
+                        vector = pt1 - pt2
+
+                        self.geometry_data["length"].append(length)
+                        self.geometry_data["surface"].append(surf)
+                        self.geometry_data["radius"].append(radius)
+                        self.geometry_data["volume"].append(volume)
+                        self.geometry_data["vector"].append(vector)
                         self.surface += surf
             else:
                 pass
@@ -137,6 +182,8 @@ class CylinderGenerator:
                     "radius_mm": 1
                 }
                 tree_data[i+length] = edge
+
+        self.tree_data = tree_data
         if self.build:
             from ..tree import TreeBuilder
 
@@ -150,16 +197,33 @@ class CylinderGenerator:
             # tvg.show()
             tvg.saveToFile("tree_output.vtk")
 
+        self.getStats()
 
-            tvgvol = TreeBuilder('vol')
-            tvgvol.voxelsize_mm = [1, 1, 1]
-            tvgvol.shape = [100, 100, 100]
-            tvgvol.tree_data = tree_data
-            outputvol = tvgvol.buildTree()
-            tvgvol.saveToFile("tree_volume.pklz")
+
+    def getStats(self):
         # self.assertTrue(False)
-
         print "Surface: ", self.surface
+        import pandas as pd
+        df = pd.DataFrame(self.geometry_data)
+        desc = df.describe()
+
+        print desc
+        return df
+
+
+
+    def saveVolumeToFile(self, filename="output/output{:05d}.jpg"):
+        from ..tree import TreeBuilder
+
+        tvgvol = TreeBuilder('vol')
+        tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
+        tvgvol.shape = self.area_shape # [100, 100, 100]
+        tvgvol.tree_data = self.tree_data
+        outputvol = tvgvol.buildTree()
+        # from .. import simpleio
+        # simpleio.save_image_stack(outputvol.astype(np.uint8)*150, fn)
+
+        tvgvol.saveToFile(filename)
 
     def _make_cylinder_shorter(self, nodeA, nodeB, radius): #, radius, cylinder_id):
         vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
@@ -182,7 +246,7 @@ class CylinderGenerator:
         """
         node = np.asarray(node)
         if radius is None:
-            radius = self.max_radius
+            radius = self.radius_maximum
 
         if np.all(node > (0 + radius)) and np.all(node < (self.area_shape - radius)):
             return  True
