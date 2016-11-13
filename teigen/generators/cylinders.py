@@ -46,6 +46,7 @@ class CylinderGenerator:
         self.max_radius = 3
         self.element_number = element_number
         self._cylinder_nodes = []
+        self.random_seed = 0
         # input of geometry and topology
         # self.V = []
         # self.CV = []
@@ -81,7 +82,7 @@ class CylinderGenerator:
         tree_data = {
 
         }
-        np.random.seed(0)
+        np.random.seed(self.random_seed)
         pts = np.random.random([self.element_number, 3]) * 100
 
         # construct voronoi

@@ -14,6 +14,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 import argparse
+# conda install -c conda-forge begins
+# import begin
 
 import PyQt4
 from PyQt4.QtGui import QGridLayout, QLabel,\
@@ -25,18 +27,38 @@ import sys
 import os.path
 import copy
 
+from .. import dictwidgetqt
+import cylinders
+
 from pyqtconfig import ConfigManager
+import inspect
+
+def generate_widget(obj):
+    argspec = inspect.getargspec(obj.__init__)
+    args = argspec.args[1:]
+    defaults = argspec.defaults
+    print "---- args"
+    print args
+    print defaults
+    # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
+    dc = dict(zip(args, defaults))
+    return dc
 
 
 
-class DictWidget(QtGui.QWidget):
+class CylindersWidget(QtGui.QWidget):
     def __init__(self, config_in, ncols=2):
-        super(DictWidget, self).__init__()
+        super(CylindersWidget, self).__init__()
         self.config_in = config_in
         self.ncols = ncols
-        self.config = ConfigManager()
+
+        self.config = generate_widget(cylinders.CylinderGenerator)
         self.init_ui()
 
+
+    def run(self):
+        self.gen = cylinders.CylinderGenerator(self.conf)
+        self.gen.run()
 
     def complicated_to_yaml(self, cfg):
         import yaml
@@ -57,39 +79,41 @@ class DictWidget(QtGui.QWidget):
 
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
-        gd = self.mainLayout
 
-        gd_max_i = 0
-        for key, value in self.config_in.iteritems():
-            if type(value) is int:
-                sb = QSpinBox()
-                sb.setRange(-100000, 100000)
-            elif type(value) is float:
-                sb = QDoubleSpinBox()
-            elif type(value) is str:
-                sb = QLineEdit()
-            elif type(value) is bool:
-                sb = QCheckBox()
-            else:
-                logger.error("Unexpected type in config dictionary")
+        self.configwg = dictwidgetqt.DictWidget(self.config)
+        self.mainLayout.addWidget(self.configwg)
 
-
-            row = gd_max_i / self.ncols
-            col = (gd_max_i % self.ncols) * 2
-
-            gd.addWidget(QLabel(key),row, col +1)
-            gd.addWidget(sb, row, col + 2)
-            self.config.add_handler(key, sb)
-            gd_max_i += 1
-
-        text_col = (self.ncols * 2) + 3
-        gd.setColumnMinimumWidth(text_col, 500)
+        # gd_max_i = 0
+        # for key, value in self.config_in.iteritems():
+        #     if type(value) is int:
+        #         sb = QSpinBox()
+        #         sb.setRange(-100000, 100000)
+        #     elif type(value) is float:
+        #         sb = QDoubleSpinBox()
+        #     elif type(value) is str:
+        #         sb = QLineEdit()
+        #     elif type(value) is bool:
+        #         sb = QCheckBox()
+        #     else:
+        #         logger.error("Unexpected type in config dictionary")
+        #
+        #
+        #     row = gd_max_i / self.ncols
+        #     col = (gd_max_i % self.ncols) * 2
+        #
+        #     gd.addWidget(QLabel(key),row, col +1)
+        #     gd.addWidget(sb, row, col + 2)
+        #     self.config.add_handler(key, sb)
+        #     gd_max_i += 1
+        #
+        # text_col = (self.ncols * 2) + 3
+        # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
         btn_accept = QPushButton("Accept", self)
         btn_accept.clicked.connect(self.btnAccept)
-        gd.addWidget(btn_accept, (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
-        self.config.updated.connect(self.on_config_update)
+        # self.config.updated.connect(self.on_config_update)
 
     def btnAccept(self):
         print self.config_as_dict()
@@ -148,7 +172,7 @@ def main():
 
     app = QApplication(sys.argv)
     cfg = {"bool": True, "int":1}
-    cw = DictWidget(cfg)
+    cw = CylindersWidget(cfg)
     cw.show()
     app.exec_()
 

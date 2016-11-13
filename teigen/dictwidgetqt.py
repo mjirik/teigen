@@ -30,10 +30,17 @@ from pyqtconfig import ConfigManager
 
 
 class DictWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2):
+    def __init__(self, config_in, ncols=2, captions={}):
+        """
+
+        :param config_in:  dictionary
+        :param ncols:
+        :param captions:
+        """
         super(DictWidget, self).__init__()
         self.config_in = config_in
         self.ncols = ncols
+        self.captions = captions
         self.config = ConfigManager()
         self.init_ui()
 
@@ -57,6 +64,7 @@ class DictWidget(QtGui.QWidget):
 
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
+        self.widgets = {}
         gd = self.mainLayout
 
         gd_max_i = 0
@@ -73,11 +81,17 @@ class DictWidget(QtGui.QWidget):
             else:
                 logger.error("Unexpected type in config dictionary")
 
+            if key in self.captions.keys():
+                caption = self.captions[key]
+            else:
+                caption = key
+
+            # import ipdb; ipdb.set_trace()
 
             row = gd_max_i / self.ncols
             col = (gd_max_i % self.ncols) * 2
 
-            gd.addWidget(QLabel(key),row, col +1)
+            gd.addWidget(QLabel(caption),row, col +1)
             gd.addWidget(sb, row, col + 2)
             self.config.add_handler(key, sb)
             gd_max_i += 1
@@ -147,8 +161,9 @@ def main():
 
 
     app = QApplication(sys.argv)
-    cfg = {"bool": True, "int":1}
-    cw = DictWidget(cfg)
+    cfg = {"bool": True, "int":1, 'str': 'strdrr'}
+    captions = {"int": "toto je int"}
+    cw = DictWidget(cfg, captions=captions)
     cw.show()
     app.exec_()
 
