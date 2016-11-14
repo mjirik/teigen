@@ -38,6 +38,7 @@ requirements:
 #    - collections
     - vtk
     - io3d
+    - numpy
 
   run:
     - python
@@ -46,6 +47,7 @@ requirements:
 #    - collections
     - vtk
     - io3d
+    - numpy
 
 test:
   # Python imports
