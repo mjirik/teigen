@@ -203,7 +203,7 @@ def main():
     parser.add_argument(
         '-i', '--inputfile',
         default=None,
-        required=True,
+        # required=True,
         help='input file'
     )
     parser.add_argument(

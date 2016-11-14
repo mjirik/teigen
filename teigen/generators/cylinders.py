@@ -76,7 +76,7 @@ class CylinderGenerator:
         if normal_radius:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_mean, radius_standard_deviation]
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         # input of geometry and topology
         # self.V = []
         # self.CV = []
