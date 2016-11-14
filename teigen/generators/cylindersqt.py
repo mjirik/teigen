@@ -144,9 +144,9 @@ class CylindersWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
-        btn_accept = QPushButton("Save", self)
-        btn_accept.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
+        btn_save = QPushButton("Save", self)
+        btn_save.clicked.connect(self.btnSave)
+        self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
     def btnAccept(self):
