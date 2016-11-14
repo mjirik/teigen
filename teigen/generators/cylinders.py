@@ -71,7 +71,12 @@ class CylinderGenerator:
         self.radius_generator_args=[radius_mean]
         self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
         if uniform_radius:
-            pass
+            self.radius_generator = np.random.uniform
+            self.radius_generator_args = [radius_minimum, radius_maximum]
+        if normal_radius:
+            self.radius_generator = np.random.normal
+            self.radius_generator_args = [radius_mean, radius_standard_deviation]
+        import ipdb; ipdb.set_trace()
         # input of geometry and topology
         # self.V = []
         # self.CV = []

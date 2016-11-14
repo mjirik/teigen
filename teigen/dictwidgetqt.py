@@ -30,7 +30,7 @@ from pyqtconfig import ConfigManager
 
 
 class DictWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2, captions={}, accept_button=False):
+    def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], accept_button=False):
         """
 
         :param config_in:  dictionary
@@ -42,8 +42,11 @@ class DictWidget(QtGui.QWidget):
         self.ncols = ncols
         self.captions = captions
         self.accept_button = accept_button
+        self.hide_keys = hide_keys
         self.config = ConfigManager()
+        self.config.set_defaults(config_in)
         self.init_ui()
+
 
 
     def complicated_to_yaml(self, cfg):
@@ -68,8 +71,11 @@ class DictWidget(QtGui.QWidget):
         self.widgets = {}
         gd = self.mainLayout
 
+
         gd_max_i = 0
         for key, value in self.config_in.iteritems():
+            if key in self.hide_keys:
+                continue
             if type(value) is int:
                 sb = QSpinBox()
                 sb.setRange(-100000, 100000)

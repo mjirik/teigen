@@ -62,8 +62,11 @@ class CylindersWidget(QtGui.QWidget):
 
     def run(self):
         print "generator args"
+        new_cfg = self.configwg.config_as_dict()
+        logger.debug(str(new_cfg))
+        self.config = new_cfg
         print self.config
-        self.gen = cylinders.CylinderGenerator(self.config)
+        self.gen = cylinders.CylinderGenerator(**self.config)
         self.gen.run()
 
     def _show_stats(self):
@@ -75,7 +78,7 @@ class CylindersWidget(QtGui.QWidget):
         print dfmerne
         dfmernef = dfmerne.to_frame()
         dfmernef.insert(0, "", dfmernef.index)
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         tw = tablewidget.TableWidget(self, dataframe=dfmernef)
         self.mainLayout.addWidget(tw)
 
@@ -130,8 +133,9 @@ class CylindersWidget(QtGui.QWidget):
 
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
+        hide_keys = ["build", "gtree"]
 
-        self.configwg = dictwidgetqt.DictWidget(self.config)
+        self.configwg = dictwidgetqt.DictWidget(self.config, hide_keys=hide_keys)
         self.mainLayout.addWidget(self.configwg)
 
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
@@ -146,7 +150,6 @@ class CylindersWidget(QtGui.QWidget):
 
         logger.debug("btnAccept")
         logger.debug(str(self.config))
-        logger.debug(str(self.configwg.config_as_dict()))
         self.run()
         self._show_stats()
         filename = QtGui.QFileDialog.getSaveFileName(
