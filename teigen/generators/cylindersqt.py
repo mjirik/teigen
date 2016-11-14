@@ -144,6 +144,9 @@ class CylindersWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
+        btn_accept = QPushButton("Save", self)
+        btn_accept.clicked.connect(self.btnSave)
+        self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
     def btnAccept(self):
@@ -152,12 +155,18 @@ class CylindersWidget(QtGui.QWidget):
         logger.debug(str(self.config))
         self.run()
         self._show_stats()
-        filename = QtGui.QFileDialog.getSaveFileName(
-            self,
-            "Save file",
-            "file{:05d}.jpg",
-            # ".jpg"
-        )
+
+    def btnSave(self):
+        filename = "file{:05d}.jpg"
+        try:
+            filename = QtGui.QFileDialog.getSaveFileName(
+                self,
+                "Save file",
+                "file{:05d}.jpg",
+                ""
+            )
+        except:
+            pass
         filename = str(filename)
         self.gen.saveVolumeToFile(filename=filename)
 
