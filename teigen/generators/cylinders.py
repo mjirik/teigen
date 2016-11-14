@@ -46,7 +46,7 @@ class CylinderGenerator:
                  normal_radius=False,
                  fixed_radius=False,
                  radius_minimum=2.0,
-                 radius_maximum=5.0,
+                 radius_maximum=10.0,
                  radius_mean=5.0,
                  radius_standard_deviation=5.0,
                  ):
@@ -86,6 +86,9 @@ class CylinderGenerator:
         # self.endDistMultiplicator = endDistMultiplicator
         # self.use_joints = use_joints
         self.surface = 0
+        self.LEN_STEP_CONSTANT = 0.1
+        self.MAKE_IT_SHORTER_CONSTANT = 3.0
+        self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
         self.tree_data = {}
 
     def _const(self, value):
@@ -102,7 +105,7 @@ class CylinderGenerator:
                 return True
             else:
                 line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
-                safe_dist2 = (self.radius_maximum * 1.5) ** 2
+                safe_dist2 = (self.radius_maximum * self.DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
                 for node in line_nodes:
                     dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
                     if dist_closest < safe_dist2:
@@ -144,12 +147,14 @@ class CylinderGenerator:
                 z = vor3.vertices[simplex, 2]
                 for two_points_id in itertools.combinations(simplex, 2):
                     radius = self.radius_generator(*self.radius_generator_args)
+                    if radius > self.radius_generator:
+                        continue
                     pt1 = vor3.vertices[two_points_id[0]]
                     pt2 = vor3.vertices[two_points_id[1]]
-                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*2)
+                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
                     pt1 = np.asarray(pt1)
                     pt2 = np.asarray(pt2)
-                    if self._check_cylinder_position(pt1, pt2, radius):
+                    if self._check_cylinder_position(pt1, pt2, radius*self.LEN_STEP_CONSTANT):
 
 
                         edge = {
