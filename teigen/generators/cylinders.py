@@ -131,8 +131,7 @@ class CylinderGenerator:
             "vector":[]
         }
 
-        radius = self.radius_maximum
-
+        # radius = self.radius_maximum
         # for i, two_points in enumerate(vor3.ridge_points):
         for i, simplex in enumerate(vor3.ridge_vertices):
             simplex = np.asarray(simplex)
@@ -144,6 +143,7 @@ class CylinderGenerator:
                 y = vor3.vertices[simplex, 1]
                 z = vor3.vertices[simplex, 2]
                 for two_points_id in itertools.combinations(simplex, 2):
+                    radius = self.radius_generator(*self.radius_generator_args)
                     pt1 = vor3.vertices[two_points_id[0]]
                     pt2 = vor3.vertices[two_points_id[1]]
                     pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*2)
@@ -157,7 +157,7 @@ class CylinderGenerator:
                             "nodeB_ZYX_mm": pt2,
                             # "radius_mm": radius
                             # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
-                            "radius_mm": self.radius_generator(*self.radius_generator_args)
+                            "radius_mm": radius
                         }
                         tree_data[i] = edge
                         line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
