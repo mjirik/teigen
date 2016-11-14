@@ -36,12 +36,16 @@ requirements:
     - python
     - setuptools
     - collections
+    - vtk
+    - io3d
 
   run:
     - python
     - conda-build
     - anaconda-client
     - collections
+    - vtk
+    - io3d
 
 test:
   # Python imports
