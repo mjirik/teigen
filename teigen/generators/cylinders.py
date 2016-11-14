@@ -120,7 +120,7 @@ class CylinderGenerator:
 
         }
         np.random.seed(self.random_seed)
-        pts = np.random.random([self.element_number, 3]) * 100
+        pts = np.random.random([self.element_number, 3]) * self.area_shape * self.voxelsize_mm
 
         # construct voronoi
         import scipy.spatial
