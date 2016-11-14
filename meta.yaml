@@ -35,7 +35,7 @@ requirements:
   build:
     - python
     - setuptools
-    - collections
+#    - collections
     - vtk
     - io3d
 
@@ -43,7 +43,7 @@ requirements:
     - python
     - conda-build
     - anaconda-client
-    - collections
+#    - collections
     - vtk
     - io3d
 
