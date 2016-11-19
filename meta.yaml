@@ -22,7 +22,7 @@ build:
     # Put any entry points (scripts to be generated automatically) here. The
     # syntax is module:function.  For example
     #
-    - teigen = teigen:gui:main
+    - teigen = teigen:main
     #
     # Would create an entry point called io3d that calls io3d.main()
 
