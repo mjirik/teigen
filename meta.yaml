@@ -52,6 +52,7 @@ requirements:
     - scikit-image
     - pyqt 4.11.*
     - pyqtconfig
+    - pandas
 
 test:
   # Python imports

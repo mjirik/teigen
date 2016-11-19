@@ -47,6 +47,15 @@ def get_default_args(obj):
     return dc
 
 
+def str_format_old_to_new(string):
+    """
+    convert old format style to new style. Works for digits only
+    %05d is converted to {:05d}
+    :param string:
+    :return:
+    """
+    import re
+    return re.sub(r"%(\d*d)", r"{:\1}", string)
 
 class CylindersWidget(QtGui.QWidget):
     def __init__(self, config_in, ncols=2):
@@ -157,12 +166,13 @@ class CylindersWidget(QtGui.QWidget):
         self._show_stats()
 
     def btnSave(self):
-        filename = "file{:05d}.jpg"
+        # filename = "file{:05d}.jpg"
+        filename = "file%:05d.jpg"
         try:
             filename = QtGui.QFileDialog.getSaveFileName(
                 self,
                 "Save file",
-                "file{:05d}.jpg",
+                filename,
                 ""
             )
         except:

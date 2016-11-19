@@ -223,6 +223,23 @@ class TubeTreeTest(unittest.TestCase):
         }
         skimage.io.imsave("skiamge.png", data3d[0])
 
+    def test_qt_file_dialog(self):
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        app = QApplication(sys.argv)
+        # fname = QFileDialog.getOpenFileName(None, 'Open file',
+        #  'c:\\',"Image files (*.jpg *.gif)")
+        filename = QFileDialog.getSaveFileName(
+            None,
+            "Save file",
+            'c:\\ahojfile%06d.jpg',
+            ""
+            # "Image files (*.jpg *.gif)"
+            # ""
+        )
+
+        # QFileDialog.getExistingDirectory()
+
 def dist_to_vectors(v1, vlist):
     import numpy as np
     out = []
