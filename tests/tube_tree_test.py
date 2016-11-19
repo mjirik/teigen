@@ -223,6 +223,7 @@ class TubeTreeTest(unittest.TestCase):
         }
         skimage.io.imsave("skiamge.png", data3d[0])
 
+    @unittest.skip("Test for gui")
     def test_qt_file_dialog(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog

@@ -167,17 +167,15 @@ class CylindersWidget(QtGui.QWidget):
 
     def btnSave(self):
         # filename = "file{:05d}.jpg"
-        filename = "file%:05d.jpg"
-        try:
-            filename = QtGui.QFileDialog.getSaveFileName(
-                self,
-                "Save file",
-                filename,
-                ""
-            )
-        except:
-            pass
+        init_filename = "file%05d.jpg"
+        filename = QtGui.QFileDialog.getSaveFileName(
+            self,
+            "Save file",
+            init_filename,
+            ""
+        )
         filename = str(filename)
+        filename = str_format_old_to_new(filename)
         self.gen.saveVolumeToFile(filename=filename)
 
 
