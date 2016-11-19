@@ -15,14 +15,14 @@ source:
    # List any patch files here
    # - fix.patch
 
-# build:
+build:
   # noarch_python: True
   # preserve_egg_dir: True
-  # entry_points:
+  entry_points:
     # Put any entry points (scripts to be generated automatically) here. The
     # syntax is module:function.  For example
     #
-    # - io3d = io3d:main
+    - teigen = teigen:__main__
     #
     # Would create an entry point called io3d that calls io3d.main()
 
@@ -41,6 +41,7 @@ requirements:
     - numpy
     - scipy
     - scikit-image
+#    - pyqt 4.11.*
 
   run:
     - python
@@ -49,6 +50,7 @@ requirements:
     - io3d
     - numpy
     - scikit-image
+    - pyqt 4.11.*
 
 test:
   # Python imports
