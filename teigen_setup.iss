@@ -11,7 +11,6 @@
 Source: "installer.bat"; DestDir: "{tmp}"
 ; Source: "applications\LISA.ico"; DestDir: "{app}"
 
-
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
