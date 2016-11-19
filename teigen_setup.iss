@@ -49,8 +49,8 @@ Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
 [Run]
 ;Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1 /InstallationType=AllUsers /D={%PUBLIC}\Minicoconda2"; Flags: waituntilterminated runasoriginaluser
 Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1"; Flags: waituntilterminated; Check: not IsCondaInstalled
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\VCForPython27.msi"""; Check: not IsVCForPythonInstalled
-Filename: "{cmd}"; Parameters: "/C ""{tmp}\installer.bat & pause"""; WorkingDir: "{tmp}"
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\VCForPython27.msi"""; Flags: waituntilterminated; Check: not IsVCForPythonInstalled
+Filename: "{cmd}"; Parameters: "/C ""{tmp}\installer.bat & pause"""; WorkingDir: "{tmp}"; Flags: waituntilterminated
 ;Filename: "{cmd}"; Parameters: "/C ""conda install --yes -c SimpleITK -c mjirik lisa"""; WorkingDir: "{%HOMEPATH}\Miniconda2\Scripts"; Flags: runasoriginaluser
 ;Filename: "{cmd}"; Parameters: "/C ""pause"""
 ;Filename: "conda"; Parameters: "create -y --no-default-packages -c mjirik -c SimpleITK -n lisa lisa pywget pip"

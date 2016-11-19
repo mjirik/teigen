@@ -22,7 +22,7 @@ build:
     # Put any entry points (scripts to be generated automatically) here. The
     # syntax is module:function.  For example
     #
-    - teigen = teigen:__main__
+    - teigen = teigen:gui:main
     #
     # Would create an entry point called io3d that calls io3d.main()
 
@@ -51,6 +51,7 @@ requirements:
     - numpy
     - scikit-image
     - pyqt 4.11.*
+    - pyqtconfig
 
 test:
   # Python imports
