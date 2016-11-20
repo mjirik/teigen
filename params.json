@@ -1,0 +1,6 @@
+{
+  "name": "Teigen",
+  "tagline": "Test Image Generator",
+  "body": "# teigen\r\nTest Image Generator\r\n\r\n# Installation\r\n\r\n    conda install -c mjirik -c simpleitk teigen\r\n\r\n## Windows\r\n\r\n[Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
