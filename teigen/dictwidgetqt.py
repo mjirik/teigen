@@ -83,6 +83,11 @@ class DictWidget(QtGui.QWidget):
 
             if key in self.hide_keys:
                 continue
+            if key in self.captions.keys():
+                caption = self.captions[key]
+            else:
+                caption = key
+
             atomic_widget = self.__get_widget_for_primitive_types(key, value)
             if atomic_widget is None:
                 if type(value) in (list, np.ndarray):
@@ -99,12 +104,6 @@ class DictWidget(QtGui.QWidget):
                     logger.error("Unexpected type in config dictionary")
 
                 continue
-
-
-            if key in self.captions.keys():
-                caption = self.captions[key]
-            else:
-                caption = key
 
             # import ipdb; ipdb.set_trace()
             row, col = self.__calculate_new_grid_position()
@@ -152,7 +151,8 @@ class DictWidget(QtGui.QWidget):
         hgrid = QGridLayout(self)
         hgrid_i = 0
         for val in ndarray.tolist():
-            key_i = key + str(hgrid_i)
+            # key_i = key + str(hgrid_i)
+            key_i = (key, hgrid_i)
             atomic_widget = self.__get_widget_for_primitive_types(key_i, val)
 
             hgrid.addWidget(atomic_widget, 0, hgrid_i)
@@ -178,14 +178,36 @@ class DictWidget(QtGui.QWidget):
 
 
     def config_as_dict(self):
+        def _primitive_type(value):
+            if type(value) == PyQt4.QtCore.QString:
+                value = str(value)
+            return value
+
         dictionary = self.config.as_dict()
         for key, value in dictionary.iteritems():
             from PyQt4.QtCore import pyqtRemoveInputHook
             pyqtRemoveInputHook()
             # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
-            if type(value) == PyQt4.QtCore.QString:
-                value = str(value)
-            dictionary[key] = value
+            if type(key) == tuple:
+
+                dict_key, value_index = key
+                dict_key = (dict_key)
+                # if dict_key not in dictionary.keys():
+                #     dictionary[dict_key] = {}
+
+                dictionary[dict_key][value_index] = _primitive_type(value)
+
+            else:
+                dictionary[key] = _primitive_type(value)
+
+        for key in dictionary.keys():
+            if type(key) == tuple:
+                dictionary.pop(key)
+
+
+        # for key, value in dictionary.iteritems():
+        #     if type(key) == tuple:
+        #         dictionary
 
         return dictionary
 

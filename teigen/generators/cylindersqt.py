@@ -58,9 +58,8 @@ def str_format_old_to_new(string):
     return re.sub(r"%(\d*d)", r"{:\1}", string)
 
 class CylindersWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2):
+    def __init__(self, ncols=2):
         super(CylindersWidget, self).__init__()
-        self.config_in = config_in
         self.ncols = ncols
 
         self.config = get_default_args(cylinders.CylinderGenerator)
@@ -233,8 +232,7 @@ def main():
 
 
     app = QApplication(sys.argv)
-    cfg = {"bool": True, "int":1}
-    cw = CylindersWidget(cfg)
+    cw = CylindersWidget()
     cw.show()
     app.exec_()
 

@@ -35,12 +35,14 @@ class CylinderGenerator:
                  gtree=None,
                  # endDistMultiplicator=1,
                  # use_joints=True,
-                 voxelsize_mm_z=1.0,
-                 voxelsize_mm_x=1.0,
-                 voxelsize_mm_y=1.0,
-                 area_shape_z=100,
-                 area_shape_x=100,
-                 area_shape_y=100,
+                 voxelsize_mm=[1.0, 1.0, 1.0],
+                 # voxelsize_mm_z=1.0,
+                 # voxelsize_mm_x=1.0,
+                 # voxelsize_mm_y=1.0,
+                 area_shape=[100, 100, 100],
+                 # area_shape_z=100,
+                 # area_shape_x=100,
+                 # area_shape_y=100,
                  element_number=30,
                  uniform_radius=False,
                  normal_radius=False,
@@ -54,12 +56,12 @@ class CylinderGenerator:
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
-        area_shape = [area_shape_z,area_shape_x, area_shape_y]
-        voxelsize_mm = [
-            voxelsize_mm_z,
-            voxelsize_mm_x,
-            voxelsize_mm_y
-        ]
+        # area_shape = [area_shape_z,area_shape_x, area_shape_y]
+        # voxelsize_mm = [
+        #     voxelsize_mm_z,
+        #     voxelsize_mm_x,
+        #     voxelsize_mm_y
+        # ]
         self.build = build
         self.area_shape = np.asarray(area_shape)
         self.voxelsize_mm = np.asarray(voxelsize_mm)
