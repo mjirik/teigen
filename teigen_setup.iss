@@ -8,7 +8,7 @@
 #define MyAppURL "http://mjirik.github.io/teigen/"
 
 [Files]
-Source: "installer.bat"; DestDir: "{tmp}"
+; Source: "installer.bat"; DestDir: "{tmp}"
 ; Source: "applications\LISA.ico"; DestDir: "{app}"
 
 [Setup]
@@ -73,6 +73,7 @@ end;
 
 procedure InitializeWizard();
 begin
+  idpAddFileSize('https://raw.githubusercontent.com/mjirik/teigen/master/installer.bat', ExpandConstant('{tmp}\installer.bat'), 1000);
   if not IsCondaInstalled then
   begin
     Log('Conda will be downloaded')

@@ -1,10 +1,10 @@
 package:
   name: teigen
-  version: "0.1.12"
+  version: "0.1.14"
 
 source:
 # this is used for build from git hub
-  git_rev: 0.1.12
+  git_rev: 0.1.14
   git_url: https://github.com/mjirik/teigen.git
 
 # this is used for pypi
@@ -53,7 +53,7 @@ requirements:
     - pyqt 4.11.*
     - pyqtconfig
     - pandas
-    - SimpleITK
+    - simpleitk
 
 test:
   # Python imports
