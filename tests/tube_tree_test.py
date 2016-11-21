@@ -254,7 +254,7 @@ class TubeTreeTest(unittest.TestCase):
         app.exec_()
 
     # @unittest.skip("Test for gui")
-    def test_qt_dictwidget(self):
+    def test_qt_cylinderwidget(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget

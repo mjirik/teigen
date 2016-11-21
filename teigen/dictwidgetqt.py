@@ -43,15 +43,40 @@ class DictWidget(QtGui.QWidget):
         self.ncols = ncols
         self.captions = captions
         self.accept_button = accept_button
-        self.hide_keys = hide_keys
+        self.hide_keys = copy.copy(hide_keys)
         self.horizontal = horizontal
         self.show_captions = show_captions
+
+        # due to load default params
+        self._get_tmp_composed_keys(config_in)
+        rr = self.hide_keys.extend(self._tmp_composed_keys_list)
+
         if config_manager is None:
             self.config = ConfigManager()
             self.config.set_defaults(config_in)
         else:
             self.config = config_manager
         self.init_ui()
+
+    def _get_tmp_composed_keys(self, cfg):
+        # vytvoří to seznam pomocných klíčů pro seznamy a ndarray
+        self._tmp_composed_keys_dict = {}
+        self._tmp_composed_keys_list = []
+        for key, value in cfg.iteritems():
+            if type(value) in (list, np.ndarray):
+                self._tmp_composed_keys_dict[key] = []
+                array = np.asarray(value)
+                key_array_i = 0
+                for val in array.tolist():
+                    # key_i = key + str(hgrid_i)
+                    key_i = (key, key_array_i)
+                    self._tmp_composed_keys_dict[key].append(key_i)
+                    self._tmp_composed_keys_list.append(key_i)
+                    key_array_i += 1
+                    cfg[key_i] = val
+
+        # self._tmp_composed_keys.keys()
+
 
 
 
@@ -184,6 +209,7 @@ class DictWidget(QtGui.QWidget):
             return value
 
         dictionary = self.config.as_dict()
+        dictionary = copy.copy(dictionary)
         for key, value in dictionary.iteritems():
             from PyQt4.QtCore import pyqtRemoveInputHook
             pyqtRemoveInputHook()

@@ -203,8 +203,8 @@ class CylinderGenerator:
             tvg = TreeBuilder('vtk')
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
-            tvg.voxelsize_mm = [1, 1, 1]
-            tvg.shape = [100, 100, 100]
+            tvg.voxelsize_mm = self.voxelsize_mm
+            tvg.shape = self.area_shape
             tvg.tree_data = tree_data
             output = tvg.buildTree() # noqa
             # tvg.show()
