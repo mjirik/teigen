@@ -241,6 +241,18 @@ class TubeTreeTest(unittest.TestCase):
 
         # QFileDialog.getExistingDirectory()
 
+    # @unittest.skip("Test for gui")
+    def test_qt_file_dialog(self):
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        from teigen.dictwidgetqt import DictWidget
+        app = QApplication(sys.argv)
+        cfg = {"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]}
+        captions = {"int": "toto je int"}
+        cw = DictWidget(cfg, captions=captions)
+        cw.show()
+        app.exec_()
+
 def dist_to_vectors(v1, vlist):
     import numpy as np
     out = []

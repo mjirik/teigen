@@ -24,13 +24,14 @@ from PyQt4 import QtGui
 import sys
 import os.path
 import copy
+import numpy as np
 
 from pyqtconfig import ConfigManager
 
 
 
 class DictWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], accept_button=False):
+    def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], horizontal=False, show_captions=True, accept_button=False, config_manager=None):
         """
 
         :param config_in:  dictionary
@@ -43,8 +44,13 @@ class DictWidget(QtGui.QWidget):
         self.captions = captions
         self.accept_button = accept_button
         self.hide_keys = hide_keys
-        self.config = ConfigManager()
-        self.config.set_defaults(config_in)
+        self.horizontal = horizontal
+        self.show_captions = show_captions
+        if config_manager is None:
+            self.config = ConfigManager()
+            self.config.set_defaults(config_in)
+        else:
+            self.config = config_manager
         self.init_ui()
 
 
@@ -69,25 +75,31 @@ class DictWidget(QtGui.QWidget):
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
         self.widgets = {}
-        gd = self.mainLayout
+        grid = self.mainLayout
+        self.grid_i = 0
 
 
-        gd_max_i = 0
         for key, value in self.config_in.iteritems():
+
             if key in self.hide_keys:
                 continue
-            if type(value) is int:
-                sb = QSpinBox()
-                sb.setRange(-100000, 100000)
-            elif type(value) is float:
-                sb = QDoubleSpinBox()
-            elif type(value) is str:
-                sb = QLineEdit()
-            elif type(value) is bool:
-                sb = QCheckBox()
-            else:
-                logger.error("Unexpected type in config dictionary")
+            atomic_widget = self.__get_widget_for_primitive_types(key, value)
+            if atomic_widget is None:
+                if type(value) in (list, np.ndarray):
+                    array = np.asarray(value)
+                    atomic_widget = self._create_sub_grid_from_ndarray(key, array)
+                    # dc = dict(zip(range(len(vl)), list(vl.astype(str))))
+                    # atomic_widget = DictWidget(config_in=dc, show_captions=False, horizontal=True, config_manager=self.config)
+                    # atomic_widget.show()
+                    row, col = self.__calculate_new_grid_position()
+                    grid.addWidget(QLabel(caption), row, col + 1)
+                    grid.addLayout(atomic_widget, row, col + 2)
+                    continue
+                else:
+                    logger.error("Unexpected type in config dictionary")
+
                 continue
+
 
             if key in self.captions.keys():
                 caption = self.captions[key]
@@ -95,14 +107,9 @@ class DictWidget(QtGui.QWidget):
                 caption = key
 
             # import ipdb; ipdb.set_trace()
-
-            row = gd_max_i / self.ncols
-            col = (gd_max_i % self.ncols) * 2
-
-            gd.addWidget(QLabel(caption),row, col +1)
-            gd.addWidget(sb, row, col + 2)
-            self.config.add_handler(key, sb)
-            gd_max_i += 1
+            row, col = self.__calculate_new_grid_position()
+            grid.addWidget(QLabel(caption), row, col + 1)
+            grid.addWidget(atomic_widget, row, col + 2)
 
         # gd.setColumnMinimumWidth(text_col, 500)
 
@@ -110,11 +117,58 @@ class DictWidget(QtGui.QWidget):
             btn_accept = QPushButton("Accept", self)
             btn_accept.clicked.connect(self.btnAccept)
             text_col = (self.ncols * 2) + 3
-            gd.addWidget(btn_accept, (gd_max_i / 2), text_col)
+            grid.addWidget(btn_accept, (self.grid_i / 2), text_col)
 
         self.config.updated.connect(self.on_config_update)
 
     # def __add_line
+    def __get_widget_for_primitive_types(self, key, value):
+
+        """
+        return right widget and connect the value with config_manager
+        :param key:
+        :param value:
+        :return:
+        """
+
+        if type(value) is int:
+            atomic_widget = QSpinBox()
+            atomic_widget.setRange(-100000, 100000)
+            self.config.add_handler(key, atomic_widget)
+        elif type(value) is float:
+            atomic_widget = QDoubleSpinBox()
+            self.config.add_handler(key, atomic_widget)
+        elif type(value) is str:
+            atomic_widget = QLineEdit()
+            self.config.add_handler(key, atomic_widget)
+        elif type(value) is bool:
+            atomic_widget = QCheckBox()
+            self.config.add_handler(key, atomic_widget)
+        else:
+            return None
+        return atomic_widget
+
+    def _create_sub_grid_from_ndarray(self, key, ndarray):
+        hgrid = QGridLayout(self)
+        hgrid_i = 0
+        for val in ndarray.tolist():
+            key_i = key + str(hgrid_i)
+            atomic_widget = self.__get_widget_for_primitive_types(key_i, val)
+
+            hgrid.addWidget(atomic_widget, 0, hgrid_i)
+            hgrid_i += 1
+
+        return hgrid
+
+
+    def __calculate_new_grid_position(self): #, atomic_widget, caption, grid):
+        row = self.grid_i / self.ncols
+        col = (self.grid_i % self.ncols) * 2
+        self.grid_i += 1
+        if self.horizontal:
+             return col, row
+        return row, col
+
 
     def btnAccept(self):
         print self.config_as_dict()
