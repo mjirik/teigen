@@ -53,7 +53,7 @@ requirements:
     - pyqt 4.11.*
     - pyqtconfig
     - pandas
-    - SimpleITK
+    - simpleitk
 
 test:
   # Python imports
