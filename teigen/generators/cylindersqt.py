@@ -84,8 +84,8 @@ class CylindersWidget(QtGui.QWidget):
         dfmerne = df[["length", "volume", "surface"]].sum() / self.gen.area_volume
         print "merne"
         print dfmerne
-        dfmernef = dfmerne.to_frame()
-        dfmernef.insert(0, "", dfmernef.index)
+        dfmernef = dfmerne.to_frame().transpose()
+        # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()
         tw = tablewidget.TableWidget(self, dataframe=dfmernef)
         self.mainLayout.addWidget(tw)
@@ -115,8 +115,10 @@ class CylindersWidget(QtGui.QWidget):
         tw = tablewidget.TableWidget(self, dataframe=dfdescribe)
         tw.show()
         tw.raise_()
+        tw.setMinimumWidth(600)
+        tw.setMinimumHeight(200)
 
-        self.mainLayout.addWidget(tw)
+        self.mainLayout.addWidget(tw,0,2,5,2)
         self.resize(600,700)
 
 
