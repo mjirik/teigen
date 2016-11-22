@@ -28,6 +28,16 @@ import numpy as np
 
 from pyqtconfig import ConfigManager
 
+def str_format_old_to_new(string):
+    """
+    convert old format style to new style. Works for digits only
+    %05d is converted to {:05d}
+    :param string:
+    :return:
+    """
+    import re
+    return re.sub(r"%(\d*d)", r"{:\1}", string)
+
 
 
 class SetDirWidget(QtGui.QWidget):
@@ -41,7 +51,7 @@ class SetDirWidget(QtGui.QWidget):
         super(SetDirWidget, self).__init__()
 
         self.caption = caption
-        self.input_dir = input_dir
+        self.input_dir = op.expanduser(input_dir)
         self.init_ui()
 
     def init_ui(self):

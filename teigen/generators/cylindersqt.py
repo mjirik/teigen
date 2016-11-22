@@ -24,10 +24,10 @@ from PyQt4.QtGui import QGridLayout, QLabel,\
 
 from PyQt4 import QtGui
 import sys
-import os.path
+import os.path as op
 import copy
 
-from .. import dictwidgetqt
+from .. import dictwidgetqt, iowidgetqt
 import cylinders
 
 from pyqtconfig import ConfigManager
@@ -46,16 +46,6 @@ def get_default_args(obj):
     dc = collections.OrderedDict(zip(args, defaults))
     return dc
 
-
-def str_format_old_to_new(string):
-    """
-    convert old format style to new style. Works for digits only
-    %05d is converted to {:05d}
-    :param string:
-    :return:
-    """
-    import re
-    return re.sub(r"%(\d*d)", r"{:\1}", string)
 
 class CylindersWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
@@ -154,6 +144,9 @@ class CylindersWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~", "output directory")
+        self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
+
         btn_save = QPushButton("Save", self)
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
@@ -168,15 +161,17 @@ class CylindersWidget(QtGui.QWidget):
 
     def btnSave(self):
         # filename = "file{:05d}.jpg"
-        init_filename = "file%05d.jpg"
-        filename = QtGui.QFileDialog.getSaveFileName(
-            self,
-            "Save file",
-            init_filename,
-            ""
-        )
-        filename = str(filename)
-        filename = str_format_old_to_new(filename)
+        filename = "file%05d.jpg"
+        # filename = QtGui.QFileDialog.getSaveFileName(
+        #     self,
+        #     "Save file",
+        #     init_filename,
+        #     ""
+        # )
+        # filename = str(filename)
+
+        filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
+        filename = iowidgetqt.str_format_old_to_new(filename)
         self.gen.saveVolumeToFile(filename=filename)
 
 

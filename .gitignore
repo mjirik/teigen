@@ -91,3 +91,6 @@ ENV/
 # output data
 *.vtk
 *.pklz
+/tests/tree_volume.pklz
+/tests/tree_output.vtk
+/tests/test_tree_output.vtk
