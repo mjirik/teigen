@@ -184,7 +184,7 @@ class TubeTreeTest(unittest.TestCase):
         tvg.tree_data = tree_data
         output = tvg.buildTree() # noqa
         # tvg.show()
-        tvg.saveToFile("tree_output.vtk")
+        tvg.saveToFile("test_tree_output.vtk")
 
 
         tvgvol = TreeBuilder('vol')
@@ -263,6 +263,18 @@ class TubeTreeTest(unittest.TestCase):
         cfg = {"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]}
         captions = {"int": "toto je int"}
         cw = CylindersWidget()
+        cw.show()
+        app.exec_()
+
+    def test_qt_set_dir_widget(self):
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        from teigen.dictwidgetqt import DictWidget
+        from teigen.iowidgetqt import SetDirWidget
+        app = QApplication(sys.argv)
+        cfg = {"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]}
+        captions = {"int": "toto je int"}
+        cw = SetDirWidget("~/lisa_data", "output dir")
         cw.show()
         app.exec_()
 
