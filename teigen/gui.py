@@ -28,7 +28,7 @@ import os.path as op
 import copy
 
 import dictwidgetqt, iowidgetqt
-from generators import cylinders
+import generators.cylinders
 
 from pyqtconfig import ConfigManager
 import inspect
@@ -52,7 +52,7 @@ class CylindersWidget(QtGui.QWidget):
         super(CylindersWidget, self).__init__()
         self.ncols = ncols
 
-        self.config = get_default_args(cylinders.CylinderGenerator)
+        self.config = get_default_args(generators.cylinders.CylinderGenerator)
         print "default args"
         print self.config
         self.gen = None

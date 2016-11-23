@@ -1,2 +1,1 @@
-import generators
-from generators.cylindersqt import main
+from gui import main
