@@ -55,6 +55,7 @@ class CylindersWidget(QtGui.QWidget):
         self.config = get_default_args(cylinders.CylinderGenerator)
         print "default args"
         print self.config
+        self.gen = None
         self.init_ui()
 
 
@@ -169,6 +170,9 @@ class CylindersWidget(QtGui.QWidget):
         #     ""
         # )
         # filename = str(filename)
+
+        if self.gen is None:
+            self.run()
 
         filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = iowidgetqt.str_format_old_to_new(filename)
