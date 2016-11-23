@@ -173,6 +173,7 @@ class CylindersWidget(QtGui.QWidget):
 
         if self.gen is None:
             self.run()
+            self._show_stats()
 
         filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = iowidgetqt.str_format_old_to_new(filename)
