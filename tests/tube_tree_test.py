@@ -278,6 +278,18 @@ class TubeTreeTest(unittest.TestCase):
         cw.show()
         app.exec_()
 
+    def test_teigen(self):
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        from teigen.dictwidgetqt import DictWidget
+        from teigen.gui import TeigenWidget
+        app = QApplication(sys.argv)
+        cfg = {"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]}
+        captions = {"int": "toto je int"}
+        cw = TeigenWidget()
+        cw.show()
+        app.exec_()
+
 def dist_to_vectors(v1, vlist):
     import numpy as np
     out = []

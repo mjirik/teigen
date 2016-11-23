@@ -29,6 +29,7 @@ import copy
 
 import dictwidgetqt, iowidgetqt
 import generators.cylinders
+import generators.gensei_wrapper
 
 from pyqtconfig import ConfigManager
 import inspect
@@ -47,12 +48,13 @@ def get_default_args(obj):
     return dc
 
 
-class CylindersWidget(QtGui.QWidget):
+class TeigenWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
-        super(CylindersWidget, self).__init__()
+        super(TeigenWidget, self).__init__()
         self.ncols = ncols
 
         self.config = get_default_args(generators.cylinders.CylinderGenerator)
+        self.config2 = get_default_args(generators.gensei_wrapper.GenseiGenerator)
         print "default args"
         print self.config
         self.gen = None
@@ -65,7 +67,9 @@ class CylindersWidget(QtGui.QWidget):
         logger.debug(str(new_cfg))
         self.config = new_cfg
         print self.config
-        self.gen = cylinders.CylinderGenerator(**self.config)
+        self.gen = generators.cylinders.CylinderGenerator(**self.config)
+        # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
+        self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
 
     def _show_stats(self):
@@ -140,6 +144,10 @@ class CylindersWidget(QtGui.QWidget):
 
         self.configwg = dictwidgetqt.DictWidget(self.config, hide_keys=hide_keys)
         self.gen_tab_wg.addTab(self.configwg, "cylinder generator")
+
+
+        self.configwg = dictwidgetqt.DictWidget(self.config2, hide_keys=hide_keys)
+        self.gen_tab_wg.addTab(self.configwg, "gensei generator")
 
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
@@ -236,7 +244,7 @@ def main():
 
 
     app = QApplication(sys.argv)
-    cw = CylindersWidget()
+    cw = TeigenWidget()
     cw.show()
     app.exec_()
 
