@@ -67,6 +67,8 @@ class TeigenWidget(QtGui.QWidget):
         logger.debug(str(new_cfg))
         self.config = new_cfg
         print self.config
+        id = self.gen_tab_wg.currentIndex()
+        print id
         self.gen = generators.cylinders.CylinderGenerator(**self.config)
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         self.gen = generators.gensei_wrapper.GenseiGenerator()
