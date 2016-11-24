@@ -15,9 +15,21 @@ from gensei.utils import get_suffix
 class GenseiGenerator:
 
     def __init__(self,
-                 voxelsize_mm=[1.0, 1.0, 1.0],
-                 area_shape=[100, 100, 100],
+                 # voxelsize_mm=[1.0, 1.0, 1.0],
+                 # area_shape=[100, 100, 100],
+                 resolution=[600, 600],
+                 dims = [10,10,10],
+                 n_slice = 21
                  ):
+        self.objects = None
+        # self.voxelsize_mm = np.asarray(voxelsize_mm)
+        # self.area_shape = np.asarray(area_shape)
+        # self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
+        self.resolution = np.asarray(resolution)
+        self.dims = dims = np.asarray(dims)
+        self.n_slice = n_slice
+        self.area_volume = np.prod(self.dims)
+
         pass
 
 
@@ -25,8 +37,81 @@ class GenseiGenerator:
 
 
     def run(self):
-        generate_slices(objects, box, options, "/home/mjirik/lisa_data/")
+        conf = {'objects' : default_objects,
+                'box' : default_box,
+                'options' : default_options}
+
+        config = Config.from_conf(conf, required=['objects', 'box'],
+                                  optional=['options'])
+
+
+        if isinstance(config.box['dims'], str):
+            config.box['dims'] = eval(config.box['dims'])
+        if isinstance(config.box['resolution'], str):
+            aux = tuple([int(r) for r in  config.box['resolution'].split('x')])
+            config.box['resolution'] = aux
+
+        # config.box["resolution"] = 1/self.voxelsize_mm[1:]
+        # config.box['dims'] = self.area_shape
+        config.box["resolution"] = tuple(self.resolution.astype(int).tolist())
+        config.box['dims'] = self.dims.astype(int).tolist()
+        config.box['n_slice'] = int(self.n_slice)
+        box = Box(**config.box)
+        options = Object(name='options', **config.options)
+
+        output(box)
+        output(options)
+
+        object_classes = Objects.from_conf(config.objects, box)
+        objects = object_classes.place_objects(box, options)
+
+        self.objects = objects
+        self.box = box
+        self.options = options
         pass
+
+    def getStats(self):
+        # self.objects.format_intersection_statistics(is_output=True)
+        # output('saving report to %s' % reportname)
+        # fd = open(reportname, 'w')
+        #
+        # fd.write('started: %s\n' % time.ctime(time_start))
+        # fd.write('elapsed: %.1f [s]\n' % (time_end - time_start))
+        #
+        # box.report(fd)
+        # options.report(fd)
+        #
+        # fd.write('\n'.join(objects.format_statistics())+'\n')
+        #
+        # object_classes.report(fd)
+        # objects.report(fd)
+        #
+        # fd.close()
+        #
+        # output('all done.')
+        data_dict = {
+            'volume': [],
+            'surface': [],
+            'length': [],
+            'radius': [],
+        }
+        for key in self.objects:
+            obj = self.objects[key]
+            data_dict['surface'].append(obj.surface)
+            data_dict['volume'].append(obj.volume)
+            data_dict['length'].append(0)
+            data_dict['radius'].append(0)
+            # obj.
+
+        import pandas as pd
+        df = pd.DataFrame(data_dict)
+        return df
+
+    def saveVolumeToFile(self, dirname):
+        if self.objects is None:
+            self.run()
+
+        generate_slices(self.objects, self.box, self.options, dirname)
 
 
 def generate_slices(objects, box, options, output_filename_trunk):
@@ -152,4 +237,44 @@ options = {
     'output_format' : 'png',
     # timeout in seconds to place more ellipsoids in to the box
     'timeout' : 5.0,
+}
+
+
+defaults = {
+    'fraction' : 0.1,
+    'fraction_reduction' : 0.9,
+    'length_to_width' : 8.0,
+
+    'n_slice' : 21,
+    'dims' : '(10, 10, 10)',
+    'units' : 'mm',
+    'resolution' : '600x600',
+    'n_object' : 10,
+    'output_format' : 'png',
+    'timeout' : 5.0,
+}
+
+default_objects = {
+    'class 1' : {
+        'kind' : 'ellipsoid',
+        'color' : 'r',
+        'fraction' : defaults['fraction'],
+        'length_to_width' : defaults['length_to_width'],
+        'reduce_to_fit' : {'fraction' : defaults['fraction_reduction']},
+        'centre' : 'random',
+        'direction' : 'random direction',
+    },
+}
+
+default_box = {
+    'dims' : defaults['dims'],
+    'units' : defaults['units'],
+    'resolution' : defaults['resolution'],
+    'n_object' : defaults['n_object'],
+    'n_slice' : defaults['n_slice'],
+}
+
+default_options = {
+    'output_format' : defaults['output_format'],
+    'timeout' : defaults['timeout'],
 }

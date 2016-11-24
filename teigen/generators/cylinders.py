@@ -63,6 +63,7 @@ class CylinderGenerator:
         #     voxelsize_mm_y
         # ]
         self.build = build
+        self.filename = "output{:05d}.jpg"
         self.area_shape = np.asarray(area_shape)
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
@@ -225,8 +226,10 @@ class CylinderGenerator:
 
 
 
-    def saveVolumeToFile(self, filename="output/output{:05d}.jpg"):
+    def saveVolumeToFile(self, filedir="output"):
         from ..tree import TreeBuilder
+
+        filename = os.path.join(filedir, self.filename)
 
         tvgvol = TreeBuilder('vol')
         tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]

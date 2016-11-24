@@ -281,12 +281,14 @@ class TubeTreeTest(unittest.TestCase):
     def test_teigen(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
-        from teigen.dictwidgetqt import DictWidget
-        from teigen.gui import TeigenWidget
+        # from teigen.dictwidgetqt import DictWidget
+        import teigen
+        import teigen.geometry3d
+        import teigen.gui
         app = QApplication(sys.argv)
         cfg = {"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]}
         captions = {"int": "toto je int"}
-        cw = TeigenWidget()
+        cw = teigen.gui.TeigenWidget()
         cw.show()
         app.exec_()
 

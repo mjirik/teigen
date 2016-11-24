@@ -53,8 +53,17 @@ class TeigenWidget(QtGui.QWidget):
         super(TeigenWidget, self).__init__()
         self.ncols = ncols
 
-        self.config = get_default_args(generators.cylinders.CylinderGenerator)
-        self.config2 = get_default_args(generators.gensei_wrapper.GenseiGenerator)
+        self.generators_classes =  [
+            generators.cylinders.CylinderGenerator,
+            generators.gensei_wrapper.GenseiGenerator
+        ]
+        self.generators_names = [
+            "Cylinder generator",
+            "Gensei generator"
+        ]
+        self.configs = [get_default_args(conf) for conf in self.generators_classes]
+        self.config = self.configs[0]
+
         print "default args"
         print self.config
         self.gen = None
@@ -63,25 +72,37 @@ class TeigenWidget(QtGui.QWidget):
 
     def run(self):
         print "generator args"
-        new_cfg = self.configwg.config_as_dict()
+        id = self.gen_tab_wg.currentIndex()
+        new_cfg = self._ui_generator_widgets[id].config_as_dict()
         logger.debug(str(new_cfg))
         self.config = new_cfg
-        print self.config
-        id = self.gen_tab_wg.currentIndex()
-        print id
-        self.gen = generators.cylinders.CylinderGenerator(**self.config)
+        generator_class = self.generators_classes[id]
+        # self.config = get_default_args(generator_class)
+        self.gen = generator_class(**self.config)
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
-        self.gen = generators.gensei_wrapper.GenseiGenerator()
+        # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
 
     def _show_stats(self):
         df = self.gen.getStats()
         import tablewidget
+        to_rename = {
+            "length": "length [mm]",
+            "volume": "volume [mm^3]",
+            "surface": "volume [mm^2]",
+            "radius": "volume [mm^2]"
+        }
+        to_rename_relative = {
+            "length": "length [mm^-2]",
+            "volume": "volume []",
+            "surface": "volume [mm^-1]",
+            "radius": "volume [mm^-2]"
+        }
 
-        dfmerne = df[["length", "volume", "surface"]].sum() / self.gen.area_volume
+        dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.gen.area_volume
         print "merne"
         print dfmerne
-        dfmernef = dfmerne.to_frame().transpose()
+        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_relative)
         # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()
         tw = tablewidget.TableWidget(self, dataframe=dfmernef)
@@ -96,15 +117,15 @@ class TeigenWidget(QtGui.QWidget):
         # self.toolbar = NavigationToolbar(self.canvas, self)
         self.mainLayout.addWidget(self.canvas)
         plt.subplot(141)
-        df[["length"]].boxplot()
+        df[["length"]].rename(columns=to_rename).boxplot()
         plt.subplot(142)
-        df[['radius']].boxplot()
+        df[['radius']].rename(columns=to_rename).boxplot()
 
         plt.subplot(143)
-        df[["surface"]].boxplot()
+        df[["surface"]].rename(columns=to_rename).boxplot()
 
         plt.subplot(144)
-        df[["volume"]].boxplot()
+        df[["volume"]].rename(columns=to_rename).boxplot()
 
         # TODO take care about redrawing
         dfdescribe = df.describe()
@@ -137,6 +158,9 @@ class TeigenWidget(QtGui.QWidget):
                 cfg[key] = yaml.dump(value, default_flow_style=True)
         return cfg
 
+    def _get_generator(self, id):
+        pass
+
 
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
@@ -144,12 +168,13 @@ class TeigenWidget(QtGui.QWidget):
         self.gen_tab_wg = QTabWidget()
         self.mainLayout.addWidget(self.gen_tab_wg)
 
-        self.configwg = dictwidgetqt.DictWidget(self.config, hide_keys=hide_keys)
-        self.gen_tab_wg.addTab(self.configwg, "cylinder generator")
-
-
-        self.configwg = dictwidgetqt.DictWidget(self.config2, hide_keys=hide_keys)
-        self.gen_tab_wg.addTab(self.configwg, "gensei generator")
+        self._ui_generator_widgets = []
+        for i, config in enumerate(self.configs):
+            wg = dictwidgetqt.DictWidget(self.configs[i], hide_keys=hide_keys)
+            self._ui_generator_widgets.append(wg)
+            self.gen_tab_wg.addTab(wg, self.generators_names[i])
+        # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
+        # self.gen_tab_wg.addTab(gen_wg, "gensei generator")
 
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
@@ -157,7 +182,7 @@ class TeigenWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~", "output directory")
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data", "output directory")
         self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save", self)
@@ -189,7 +214,7 @@ class TeigenWidget(QtGui.QWidget):
 
         filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = iowidgetqt.str_format_old_to_new(filename)
-        self.gen.saveVolumeToFile(filename=filename)
+        self.gen.saveVolumeToFile(filename)
 
 
 
