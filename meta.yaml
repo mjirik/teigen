@@ -54,6 +54,7 @@ requirements:
     - pyqtconfig
     - pandas
     - simpleitk
+    - imtools >=0.1.18
 
 test:
   # Python imports

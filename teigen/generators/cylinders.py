@@ -44,13 +44,13 @@ class CylinderGenerator:
                  # area_shape_x=100,
                  # area_shape_y=100,
                  element_number=30,
-                 uniform_radius=False,
-                 normal_radius=False,
-                 fixed_radius=False,
-                 radius_minimum=2.0,
-                 radius_maximum=10.0,
-                 radius_mean=5.0,
-                 radius_standard_deviation=5.0,
+                 uniform_radius_distribution=False,
+                 normal_radius_distribution=False,
+                 fixed_radius_distribution=False,
+                 radius_distribution_minimum=2.0,
+                 radius_distribution_maximum=10.0,
+                 radius_distribution_mean=5.0,
+                 radius_distribution_standard_deviation=5.0,
                  ):
         """
         gtree is information about input data structure.
@@ -67,18 +67,18 @@ class CylinderGenerator:
         self.area_shape = np.asarray(area_shape)
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
-        self.radius_maximum = radius_maximum
+        self.radius_maximum = radius_distribution_maximum
         self._cylinder_nodes = []
         self.random_seed = 0
         self.radius_generator = self._const
-        self.radius_generator_args=[radius_mean]
+        self.radius_generator_args=[radius_distribution_mean]
         self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
-        if uniform_radius:
+        if uniform_radius_distribution:
             self.radius_generator = np.random.uniform
-            self.radius_generator_args = [radius_minimum, radius_maximum]
-        if normal_radius:
+            self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
+        if normal_radius_distribution:
             self.radius_generator = np.random.normal
-            self.radius_generator_args = [radius_mean, radius_standard_deviation]
+            self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
         # import ipdb; ipdb.set_trace()
         # input of geometry and topology
         # self.V = []

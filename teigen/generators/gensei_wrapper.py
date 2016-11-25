@@ -16,7 +16,8 @@ class GenseiGenerator:
                  # area_shape=[100, 100, 100],
                  resolution=[600, 600],
                  dims = [10,10,10],
-                 n_slice = 21
+                 n_slice = 21,
+                 n_objects = 10
                  ):
         self.objects = None
         # self.voxelsize_mm = np.asarray(voxelsize_mm)
@@ -25,6 +26,7 @@ class GenseiGenerator:
         self.resolution = np.asarray(resolution)
         self.dims = dims = np.asarray(dims)
         self.n_slice = n_slice
+        self.n_objects = n_objects
         self.area_volume = np.prod(self.dims)
 
         pass

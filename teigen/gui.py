@@ -168,9 +168,16 @@ class TeigenWidget(QtGui.QWidget):
         self.gen_tab_wg = QTabWidget()
         self.mainLayout.addWidget(self.gen_tab_wg)
 
+        rename_captions_dict = {
+            "voxelsize_mm": "voxel size [mm]",
+            }
+
         self._ui_generator_widgets = []
         for i, config in enumerate(self.configs):
-            wg = dictwidgetqt.DictWidget(self.configs[i], hide_keys=hide_keys)
+            wg = dictwidgetqt.DictWidget(
+                self.configs[i],
+                hide_keys=hide_keys,
+                captions=rename_captions_dict)
             self._ui_generator_widgets.append(wg)
             self.gen_tab_wg.addTab(wg, self.generators_names[i])
         # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
@@ -199,7 +206,7 @@ class TeigenWidget(QtGui.QWidget):
 
     def btnSave(self):
         # filename = "file{:05d}.jpg"
-        filename = "file%05d.jpg"
+        # filename = "file%05d.jpg"
         # filename = QtGui.QFileDialog.getSaveFileName(
         #     self,
         #     "Save file",
@@ -212,7 +219,9 @@ class TeigenWidget(QtGui.QWidget):
             self.run()
             self._show_stats()
 
-        filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
+        # filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
+        filename = self.ui_output_dir_widget.get_dir()
+
         filename = iowidgetqt.str_format_old_to_new(filename)
         self.gen.saveVolumeToFile(filename)
 
