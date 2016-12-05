@@ -41,7 +41,7 @@ class TBVolume:
         if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
             self.intensity_profile = gtree.intensity_profile
         else:
-            self.intensity_profile = {1:200}
+            self.intensity_profile = {1:200, 0.6: 100}
 
         # self.intensity_profile = incollections.OrderedDict(sorted(intensity_profile, reverse=True))
         self._cylinders_params = []
@@ -144,7 +144,7 @@ class TBVolume:
             radk_intensity = self.intensity_profile[radk]
 
             for cyl in self._cylinders_params:
-                self.add_cylinder(cyl[0], cyl[1], cyl[2] * radk, cyl[3])
+                self._add_cylinder(cyl[0], cyl[1], cyl[2] * radk, cyl[3])
 
                 if self.finish_progress_callback is not None:
                     self.finish_progress_callback(progress)

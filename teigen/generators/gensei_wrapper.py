@@ -35,7 +35,7 @@ class GenseiGenerator:
 
 
     def run(self):
-        from gensei.base import *
+        from gensei.base import Config, Object
         from gensei import Objects, Box
         from gensei.utils import get_suffix
 
@@ -122,7 +122,7 @@ def generate_slices(objects, box, options, output_filename_trunk):
     block. Each image displays a planar cut plane of the block intersecting the
     ellipsoids.
     """
-    from gensei.base import *
+    from gensei.base import output, assert_
     from gensei import Objects, Box
     from gensei.utils import get_suffix
     resolution = box.resolution

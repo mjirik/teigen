@@ -51,7 +51,9 @@ class CylinderGenerator:
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=5.0,
                  radius_distribution_standard_deviation=5.0,
-                 intensity_profile=None
+                 # intensity_profile=None
+                 intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
+                 intensity_profile_intensity=[195, 190, 200, 30],
                  ):
         """
         gtree is information about input data structure.
@@ -70,7 +72,8 @@ class CylinderGenerator:
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
         self.radius_maximum = radius_distribution_maximum
-        self.intensity_profile = intensity_profile
+        # self.intensity_profile = intensity_profile
+        self.intensity_profile = dict(zip(intensity_profile_radius, intensity_profile_intensity))
         self._cylinder_nodes = []
         self.random_seed = 0
         self.radius_generator = self._const

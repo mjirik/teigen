@@ -172,8 +172,8 @@ class TreeBuilder:
         return output
 
     def finish_progress_callback(self, progress):
-        logger.debug(str(progress))
         print progress
+        logger.debug(str(progress))
 
     def generateTree_vtk(self):
         import vtk
