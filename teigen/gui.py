@@ -117,15 +117,15 @@ class TeigenWidget(QtGui.QWidget):
         # self.toolbar = NavigationToolbar(self.canvas, self)
         self.mainLayout.addWidget(self.canvas)
         plt.subplot(141)
-        df[["length"]].rename(columns=to_rename).boxplot()
+        df[["length"]].rename(columns=to_rename).boxplot(return_type='axes')
         plt.subplot(142)
-        df[['radius']].rename(columns=to_rename).boxplot()
+        df[['radius']].rename(columns=to_rename).boxplot(return_type='axes')
 
         plt.subplot(143)
-        df[["surface"]].rename(columns=to_rename).boxplot()
+        df[["surface"]].rename(columns=to_rename).boxplot(return_type='axes')
 
         plt.subplot(144)
-        df[["volume"]].rename(columns=to_rename).boxplot()
+        df[["volume"]].rename(columns=to_rename).boxplot(return_type='axes')
 
         # TODO take care about redrawing
         dfdescribe = df.describe()

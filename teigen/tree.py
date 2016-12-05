@@ -33,6 +33,7 @@ class TreeBuilder:
         self.shape = None
         self.use_lar = False
         self.tree_label = None
+        self.segments_progress_callback = self.finish_progress_callback
 
         if generator_class in ['vol', 'volume']:
             import tb_volume
@@ -114,6 +115,19 @@ class TreeBuilder:
         else:
             self.generator = self.generator_class(self, **self.generator_params)
 
+        tree_output = self._build_tree_per_segments()
+
+        logger.debug("before visualization - generateTree()")
+        if self.use_lar:
+            self.lv.show()
+
+        return tree_output
+
+
+    def _build_tree_per_segments(self):
+        progress_step = 1.0/len(self.tree_data)
+        progress = 0.0
+
         for cyl_id in self.tree_data:
             logger.debug("CylinderId: " + str(cyl_id))
             cyl_data = self.tree_data[cyl_id]
@@ -138,10 +152,14 @@ class TreeBuilder:
 
                 # if self.use_lar:
                 #     self.generator.add_cylinder(p1m, p2m, rad, in)
+            if self.segments_progress_callback is not None:
+                self.segments_progress_callback(progress_step)
+            progress += progress_step
         logger.debug("cylinders generated")
 
         if "finish" in dir(self.generator):
             # generator could have finish() function
+            self.generator.finish_progress_callback = self.finish_progress_callback
             self.generator.finish()
             logger.debug("joints generated")
         else:
@@ -151,10 +169,11 @@ class TreeBuilder:
 
         output = self.generator.get_output()
 
-        logger.debug("before visualization - generateTree()")
-        if self.use_lar:
-            self.lv.show()
         return output
+
+    def finish_progress_callback(self, progress):
+        logger.debug(str(progress))
+        print progress
 
     def generateTree_vtk(self):
         import vtk

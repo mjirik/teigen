@@ -51,10 +51,12 @@ class CylinderGenerator:
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=5.0,
                  radius_distribution_standard_deviation=5.0,
+                 intensity_profile=None
                  ):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
+        intensity_profile: Dictionary type. Key is radius and value is required intensity.
         """
         # area_shape = [area_shape_z,area_shape_x, area_shape_y]
         # voxelsize_mm = [
@@ -68,6 +70,7 @@ class CylinderGenerator:
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
         self.radius_maximum = radius_distribution_maximum
+        self.intensity_profile = intensity_profile
         self._cylinder_nodes = []
         self.random_seed = 0
         self.radius_generator = self._const
@@ -165,7 +168,7 @@ class CylinderGenerator:
                             "nodeB_ZYX_mm": pt2,
                             # "radius_mm": radius
                             # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
-                            "radius_mm": radius
+                            "radius_mm": radius,
                         }
                         tree_data[i] = edge
                         line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
@@ -235,6 +238,8 @@ class CylinderGenerator:
         tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
         tvgvol.shape = self.area_shape # [100, 100, 100]
         tvgvol.tree_data = self.tree_data
+        if self.intensity_profile is not None:
+            tvgvol.intensity_profile = self.intensity_profile
         outputvol = tvgvol.buildTree()
         # from .. import simpleio
         # simpleio.save_image_stack(outputvol.astype(np.uint8)*150, fn)

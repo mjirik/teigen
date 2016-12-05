@@ -25,7 +25,8 @@ import tb_vtk
 import vtk
 from vtk.util import numpy_support
 
-from datetime import datetime
+# from datetime import datetime
+# import collections
 
 
 class TBVolume:
@@ -37,12 +38,24 @@ class TBVolume:
         self.shape = gtree.shape
         self.data3d = np.zeros(gtree.shape, dtype=np.int)
         self.voxelsize_mm = gtree.voxelsize_mm
-        self.output_intensity = 200
+        if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
+            self.intensity_profile = gtree.intensity_profile
+        else:
+            self.intensity_profile = {1:200}
+
+        # self.intensity_profile = incollections.OrderedDict(sorted(intensity_profile, reverse=True))
+        self._cylinders_params = []
+        self._temp_intensity = 10
+        self.finish_progress_callback = None
+        # self.output_intensity = 200
 
     def add_cylinder(self, p1m, p2m, rad, id):
         """
         Funkce na vykresleni jednoho segmentu do 3D dat
         """
+        self._cylinders_params.append([p1m, p2m, rad, id])
+
+    def _add_cylinder(self, p1m, p2m, rad, id):
 
         cyl_data3d = np.ones(self.shape, dtype=np.bool)
         # prvni a koncovy bod, ve pixelech
@@ -114,17 +127,37 @@ class TBVolume:
                         iX = int(z + cut_up)
                         iY = int(y + cut_yu)
                         iZ = int(x + cut_xl)
-                        self.data3d[iX][iY][iZ] = 1
+                        self.data3d[iX][iY][iZ] = self._temp_intensity
 
     def get_output(self):
         return self.data3d
+
+    def finish(self):
+        """
+        :param self.finish_progress_callback: function with input parameter from 0.0 to 1.0
+        :return:
+        """
+        progress_step = 1.0/(len(self.intensity_profile) * len(self._cylinders_params))
+        progress = 0.0
+
+        for radk in sorted(self.intensity_profile, reverse=True):
+            radk_intensity = self.intensity_profile[radk]
+
+            for cyl in self._cylinders_params:
+                self.add_cylinder(cyl[0], cyl[1], cyl[2] * radk, cyl[3])
+
+                if self.finish_progress_callback is not None:
+                    self.finish_progress_callback(progress)
+                    progress += progress_step
+
+            self.data3d[self.data3d==self._temp_intensity] = radk_intensity
 
     def save(self, outputfile, filetype='pklz'):
         import io3d
         import io3d.misc
         import numpy as np
         data = {
-            'data3d': self.data3d.astype(np.uint8) * self.output_intensity,
+            'data3d': self.data3d.astype(np.uint8), #* self.output_intensity,
             'voxelsize_mm': self.voxelsize_mm,
             # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
         }
