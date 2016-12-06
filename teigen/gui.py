@@ -189,8 +189,8 @@ class TeigenWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data", "output directory")
-        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:05d}.jpg'")
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/slice{:06d}.jpg", "output directory")
+        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
         self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save", self)
