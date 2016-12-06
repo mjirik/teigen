@@ -89,14 +89,14 @@ class TeigenWidget(QtGui.QWidget):
         to_rename = {
             "length": "length [mm]",
             "volume": "volume [mm^3]",
-            "surface": "volume [mm^2]",
-            "radius": "volume [mm^2]"
+            "surface": "surface [mm^2]",
+            "radius": "radius [mm^2]"
         }
         to_rename_relative = {
             "length": "length [mm^-2]",
             "volume": "volume []",
-            "surface": "volume [mm^-1]",
-            "radius": "volume [mm^-2]"
+            "surface": "surface [mm^-1]",
+            "radius": "radius [mm^-2]"
         }
 
         dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.gen.area_volume
@@ -190,9 +190,11 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data", "output directory")
+        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:05d}.jpg'")
         self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save", self)
+        btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
@@ -223,6 +225,9 @@ class TeigenWidget(QtGui.QWidget):
         filename = self.ui_output_dir_widget.get_dir()
 
         filename = iowidgetqt.str_format_old_to_new(filename)
+
+
+
         self.gen.saveVolumeToFile(filename)
 
 

@@ -55,6 +55,8 @@ requirements:
     - pandas
     - simpleitk
     - imtools >=0.1.18
+    - gensei
+    - pyqtgraph
     - git # kvuli instalaci gensei
 
 test:

@@ -41,7 +41,7 @@ def str_format_old_to_new(string):
 
 
 class SetDirWidget(QtGui.QWidget):
-    def __init__(self, input_dir="", caption=None):
+    def __init__(self, input_dir="", caption=None, tooltip=None):
         """
 
         :param config_in:  dictionary
@@ -51,6 +51,7 @@ class SetDirWidget(QtGui.QWidget):
         super(SetDirWidget, self).__init__()
 
         self.caption = caption
+        self.tooltip = None
         self.input_dir = op.expanduser(input_dir)
         self.init_ui()
 
@@ -68,7 +69,9 @@ class SetDirWidget(QtGui.QWidget):
         grid.addWidget(self.ui_dir_box, 0, 1)
 
 
-        btn_accept = QPushButton("Set", self)
+        btn_accept = QPushButton("Set dir", self)
+        if self.tooltip is not None:
+            btn_accept.setToolTip(self.tooltip)
         btn_accept.clicked.connect(self.callback_set_dir)
         grid.addWidget(btn_accept, 0, 2)
 
@@ -77,13 +80,14 @@ class SetDirWidget(QtGui.QWidget):
 
     def callback_set_dir(self):
         # init_filename = "file%05d.jpg"
+        directory, file = op.split(self.get_dir())
 
         filename = QtGui.QFileDialog.getExistingDirectory(
             self,
-            "Save file",
-            self.get_dir()
+            "Save directory",
+            directory
         )
-        filename = str(filename)
+        filename = op.join(str(filename), file)
 
         self.ui_dir_box.setText(filename)
 

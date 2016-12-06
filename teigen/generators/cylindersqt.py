@@ -31,20 +31,7 @@ from .. import dictwidgetqt, iowidgetqt
 import cylinders
 
 from pyqtconfig import ConfigManager
-import inspect
-import collections
 
-def get_default_args(obj):
-    argspec = inspect.getargspec(obj.__init__)
-    args = argspec.args[1:]
-    defaults = argspec.defaults
-    print "---- args"
-    print args
-    print defaults
-    # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
-    # dc = dict(zip(args, defaults))
-    dc = collections.OrderedDict(zip(args, defaults))
-    return dc
 
 
 class CylindersWidget(QtGui.QWidget):
@@ -52,7 +39,7 @@ class CylindersWidget(QtGui.QWidget):
         super(CylindersWidget, self).__init__()
         self.ncols = ncols
 
-        self.config = get_default_args(cylinders.CylinderGenerator)
+        self.config = dictwidgetqt.get_default_args(cylinders.CylinderGenerator)
         print "default args"
         print self.config
         self.gen = None

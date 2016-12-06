@@ -28,7 +28,20 @@ import numpy as np
 
 from pyqtconfig import ConfigManager
 
+import inspect
+import collections
 
+def get_default_args(obj):
+    argspec = inspect.getargspec(obj.__init__)
+    args = argspec.args[1:]
+    defaults = argspec.defaults
+    print "---- args"
+    print args
+    print defaults
+    # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
+    # dc = dict(zip(args, defaults))
+    dc = collections.OrderedDict(zip(args, defaults))
+    return dc
 
 class DictWidget(QtGui.QWidget):
     def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], horizontal=False, show_captions=True, accept_button=False, config_manager=None):

@@ -11,4 +11,4 @@ rem conda install -c jmargeta scikit-fmm
 rem python -m wget https://raw.githubusercontent.com/mjirik/lisa/master/requirements_pip.txt
 rem pip install -r requirements_pip.txt
 rem del requirements_pip.txt
-pip install git+https://github.com/rc/gensei.git
+rem pip install git+https://github.com/rc/gensei.git
