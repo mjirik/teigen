@@ -26,14 +26,16 @@ from PyQt4 import QtGui
 import sys
 import os.path as op
 import copy
+import inspect
+import collections
+import numpy as np
+import scipy
 
 import dictwidgetqt, iowidgetqt
 import generators.cylinders
 import generators.gensei_wrapper
 
 from pyqtconfig import ConfigManager
-import inspect
-import collections
 
 def get_default_args(obj):
     argspec = inspect.getargspec(obj.__init__)
@@ -67,6 +69,7 @@ class TeigenWidget(QtGui.QWidget):
         print "default args"
         print self.config
         self.gen = None
+        self.teigen = Teigen()
         self.init_ui()
 
 
@@ -82,6 +85,7 @@ class TeigenWidget(QtGui.QWidget):
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
+
 
     def _show_stats(self):
         df = self.gen.getStats()
@@ -185,6 +189,10 @@ class TeigenWidget(QtGui.QWidget):
 
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
+        postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
+        self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
+        self.mainLayout.addWidget(self.posprocessing_wg)
+
         btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnAccept)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
@@ -221,6 +229,14 @@ class TeigenWidget(QtGui.QWidget):
             self.run()
             self._show_stats()
 
+        # postprocessing
+        if "generate_volume" in dir(self.gen):
+            self.teigen.data3d = self.gen.generate_volume()
+            self.teigen.voxelsize_mm = self.gen.voxelsize_mm
+            postprocessing_params = self.posprocessing_wg.config_as_dict()
+            data3d = self.teigen.postprocessing(**postprocessing_params)
+            self.gen.data3d = data3d
+
         # filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = self.ui_output_dir_widget.get_dir()
 
@@ -248,6 +264,42 @@ class TeigenWidget(QtGui.QWidget):
 
         return dictionary
 
+
+class Teigen():
+    def __init__(self):
+        self.data3d = None
+        self.voxelsize_mm = None
+
+
+    def postprocessing(self, gaussian_filter=True, gaussian_filter_sigma_mm=1.0, gaussian_noise=True, gaussian_noise_stddev=10.0, gaussian_noise_center=0.0, limit_negative_intensities=True):
+        if gaussian_filter:
+            sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm
+
+            self.data3d = scipy.ndimage.filters.gaussian_filter(
+                self.data3d,
+                sigma=sigma_px)
+
+        if gaussian_noise:
+            dt = self.data3d.dtype
+            noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
+            self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
+
+        if limit_negative_intensities:
+            self.data3d[self.data3d < 0] = 0
+
+        return self.data3d
+
+    # def save_volume_to_file(self, filename):
+    #
+    #     import io3
+    #     import io3d.misc
+    #     import numpy as np
+    #     data = {
+    #         'data3d': self.data3d.astype(np.uint8), #* self.output_intensity,
+    #         'voxelsize_mm': self.voxelsize_mm,
+    #         # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
+    #     }
+    #     io3d.write(data, filename)
 
 def main():
     logger = logging.getLogger()

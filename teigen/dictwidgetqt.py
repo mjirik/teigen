@@ -32,7 +32,11 @@ import inspect
 import collections
 
 def get_default_args(obj):
-    argspec = inspect.getargspec(obj.__init__)
+    if ("__init__" in dir(obj)) and inspect.isfunction(obj.__init__):
+        argspec = inspect.getargspec(obj.__init__)
+    else:
+        argspec = inspect.getargspec(obj)
+
     args = argspec.args[1:]
     defaults = argspec.defaults
     print "---- args"
