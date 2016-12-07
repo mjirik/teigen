@@ -34,7 +34,7 @@ import numpy as np
 
 def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
 
-    output = []
+    outdict = []
 
     for key in key_value:
         value = key_value[key]
@@ -50,15 +50,31 @@ def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
             ntype = 'bool'
         elif (tp == str):
             ntype = 'str'
-        # elif tp in (list, np.ndarray):
-        #     ntype = 'group'
+        elif (tp == float):
+            ntype = 'float'
+        elif tp in (list, np.ndarray, collections.OrderedDict):
+            ntype = 'group'
+            key_parameters.pop('value')
+            if tp == list:
+                children_key_value = collections.OrderedDict(zip(map(str, range(len(value))), value))
+            elif (tp == np.ndarray):
+                value_list = value.to_list()
+                children_key_value = collections.OrderedDict(zip(map(str, range(len(value_list))), value_list))
+            elif tp in (dict, collections.OrderedDict):
+                children_key_value = value
+            children_dict = dict_to_pyqtgraph(key_value=children_key_value)
+
+            key_parameters['children'] = children_dict
+            print key_parameters
 
 
         if ntype is not None:
             key_parameters['type'] = ntype
-            output.append(key_parameters)
+            outdict.append(key_parameters)
 
-    return output
+    return outdict
+
+# def add_item()
 
 
 def main():

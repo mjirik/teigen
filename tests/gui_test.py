@@ -31,6 +31,18 @@ class GuiTest(unittest.TestCase):
         )
 
 
+    def test_pyqtgraph_from_manual_dict(self):
+        params =  [
+            {'type': 'int', 'name': 'int', 'value': 5},
+            {'type': 'group', 'name': 'vs', 'children': [
+                {'type': 'int', 'name': "2", 'value': 7}
+            ]},
+            {'type': 'bool', 'name': 'bool', 'value': True},
+            {'type': 'str', 'name': 'str', 'value': 'strdrr'}
+        ]
+
+        p = Parameter.create(name='params', type='group', children=params)
+
     def test_pyqtgraph(self):
         cfg = collections.OrderedDict({"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]})
         captions = {"int": "toto je int"}
