@@ -69,6 +69,9 @@ class TeigenWidget(QtGui.QWidget):
         print "default args"
         print self.config
         self.gen = None
+        self.dataframes = {}
+        self.figures = {}
+        self.ui_stats_shown = False
         self.teigen = Teigen()
         self.init_ui()
 
@@ -88,6 +91,28 @@ class TeigenWidget(QtGui.QWidget):
 
 
     def _show_stats(self):
+        if self.ui_stats_shown:
+        #     self._wg_tab_describe.deleteLater()
+        #     self._wg_tab_describe = None
+        #     self._wg_tab_merne.deleteLater()
+        #     self._wg_tab_merne = None
+            pass
+        else:
+
+            self.stats_tab_wg = QTabWidget()
+            self.mainLayout.addWidget(self.stats_tab_wg, 0, 2, 5, 2)
+        if True:
+            from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+            # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+            import matplotlib.pyplot as plt
+
+            self.figure = plt.figure()
+            self.canvas = FigureCanvas(self.figure)
+            # self.toolbar = NavigationToolbar(self.canvas, self)
+            self.stats_tab_wg.addTab(self.canvas, 'Graphs')
+
+
+
         df = self.gen.getStats()
         import tablewidget
         to_rename = {
@@ -96,7 +121,7 @@ class TeigenWidget(QtGui.QWidget):
             "surface": "surface [mm^2]",
             "radius": "radius [mm^2]"
         }
-        to_rename_relative = {
+        to_rename_density = {
             "length": "length [mm^-2]",
             "volume": "volume []",
             "surface": "surface [mm^-1]",
@@ -106,20 +131,14 @@ class TeigenWidget(QtGui.QWidget):
         dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.gen.area_volume
         print "merne"
         print dfmerne
-        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_relative)
+        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
         # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()
-        tw = tablewidget.TableWidget(self, dataframe=dfmernef)
-        self.mainLayout.addWidget(tw)
 
-        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-        # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-        import matplotlib.pyplot as plt
+        self._wg_tab_merne = tablewidget.TableWidget(self, dataframe=dfmernef)
+        self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
+        self.dataframes["density"] = dfmernef
 
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
-        # self.toolbar = NavigationToolbar(self.canvas, self)
-        self.mainLayout.addWidget(self.canvas)
         plt.subplot(141)
         df[["length"]].rename(columns=to_rename).boxplot(return_type='axes')
         plt.subplot(142)
@@ -134,14 +153,19 @@ class TeigenWidget(QtGui.QWidget):
         # TODO take care about redrawing
         dfdescribe = df.describe()
         dfdescribe.insert(0, "", dfdescribe.index)
-        tw = tablewidget.TableWidget(self, dataframe=dfdescribe)
-        tw.show()
-        tw.raise_()
-        tw.setMinimumWidth(600)
-        tw.setMinimumHeight(200)
+        self.dataframes["describe"] = dfdescribe
 
-        self.mainLayout.addWidget(tw,0,2,5,2)
+        self._wg_tab_describe = tablewidget.TableWidget(self, dataframe=dfdescribe)
+        self._wg_tab_describe.show()
+        self._wg_tab_describe.raise_()
+        self._wg_tab_describe.setMinimumWidth(600)
+        self._wg_tab_describe.setMinimumHeight(200)
+
+        # self.mainLayout.addWidget(self._wg_tab_describe, 0, 2, 5, 2)
+        self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
         self.resize(600,700)
+
+        self.ui_stats_shown = True
 
 
 
@@ -194,7 +218,7 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(self.posprocessing_wg)
 
         btn_accept = QPushButton("Run", self)
-        btn_accept.clicked.connect(self.btnAccept)
+        btn_accept.clicked.connect(self.btnRun)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/slice{:06d}.jpg", "output directory")
@@ -207,7 +231,7 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
-    def btnAccept(self):
+    def btnRun(self):
 
         logger.debug("btnAccept")
         logger.debug(str(self.config))
@@ -245,7 +269,19 @@ class TeigenWidget(QtGui.QWidget):
 
 
         self.gen.saveVolumeToFile(filename)
+        fn_base = self.filename_base(filename)
+        for dfname in self.dataframes:
+            df = self.dataframes[dfname].to_csv(fn_base+"_" + dfname + ".csv")
+        self.figure.savefig(fn_base + "_" + "graph.pdf")
+        self.figure.savefig(fn_base + "_" + "graph.png")
 
+    def filename_base(self, filename):
+
+        import re
+        filename = re.sub(r"({.*})", r"", filename)
+
+        root, ext = op.splitext(filename)
+        return root
 
 
     def on_config_update(self):
