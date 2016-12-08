@@ -32,49 +32,60 @@ import inspect
 import collections
 import numpy as np
 
-def dict_to_pyqtgraph(key_value={}, params={}):
+def dict_to_pyqtgraph(key, value, params={}):
 
-    outdict = []
+    tp = value.__class__.__name__
+    key_parameters = {
+        "name":key,
+        'value': value,
+        'type': tp,
+    }
+    # if key in params.keys():
 
-    for key in key_value:
-        value = key_value[key]
-        key_parameters = {
-            "name":key,
-            'value': value,
-        }
-        # if key in params.keys():
+    children_params = {}
+    if "children" in params.keys():
+        children_params = params.pop('children_params')
 
-        ntype = None
-        tp = type(value)
-        if tp == int:
-            ntype = 'int'
-        elif (tp == bool):
-            ntype = 'bool'
-        elif (tp == str):
-            ntype = 'str'
-        elif (tp == float):
-            ntype = 'float'
-        elif tp in (list, np.ndarray, collections.OrderedDict):
-            ntype = 'group'
-            key_parameters.pop('value')
-            if tp == list:
-                children_key_value = collections.OrderedDict(zip(map(str, range(len(value))), value))
-            elif (tp == np.ndarray):
-                value_list = value.to_list()
-                children_key_value = collections.OrderedDict(zip(map(str, range(len(value_list))), value_list))
-            elif tp in (dict, collections.OrderedDict):
-                children_key_value = value
-            children_dict = dict_to_pyqtgraph(key_value=children_key_value)
+    key_parameters.update(params)
+    key_parameters['reconstruction_type'] = tp
 
-            key_parameters['children'] = children_dict
-            print key_parameters
+    # ntype = None
+    # if tp == int:
+    #     ntype = 'int'
+    # elif (tp == bool):
+    #     ntype = 'bool'
+    # elif (tp == str):
+    #     ntype = 'str'
+    # elif (tp == float):
+    #     ntype = 'float'
+    if tp in ('list', 'ndarray', 'OrderedDict'):
+        # key_parameters['type'] = key_parameters['type']
+        key_parameters['type'] = 'group'
+        key_parameters.pop('value')
+        if tp == 'list':
+            children_key_value = collections.OrderedDict(zip(map(str, range(len(value))), value))
+        elif (tp == 'ndarray'):
+            value_list = value.to_list()
+            children_key_value = collections.OrderedDict(zip(map(str, range(len(value_list))), value_list))
+        elif tp in ('dict', 'OrderedDict'):
+            children_key_value = value
 
+        children_list = []
+        for keyi, vali in children_key_value.items():
+            children_item = dict_to_pyqtgraph(keyi, vali, children_params)
+            children_list.append(children_item)
 
-        if ntype is not None:
-            key_parameters['type'] = ntype
-            outdict.append(key_parameters)
+        key_parameters['children'] = children_list
 
-    return outdict
+            # value = value_list
+            # print key_parameters
+    return key_parameters
+
+    #     if ntype is not None:
+    #         key_parameters['type'] = ntype
+    #         outdict.append(key_parameters)
+    #
+    # return outdict
 
 # def add_item()
 def pyqtgraph_to_dict(dct):

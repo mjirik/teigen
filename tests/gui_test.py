@@ -47,15 +47,16 @@ class GuiTest(unittest.TestCase):
         cfg = collections.OrderedDict({"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]})
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.dict_to_pyqtgraph(cfg)
+        params = teigen.dictwidgetpyqtgraph.dict_to_pyqtgraph('params', cfg)
         print params
 
-        params[0]['title'] = "Pokusny title"
-        params[0]['my note'] = "poznamka"
+        # params[0]['title'] = "Pokusny title"
+        # params[0]['my note'] = "poznamka"
 
         from PyQt4.QtGui import QApplication, QFileDialog
         app = QApplication(sys.argv)
-        p = Parameter.create(name='params', type='group', children=params)
+        p = Parameter.create(**params)
+        # p = Parameter.create(name='params', type='group', children=params)
         t = ParameterTree()
         print p.getValues()
         lst = p.saveState()
