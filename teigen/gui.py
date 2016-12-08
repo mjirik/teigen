@@ -73,7 +73,7 @@ class TeigenWidget(QtGui.QWidget):
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen()
-        self.version = "0.1.19"
+        self.version = "0.1.20"
         self.init_ui()
 
 
