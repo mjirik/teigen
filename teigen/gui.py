@@ -280,11 +280,11 @@ class TeigenWidget(QtGui.QWidget):
             dictwidgetpyqtgraph.ComplexParameter(name='Custom parameter group (reciprocal values)'))
         p = Parameter.create(**gr_struct)
 
-        t = ParameterTree()
-        t.setParameters(p, showTop=False)
-        t.setMinimumWidth(300)
-        t.show()
-        self.mainLayout.addWidget(t, 0, 1, 5, 1)
+        # t = ParameterTree()
+        # t.setParameters(p, showTop=False)
+        # t.setMinimumWidth(300)
+        # t.show()
+        # self.mainLayout.addWidget(t, 0, 1, 5, 1)
 
         ## end of pyqtgraph tree
     def btnRun(self):
