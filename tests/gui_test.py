@@ -23,7 +23,7 @@ class GuiTest(unittest.TestCase):
         )
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.dict_to_pyqtgraph(cfg)
+        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct(cfg)
         print params
         self.assertDictEqual(
             params[0],
@@ -47,7 +47,7 @@ class GuiTest(unittest.TestCase):
         cfg = collections.OrderedDict({"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]})
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.dict_to_pyqtgraph('params', cfg)
+        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg)
         print params
 
         # params[0]['title'] = "Pokusny title"
@@ -62,7 +62,7 @@ class GuiTest(unittest.TestCase):
         lst = p.saveState()
 
 
-        dict_again = teigen.dictwidgetpyqtgraph.pyqtgraph_to_dict(lst)
+        name, dict_again = teigen.dictwidgetpyqtgraph.from_pyqtgraph_struct(lst)
         t.setParameters(p, showTop=False)
         t.show()
 
