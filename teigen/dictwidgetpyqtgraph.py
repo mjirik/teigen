@@ -32,7 +32,7 @@ import inspect
 import collections
 import numpy as np
 
-def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
+def dict_to_pyqtgraph(key_value={}, params={}):
 
     outdict = []
 
@@ -42,6 +42,8 @@ def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
             "name":key,
             'value': value,
         }
+        # if key in params.keys():
+
         ntype = None
         tp = type(value)
         if tp == int:
@@ -75,6 +77,33 @@ def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
     return outdict
 
 # def add_item()
+def pyqtgraph_to_dict(dct):
+    output = {}
+    key = dct['name']
+    if 'children' in dct.keys():
+        reconstruction_type = 'dict'
+        # if reconsturuction type is list
+        if reconstruction_type == 'dict':
+            children_dict = {}
+            for child in dct['children']:
+                child_item = dct['children'][child]
+                keyi, valuei = pyqtgraph_to_dict(child_item)
+                children_dict[keyi] = valuei
+            value = children_dict
+
+        elif reconstruction_type == 'list':
+            children_list = []
+            for child in dct['children']:
+                keyi, valuei = pyqtgraph_to_dict(dct['children'][child])
+                children_list.append(valuei)
+            value = children_list
+
+    else:
+        value = dct['value']
+
+    return key, value
+
+
 
 
 def main():

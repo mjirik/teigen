@@ -50,11 +50,18 @@ class GuiTest(unittest.TestCase):
         params = teigen.dictwidgetpyqtgraph.dict_to_pyqtgraph(cfg)
         print params
 
+        params[0]['title'] = "Pokusny title"
+        params[0]['my note'] = "poznamka"
+
         from PyQt4.QtGui import QApplication, QFileDialog
         app = QApplication(sys.argv)
         p = Parameter.create(name='params', type='group', children=params)
         t = ParameterTree()
         print p.getValues()
+        lst = p.saveState()
+
+
+        dict_again = teigen.dictwidgetpyqtgraph.pyqtgraph_to_dict(lst)
         t.setParameters(p, showTop=False)
         t.show()
 
