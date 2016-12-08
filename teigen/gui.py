@@ -73,6 +73,7 @@ class TeigenWidget(QtGui.QWidget):
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen()
+        self.version = "0.1.19"
         self.init_ui()
 
 
@@ -100,7 +101,7 @@ class TeigenWidget(QtGui.QWidget):
         else:
 
             self.stats_tab_wg = QTabWidget()
-            self.mainLayout.addWidget(self.stats_tab_wg, 0, 2, 5, 2)
+            self.mainLayout.addWidget(self.stats_tab_wg, 0, 3, 5, 2)
         if True:
             from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
             # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
@@ -191,7 +192,13 @@ class TeigenWidget(QtGui.QWidget):
 
 
     def init_ui(self):
+        wtitle = "Teigen " + self.version
+        self.setWindowTitle(wtitle)
         self.mainLayout = QGridLayout(self)
+
+
+
+
         hide_keys = ["build", "gtree"]
         self.gen_tab_wg = QTabWidget()
         self.mainLayout.addWidget(self.gen_tab_wg)
@@ -217,6 +224,7 @@ class TeigenWidget(QtGui.QWidget):
         self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         self.mainLayout.addWidget(self.posprocessing_wg)
 
+
         btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnRun)
         self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
@@ -231,6 +239,54 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
+
+        ## pyqtgraph experiments
+        import dictwidgetpyqtgraph
+        import pyqtgraph
+        from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
+        input_params = {
+            "voxelsize": [0.01, 0.01, 0.01],
+            'area_size_px': [100, 100, 100],
+            'area_size': [10.0, 10.0, 10.0]
+        }
+        properties = {
+            "children": {
+                "voxelsize_mm": {
+                    "title": 'voxelsize [mm]',
+                    "children": {
+                        "0": {
+                            "title": "z",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        },
+                        "1": {
+                            "title": "x",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        },
+                        "2": {
+                            "title": "y",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        }
+                    }
+                }
+            }
+        }
+
+        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, properties=properties)
+
+        gr_struct['children'].append(
+            dictwidgetpyqtgraph.ComplexParameter(name='Custom parameter group (reciprocal values)'))
+        p = Parameter.create(**gr_struct)
+
+        # t = ParameterTree()
+        # t.setParameters(p, showTop=False)
+        # t.setMinimumWidth(300)
+        # t.show()
+        # self.mainLayout.addWidget(t, 0, 1, 5, 1)
+
+        ## end of pyqtgraph tree
     def btnRun(self):
 
         logger.debug("btnAccept")
