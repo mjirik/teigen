@@ -430,8 +430,8 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     # logger.debug("after visualization")
 
     # ukládání do souboru
-    if args.outputfile is not None:
-        tg.saveToFile(args.outputfile, args.outputfiletype)
+    # if args.outputfile is not None:
+    #     tg.saveToFile(args.outputfile, args.outputfiletype)
 
 
 # class TreeGenerator(TreeConstructor):

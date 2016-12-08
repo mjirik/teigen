@@ -76,7 +76,6 @@ def dict_to_pyqtgraph(key_value={}, manual_parameters={}):
 
 # def add_item()
 
-
 def main():
     logger = logging.getLogger()
 
