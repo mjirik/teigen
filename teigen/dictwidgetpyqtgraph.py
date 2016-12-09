@@ -182,7 +182,7 @@ class ListParameter(pTypes.GroupParameter):
 
 
 
-class AreaSizeParameter(pTypes.GroupParameter):
+class AreaSamplingParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'bool'
         opts['value'] = True

@@ -277,7 +277,7 @@ class TeigenWidget(QtGui.QWidget):
         gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts=properties)
 
         gr_struct['children'].append(
-            dictwidgetpyqtgraph.AreaSizeParameter(name='Custom parameter group (reciprocal values)'))
+            dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
         p = Parameter.create(**gr_struct)
 
         t = ParameterTree()
