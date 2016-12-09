@@ -143,18 +143,39 @@ class ComplexParameter(pTypes.GroupParameter):
         # self.b = self.param('B = 1/A')
         # self.a.sigValueChanged.connect(self.aChanged)
         # self.b.sigValueChanged.connect(self.bChanged)
+        pvoxelsize = pTypes.GroupParameter(name="voxelsize_mm", title="voxelsize [mm]")
+        pvsz = pTypes.Parameter(name='z_m', type='float', value=0.01, suffix='m', siPrefix=True)
+        pvsx = pTypes.Parameter(name='x_m', type='float', value=0.01, suffix='m', siPrefix=True)
+        pvsy = pTypes.Parameter(name='y_m', type='float', value=0.01, suffix='m', siPrefix=True)
+        pvoxelsize.addChild(pvsz)
+        pvoxelsize.addChild(pvsx)
+        pvoxelsize.addChild(pvsy)
+
+        pareasize = pTypes.GroupParameter(name="shape", title="area size [px]")
+        pasz = pTypes.Parameter(name='z', type='float', value=0.01, suffix='px', siPrefix=False)
+        pasx = pTypes.Parameter(name='x', type='float', value=0.01, suffix='px', siPrefix=False)
+        pasy = pTypes.Parameter(name='y', type='float', value=0.01, suffix='px', siPrefix=False)
+        pareasize.addChild(pasz)
+        pareasize.addChild(pasx)
+        pareasize.addChild(pasy)
+        # pvoxelsize.addChild({'name': 'z_m', 'type': 'float', 'value': 0.01, 'suffix': 'm', 'siPrefix': True})
 
         self.addChild({'name': 'z_m', 'type': 'float', 'value': 0.01, 'suffix': 'm', 'siPrefix': True})
         self.addChild({'name': 'z_size_px', 'type': 'int', 'value': 100, 'suffix': 'px', 'siPrefix': False})
         self.addChild({'name': 'z_size_m', 'type': 'float', 'value': 10.0, 'suffix': 'm', 'siPrefix': True})
         self.addChild({'name': 'x_m', 'type': 'float', 'value': 1/7., 'suffix': 's', 'siPrefix': True})
         self.addChild({'name': 'y_m', 'type': 'float', 'value': 1/7., 'suffix': 's', 'siPrefix': True})
+
+
         self.z_m = self.param('z_m')
         self.z_size_m = self.param('z_size_m')
         self.z_size_px = self.param('z_size_px')
 
         self.z_size_m.sigValueChanged.connect(self.z_size_mChanged)
         self.z_size_px.sigValueChanged.connect(self.z_size_pxChanged)
+
+        self.addChild(pvoxelsize)
+        self.addChild(pareasize)
 
     # def z_mChanged(self):
     #     self.z_.setValue(1.0 / self.a.value(), blockSignal=self.bChanged)
