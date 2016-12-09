@@ -34,13 +34,13 @@ import numpy as np
 
 import pyqtgraph.parametertree.parameterTypes as pTypes
 
-def to_pyqtgraph_struct(name, value, properties={}):
+def to_pyqtgraph_struct(name, value, opts={}):
     """
     Prepare structure for visualization by pyqtgraph tree.
 
     :param name:
     :param value:
-    :param properties:
+    :param opts:
     :return:
     """
 
@@ -61,10 +61,10 @@ def to_pyqtgraph_struct(name, value, properties={}):
     # if key in params.keys():
 
     children_properties = {}
-    if "children" in properties.keys():
-        children_properties = properties.pop('children')
+    if "children" in opts.keys():
+        children_properties = opts.pop('children')
 
-    item_properties.update(properties)
+    item_properties.update(opts)
     item_properties['reconstruction_type'] = tp
 
     if tp in ('list', 'ndarray', 'OrderedDict', 'dict'):
@@ -131,6 +131,50 @@ def from_pyqtgraph_struct(dct):
 
 
 
+class ListParameter(pTypes.GroupParameter):
+    """
+    New keywords
+
+    titles: is list of titles
+    value: list of values
+    """
+    def __init__(self, **opts):
+        values = opts.pop('value')
+        parent_opts={
+            'name': opts.pop('name'),
+            'type': 'bool',
+            'value': True
+        }
+        if 'title' in opts.keys():
+            parent_opts['title']  = opts.pop('title')
+        # opts['type'] = 'bool'
+        # opts['value'] = True
+        pTypes.GroupParameter.__init__(self, **parent_opts)
+        # gp = pTypes.GroupParameter(name=opts['name'], title=opts['title'])
+        if 'names' in opts.keys():
+            names = opts['names']
+        else:
+            names =  map(str, range(len(values)))
+
+        for i in range(len(values)):
+            opts['name'] = names[i]
+            opts['value'] = values[i]
+            self.addChild(opts)
+
+
+
+        # pvsz = pTypes.Parameter(name='z', value=values[0], **opts)
+        # pvsx = pTypes.Parameter(name='x', value=values[1], **opts)
+        # pvsy = pTypes.Parameter(name='y', value=values[2], **opts)
+        # pvsy = pTypes.Parameter(name='y', value=values[2], **opts)
+
+        # self.addChild(pvsz)
+        # self.addChild(pvsx)
+        # self.addChild(pvsy)
+        # opts['value'] = values[0]
+        # opts['name'] = 'uu'
+        # self.addChild(opts)
+
 class ComplexParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'bool'
@@ -150,6 +194,7 @@ class ComplexParameter(pTypes.GroupParameter):
         pvoxelsize.addChild(pvsz)
         pvoxelsize.addChild(pvsx)
         pvoxelsize.addChild(pvsy)
+        self.pvoxelsize = pvoxelsize
 
         pareasize = pTypes.GroupParameter(name="shape", title="area size [px]")
         pasz = pTypes.Parameter(name='z', type='float', value=0.01, suffix='px', siPrefix=False)
@@ -176,7 +221,12 @@ class ComplexParameter(pTypes.GroupParameter):
 
         self.addChild(pvoxelsize)
         self.addChild(pareasize)
+        pp = ListParameter(name="ListParameter voxelsize_mm", value=[1.0,2.0,3.0], type='float', suffix='m', siPrefix=True)
 
+        self.addChild(pp)
+
+    def voxelsizeChanged(self):
+        self.z_size_px.setValue(int(self.z_size_m.value() / self.z_m.value()), blockSignal=self.z_size_pxChanged)
     # def z_mChanged(self):
     #     self.z_.setValue(1.0 / self.a.value(), blockSignal=self.bChanged)
     def z_size_mChanged(self):

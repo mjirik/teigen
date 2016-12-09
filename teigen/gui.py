@@ -274,7 +274,7 @@ class TeigenWidget(QtGui.QWidget):
             }
         }
 
-        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, properties=properties)
+        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts=properties)
 
         gr_struct['children'].append(
             dictwidgetpyqtgraph.ComplexParameter(name='Custom parameter group (reciprocal values)'))
