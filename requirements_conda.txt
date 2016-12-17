@@ -3,7 +3,7 @@ io3d
 io3d
 numpy
 scikit-image
-pyqt 4.11.*
+pyqt >=4.11.*
 pyqtconfig
 pandas
 simpleitk
