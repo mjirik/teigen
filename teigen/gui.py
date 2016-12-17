@@ -330,6 +330,7 @@ class TeigenWidget(QtGui.QWidget):
             df = self.dataframes[dfname].to_csv(fn_base+"_" + dfname + ".csv")
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
+        self.figure.savefig(fn_base + "_" + "graph.svg")
 
     def filename_base(self, filename):
 
