@@ -48,10 +48,18 @@ class GuiTest(unittest.TestCase):
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpyqtgraph
         params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg)
+        params['children'].append(
+            teigen.dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
         print params
 
         # params[0]['title'] = "Pokusny title"
         # params[0]['my note'] = "poznamka"
+
+        import pyqtgraph.parametertree.parameterTypes as pTypes
+        grp = pTypes.GroupParameter(name="pokus", reconstruction_type="list")
+
+        grpval = grp.saveState()
+
 
         from PyQt4.QtGui import QApplication, QFileDialog
         app = QApplication(sys.argv)
@@ -60,7 +68,7 @@ class GuiTest(unittest.TestCase):
         t = ParameterTree()
         print p.getValues()
         lst = p.saveState()
-
+        vals = p.getValues()
 
         name, dict_again = teigen.dictwidgetpyqtgraph.from_pyqtgraph_struct(lst)
         t.setParameters(p, showTop=False)

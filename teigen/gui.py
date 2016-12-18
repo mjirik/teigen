@@ -285,6 +285,7 @@ class TeigenWidget(QtGui.QWidget):
         t.setMinimumWidth(300)
         t.show()
         self.mainLayout.addWidget(t, 0, 1, 5, 1)
+        self.area_sampling_wg = t
 
         ## end of pyqtgraph tree
     def btnRun(self):

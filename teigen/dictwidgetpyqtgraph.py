@@ -147,6 +147,8 @@ class ListParameter(pTypes.GroupParameter):
         }
         if 'title' in opts.keys():
             parent_opts['title']  = opts.pop('title')
+        if "reconstruction_type" in opts.keys():
+            parent_opts['reconstruction_type']  = opts.pop('reconstruction_type')
         # opts['type'] = 'bool'
         # opts['value'] = True
         pTypes.GroupParameter.__init__(self, **parent_opts)
@@ -186,41 +188,42 @@ class AreaSamplingParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'bool'
         opts['value'] = True
+        voxelsize_mm = [1.0, 1.0, 1.0]
+        areasize_mm = [10.0, 10.0, 10.0]
+        areasize_px = [10, 10, 10]
+
+        if "voxelsize_mm" in opts.keys():
+            voxelsize_mm = opts.pop('voxelsize_mm')
+        if "areasize_mm" in opts.keys():
+            areasize_mm = opts.pop('areasize_mm')
+        if "areasize_px" in opts.keys():
+            areasize_px = opts.pop('areasize_px')
+
         pTypes.GroupParameter.__init__(self, **opts)
 
-        # self.addChild({'name': 'A = 1/B', 'type': 'float', 'value': 7, 'suffix': 'Hz', 'siPrefix': True})
-        # self.addChild({'name': 'B = 1/A', 'type': 'float', 'value': 1/7., 'suffix': 's', 'siPrefix': True})
-        # self.a = self.param('A = 1/B')
-        # self.b = self.param('B = 1/A')
-        # self.a.sigValueChanged.connect(self.aChanged)
-        # self.b.sigValueChanged.connect(self.bChanged)
-        # pvoxelsize = pTypes.GroupParameter(name="voxelsize_mm", title="voxelsize [mm]")
-        # pvsz = pTypes.Parameter(name='z_m', type='float', value=0.01, suffix='m', siPrefix=True)
-        # pvsx = pTypes.Parameter(name='x_m', type='float', value=0.01, suffix='m', siPrefix=True)
-        # pvsy = pTypes.Parameter(name='y_m', type='float', value=0.01, suffix='m', siPrefix=True)
-        self.p_voxelsize_m = ListParameter(name="voxelsize_mm", value=[1.0,2.0,3.0], type='float', suffix='m', siPrefix=True)
-        self.p_areasize_px = ListParameter(name="areasize_px", value=[1.0,2.0,3.0], type='int', suffix='px', siPrefix=False)
-        self.p_areasize_m = ListParameter(name="areasize_mm", value=[1.0,2.0,3.0], type='float', suffix='m', siPrefix=True)
+        self.p_voxelsize_mm = ListParameter(name="voxelsize_mm", value=voxelsize_mm, type='float', suffix='mm', siPrefix=False, reconstruction_type='list')
+        self.p_areasize_px = ListParameter(name="areasize_px", value=areasize_px, type='int', suffix='px', siPrefix=False, reconstruction_type='list')
+        self.p_areasize_mm = ListParameter(name="areasize_mm", value=areasize_mm, type='float', suffix='mm', siPrefix=False, reconstruction_type='list')
 
-        self.addChild(self.p_voxelsize_m)
-        self.addChild(self.p_areasize_m)
+        self.addChild(self.p_voxelsize_mm)
+        self.addChild(self.p_areasize_mm)
         self.addChild(self.p_areasize_px)
 
-        self.p_areasize_m.sigValueChanged.connect(self.areasize_mChanged)
+        self.p_areasize_mm.sigValueChanged.connect(self.areasize_mChanged)
         self.p_areasize_px.sigValueChanged.connect(self.areasize_pxChanged)
 
 
     def areasize_mChanged(self):
-        as_m = np.asarray(self.p_areasize_m.value())
-        vs_m = np.asarray(self.p_voxelsize_m.value()).astype(np.float)
+        as_m = np.asarray(self.p_areasize_mm.value())
+        vs_m = np.asarray(self.p_voxelsize_mm.value()).astype(np.float)
         val = (as_m / vs_m).astype(np.int).tolist()
         self.p_areasize_px.setValue(
             val,
             blockSignal=self.areasize_pxChanged)
 
     def areasize_pxChanged(self):
-        val = (np.asarray(self.p_voxelsize_m.value()) * np.asarray(self.p_areasize_px.value())).tolist()
-        self.p_areasize_m.setValue(
+        val = (np.asarray(self.p_voxelsize_mm.value()) * np.asarray(self.p_areasize_px.value())).tolist()
+        self.p_areasize_mm.setValue(
             val,
             blockSignal=self.areasize_mChanged)
 
