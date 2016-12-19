@@ -50,6 +50,10 @@ def get_default_args(obj):
     dc = collections.OrderedDict(zip(args, defaults))
     return dc
 
+def subdict(dct, keys):
+    p = {key: value for key, value in dict.items() if key in keys}
+    return p
+
 class DictWidget(QtGui.QWidget):
     def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], horizontal=False, show_captions=True, accept_button=False, config_manager=None):
         """

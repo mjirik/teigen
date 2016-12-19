@@ -45,21 +45,48 @@ class GuiTest(unittest.TestCase):
 
     @attr('interactive')
     def test_pyqtgraph(self):
-        cfg = collections.OrderedDict({"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]})
+        cfg = collections.OrderedDict({
+            "bool": True,
+            "int":5,
+            'str': 'strdrr',
+            'vs':[1.0, 2.5, 7]
+            # 'Area Sampling' : dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
+        })
         captions = {"int": "toto je int"}
+
+        opts = {}
+        # opts = {
+        #     "children": {
+        #         "voxelsize_mm": {
+        #             "title": 'voxelsize [mm]',
+        #             "children": {
+        #                 "0": {
+        #                     "title": "z",
+        #                     'suffix': 'm',
+        #                     'siPrefix': True
+        #                 },
+        #                 "1": {
+        #                     "title": "x",
+        #                     'suffix': 'm',
+        #                     'siPrefix': True
+        #                 },
+        #                 "2": {
+        #                     "title": "y",
+        #                     'suffix': 'm',
+        #                     'siPrefix': True
+        #                 }
+        #             }
+        #         }
+        #     }
+        # }
         import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg)
+        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg, opts=opts)
         params['children'].append(
             teigen.dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
-        print params
+        # print params
 
         # params[0]['title'] = "Pokusny title"
         # params[0]['my note'] = "poznamka"
-
-        import pyqtgraph.parametertree.parameterTypes as pTypes
-        grp = pTypes.GroupParameter(name="pokus", reconstruction_type="list")
-
-        grpval = grp.saveState()
 
 
         from PyQt4.QtGui import QApplication, QFileDialog
@@ -77,7 +104,7 @@ class GuiTest(unittest.TestCase):
 
         app.exec_()
 
-        self.assertTrue(False)
+        # self.assertTrue(False)
 
 
 if __name__ == '__main__':

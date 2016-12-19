@@ -31,7 +31,9 @@ import collections
 import numpy as np
 import scipy
 
-import dictwidgetqt, iowidgetqt
+import dictwidgetqt
+import iowidgetqt
+import dictwidgetpyqtgraph
 import generators.cylinders
 import generators.gensei_wrapper
 
@@ -42,20 +44,6 @@ class TeigenWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
         super(TeigenWidget, self).__init__()
         self.ncols = ncols
-
-        self.generators_classes =  [
-            generators.cylinders.CylinderGenerator,
-            generators.gensei_wrapper.GenseiGenerator
-        ]
-        self.generators_names = [
-            "Cylinder generator",
-            "Gensei generator"
-        ]
-        self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
-        self.config = self.configs[0]
-
-        print "default args"
-        print self.config
         self.gen = None
         self.dataframes = {}
         self.figures = {}
@@ -70,14 +58,31 @@ class TeigenWidget(QtGui.QWidget):
         id = self.gen_tab_wg.currentIndex()
         new_cfg = self._ui_generator_widgets[id].config_as_dict()
         logger.debug(str(new_cfg))
-        self.config = new_cfg
-        generator_class = self.generators_classes[id]
-        # self.config = get_default_args(generator_class)
-        self.gen = generator_class(**self.config)
-        # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
-        # self.gen = generators.gensei_wrapper.GenseiGenerator()
-        self.gen.run()
 
+        none, area_cfg = dictwidgetpyqtgraph.from_pyqtgraph_struct(self.area_sampling_params.saveState())
+
+        new_cfg.update(area_cfg["Area Sampling"])
+
+        # self.config = new_cfg
+        self.teigen.run(generator_id=id, **self.config)
+
+    def _area_sampling_gensei_export(self, area_sampling_params):
+        asp = area_sampling_params
+        vs_mm = np.asarray(asp["voxelsize_mm"])
+        resolution = 1.0 / vs_mm
+        dct = {
+            'dims': asp["areasize_mm"],
+            'n_slice': asp["areasize_px"][0],
+            'resolution': [resolution[1], resolution[2]]
+        }
+        return dct
+
+
+    def _area_sampling_cylinder_generator_export(self, area_sampling_params):
+        return {
+            'voxelsize_mm': area_sampling_params["voxelsize_mm"],
+            'area_shape': area_sampling_params["areasize_px"]
+        }
 
     def _show_stats(self):
         if self.ui_stats_shown:
@@ -102,7 +107,7 @@ class TeigenWidget(QtGui.QWidget):
 
 
 
-        df = self.gen.getStats()
+        df = self.teigen.gen.getStats()
         import tablewidget
         to_rename = {
             "length": "length [mm]",
@@ -189,16 +194,16 @@ class TeigenWidget(QtGui.QWidget):
 
         hide_keys = ["build", "gtree"]
         self.gen_tab_wg = QTabWidget()
-        self.mainLayout.addWidget(self.gen_tab_wg)
+        self.mainLayout.addWidget(self.gen_tab_wg, 0, 1)
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
             }
 
         self._ui_generator_widgets = []
-        for i, config in enumerate(self.configs):
+        for i, config in enumerate(self.teigen.configs):
             wg = dictwidgetqt.DictWidget(
-                self.configs[i],
+                self.teigen.configs[i],
                 hide_keys=hide_keys,
                 captions=rename_captions_dict,
                 ncols=1,
@@ -212,21 +217,21 @@ class TeigenWidget(QtGui.QWidget):
 
         postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
         self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
-        self.mainLayout.addWidget(self.posprocessing_wg)
+        self.mainLayout.addWidget(self.posprocessing_wg, 1, 1)
 
 
         btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnRun)
-        self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_accept, 2, 1) # , (gd_max_i / 2), text_col)
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/slice{:06d}.jpg", "output directory")
         self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 3, 1) # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_save, 3, 1) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
 
@@ -235,49 +240,18 @@ class TeigenWidget(QtGui.QWidget):
         import pyqtgraph
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
-            "voxelsize": [0.01, 0.01, 0.01],
-            'area_size_px': [100, 100, 100],
-            'area_size': [10.0, 10.0, 10.0]
+            "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
         }
-        properties = {
-            "children": {
-                "voxelsize_mm": {
-                    "title": 'voxelsize [mm]',
-                    "children": {
-                        "0": {
-                            "title": "z",
-                            'suffix': 'm',
-                            'siPrefix': True
-                        },
-                        "1": {
-                            "title": "x",
-                            'suffix': 'm',
-                            'siPrefix': True
-                        },
-                        "2": {
-                            "title": "y",
-                            'suffix': 'm',
-                            'siPrefix': True
-                        }
-                    }
-                }
-            }
-        }
-
-        input_params["Area sampling"] = dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
-
-        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts=properties)
-
-        # gr_struct['children'].append(
-        #     dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
+        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts={})
         p = Parameter.create(**gr_struct)
 
         t = ParameterTree()
         t.setParameters(p, showTop=False)
         t.setMinimumWidth(300)
         t.show()
-        self.mainLayout.addWidget(t, 0, 1, 5, 1)
+        self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.area_sampling_wg = t
+        self.area_sampling_params = p
 
         ## end of pyqtgraph tree
     def btnRun(self):
@@ -355,7 +329,27 @@ class Teigen():
     def __init__(self):
         self.data3d = None
         self.voxelsize_mm = None
+        self.generators_classes =  [
+            generators.cylinders.CylinderGenerator,
+            generators.gensei_wrapper.GenseiGenerator
+        ]
+        self.generators_names = [
+            "Cylinder generator",
+            "Gensei generator"
+        ]
+        self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
+        self.config = self.configs[0]
 
+    def run(self, **config):
+        id = config.pop('id')
+
+        self.config = config
+        generator_class = self.generators_classes[id]
+        # self.config = get_default_args(generator_class)
+        self.gen = generator_class(**self.config)
+        # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
+        # self.gen = generators.gensei_wrapper.GenseiGenerator()
+        self.gen.run()
 
     def postprocessing(self, gaussian_filter=True, gaussian_filter_sigma_mm=1.0, gaussian_noise=True, gaussian_noise_stddev=10.0, gaussian_noise_center=0.0, limit_negative_intensities=True):
         if gaussian_filter:
