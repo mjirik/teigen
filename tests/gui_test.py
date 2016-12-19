@@ -43,6 +43,7 @@ class GuiTest(unittest.TestCase):
 
         p = Parameter.create(name='params', type='group', children=params)
 
+    @attr('interactive')
     def test_pyqtgraph(self):
         cfg = collections.OrderedDict({"bool": True, "int":5, 'str': 'strdrr', 'vs':[1.0, 2.5, 7]})
         captions = {"int": "toto je int"}

@@ -32,8 +32,11 @@ import inspect
 import collections
 
 def get_default_args(obj):
-    if ("__init__" in dir(obj)) and inspect.isfunction(obj.__init__):
-        argspec = inspect.getargspec(obj.__init__)
+    if ("__init__" in dir(obj)):
+        if inspect.isfunction(obj.__init__) or inspect.ismethod(obj.__init__):
+            argspec = inspect.getargspec(obj.__init__)
+        else:
+            argspec = inspect.getargspec(obj)
     else:
         argspec = inspect.getargspec(obj)
 
@@ -64,6 +67,7 @@ class DictWidget(QtGui.QWidget):
         self.horizontal = horizontal
         self.show_captions = show_captions
 
+        # hide also temp keys for lists and ndarrays
         # due to load default params
         self._get_tmp_composed_keys(config_in)
         rr = self.hide_keys.extend(self._tmp_composed_keys_list)

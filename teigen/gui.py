@@ -37,18 +37,6 @@ import generators.gensei_wrapper
 
 from pyqtconfig import ConfigManager
 
-def get_default_args(obj):
-    argspec = inspect.getargspec(obj.__init__)
-    args = argspec.args[1:]
-    defaults = argspec.defaults
-    print "---- args"
-    print args
-    print defaults
-    # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
-    # dc = dict(zip(args, defaults))
-    dc = collections.OrderedDict(zip(args, defaults))
-    return dc
-
 
 class TeigenWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
@@ -63,7 +51,7 @@ class TeigenWidget(QtGui.QWidget):
             "Cylinder generator",
             "Gensei generator"
         ]
-        self.configs = [get_default_args(conf) for conf in self.generators_classes]
+        self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
         self.config = self.configs[0]
 
         print "default args"
@@ -212,7 +200,9 @@ class TeigenWidget(QtGui.QWidget):
             wg = dictwidgetqt.DictWidget(
                 self.configs[i],
                 hide_keys=hide_keys,
-                captions=rename_captions_dict)
+                captions=rename_captions_dict,
+                ncols=1,
+            )
             self._ui_generator_widgets.append(wg)
             self.gen_tab_wg.addTab(wg, self.generators_names[i])
         # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
@@ -274,10 +264,12 @@ class TeigenWidget(QtGui.QWidget):
             }
         }
 
+        input_params["Area sampling"] = dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
+
         gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts=properties)
 
-        gr_struct['children'].append(
-            dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
+        # gr_struct['children'].append(
+        #     dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
         p = Parameter.create(**gr_struct)
 
         t = ParameterTree()

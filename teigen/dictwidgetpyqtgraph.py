@@ -32,7 +32,14 @@ import inspect
 import collections
 import numpy as np
 
+from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 import pyqtgraph.parametertree.parameterTypes as pTypes
+
+
+class DictWidget(ParameterTree):
+
+    def __init__(self, input_dict, opts=None):
+        pass
 
 def to_pyqtgraph_struct(name, value, opts={}):
     """
