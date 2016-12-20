@@ -209,7 +209,7 @@ class TeigenWidget(QtGui.QWidget):
                 ncols=1,
             )
             self._ui_generator_widgets.append(wg)
-            self.gen_tab_wg.addTab(wg, self.generators_names[i])
+            self.gen_tab_wg.addTab(wg, self.teigen.generators_names[i])
         # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
         # self.gen_tab_wg.addTab(gen_wg, "gensei generator")
 
