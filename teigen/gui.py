@@ -64,25 +64,8 @@ class TeigenWidget(QtGui.QWidget):
         new_cfg.update(area_cfg["Area Sampling"])
 
         # self.config = new_cfg
-        self.teigen.run(generator_id=id, **self.config)
+        self.teigen.run(generator_id=id, **new_cfg)
 
-    def _area_sampling_gensei_export(self, area_sampling_params):
-        asp = area_sampling_params
-        vs_mm = np.asarray(asp["voxelsize_mm"])
-        resolution = 1.0 / vs_mm
-        dct = {
-            'dims': asp["areasize_mm"],
-            'n_slice': asp["areasize_px"][0],
-            'resolution': [resolution[1], resolution[2]]
-        }
-        return dct
-
-
-    def _area_sampling_cylinder_generator_export(self, area_sampling_params):
-        return {
-            'voxelsize_mm': area_sampling_params["voxelsize_mm"],
-            'area_shape': area_sampling_params["areasize_px"]
-        }
 
     def _show_stats(self):
         if self.ui_stats_shown:
@@ -257,7 +240,7 @@ class TeigenWidget(QtGui.QWidget):
     def btnRun(self):
 
         logger.debug("btnAccept")
-        logger.debug(str(self.config))
+        # logger.debug(str(self.config))
         self.run()
         self._show_stats()
 
@@ -341,7 +324,19 @@ class Teigen():
         self.config = self.configs[0]
 
     def run(self, **config):
-        id = config.pop('id')
+        id = config.pop('generator_id')
+        cfg_export_fcn = [
+            self._area_sampling_cylinder_generator_export,
+            self._area_sampling_gensei_export,
+        ]
+
+        area_dct = dictwidgetqt.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
+        config.pop("voxelsize_mm")
+        config.pop("areasize_mm")
+        config.pop("areasize_px")
+
+        cfg = cfg_export_fcn[id](area_dct)
+        config.update(cfg)
 
         self.config = config
         generator_class = self.generators_classes[id]
@@ -369,6 +364,23 @@ class Teigen():
 
         return self.data3d
 
+    def _area_sampling_gensei_export(self, area_sampling_params):
+        asp = area_sampling_params
+        vs_mm = np.asarray(asp["voxelsize_mm"])
+        resolution = 1.0 / vs_mm
+        dct = {
+            'dims': asp["areasize_mm"],
+            'n_slice': asp["areasize_px"][0],
+            'resolution': [resolution[1], resolution[2]]
+        }
+        return dct
+
+
+    def _area_sampling_cylinder_generator_export(self, area_sampling_params):
+        return {
+            'voxelsize_mm': area_sampling_params["voxelsize_mm"],
+            'area_shape': area_sampling_params["areasize_px"]
+        }
     # def save_volume_to_file(self, filename):
     #
     #     import io3

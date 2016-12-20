@@ -51,7 +51,7 @@ def get_default_args(obj):
     return dc
 
 def subdict(dct, keys):
-    p = {key: value for key, value in dict.items() if key in keys}
+    p = {key: value for key, value in dct.items() if key in keys}
     return p
 
 class DictWidget(QtGui.QWidget):
