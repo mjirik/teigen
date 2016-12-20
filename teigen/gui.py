@@ -214,7 +214,7 @@ class TeigenWidget(QtGui.QWidget):
         btn_save = QPushButton("Save", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save, 3, 1) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
 
