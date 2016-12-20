@@ -54,6 +54,7 @@ class CylinderGenerator:
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
+                 random_generator_seed=0
                  ):
         """
         gtree is information about input data structure.
@@ -75,7 +76,7 @@ class CylinderGenerator:
         # self.intensity_profile = intensity_profile
         self.intensity_profile = dict(zip(intensity_profile_radius, intensity_profile_intensity))
         self._cylinder_nodes = []
-        self.random_seed = 0
+        self.random_generator_seed = random_generator_seed
         self.radius_generator = self._const
         self.radius_generator_args=[radius_distribution_mean]
         self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
@@ -129,7 +130,7 @@ class CylinderGenerator:
         tree_data = {
 
         }
-        np.random.seed(self.random_seed)
+        np.random.seed(self.random_generator_seed)
         pts = np.random.random([self.element_number, 3]) * self.area_shape * self.voxelsize_mm
 
         # construct voronoi

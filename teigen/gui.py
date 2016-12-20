@@ -105,7 +105,7 @@ class TeigenWidget(QtGui.QWidget):
             "radius": "radius [mm^-2]"
         }
 
-        dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.gen.area_volume
+        dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.teigen.gen.area_volume
         print "merne"
         print dfmerne
         dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
@@ -336,7 +336,7 @@ class Teigen():
         config.pop("areasize_px")
 
         cfg = cfg_export_fcn[id](area_dct)
-        config.update(cfg)
+        # config.update(cfg)
 
         self.config = config
         generator_class = self.generators_classes[id]
