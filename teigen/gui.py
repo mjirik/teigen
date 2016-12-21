@@ -50,10 +50,10 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_stats_shown = False
         self.teigen = Teigen()
         self.version = "0.1.20"
+        self.config = {}
         self.init_ui()
 
-
-    def run(self):
+    def collect_config(self):
         print "generator args"
         id = self.gen_tab_wg.currentIndex()
         new_cfg = self._ui_generator_widgets[id].config_as_dict()
@@ -62,9 +62,18 @@ class TeigenWidget(QtGui.QWidget):
         none, area_cfg = dictwidgetpyqtgraph.from_pyqtgraph_struct(self.area_sampling_params.saveState())
 
         new_cfg.update(area_cfg["Area Sampling"])
+        new_cfg["filepattern"] = self.ui_output_dir_widget.get_dir()
+        new_cfg["generator_id"] = id
+
+        self.config["postprocessing"] = self.posprocessing_wg.config_as_dict()
+        self.config = new_cfg
+
+
+    def run(self):
+        self.collect_config()
 
         # self.config = new_cfg
-        self.teigen.run(generator_id=id, **new_cfg)
+        self.teigen.run(**self.config)
 
 
     def _show_stats(self):
@@ -175,7 +184,7 @@ class TeigenWidget(QtGui.QWidget):
 
 
 
-        hide_keys = ["build", "gtree"]
+        hide_keys = ["build", "gtree", "voxelsize_mm", "area_shape", "resolution", "n_slice", "dims"]
         self.gen_tab_wg = QTabWidget()
         self.mainLayout.addWidget(self.gen_tab_wg, 0, 1)
 
@@ -198,20 +207,22 @@ class TeigenWidget(QtGui.QWidget):
 
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
-        postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
-        self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
-        self.mainLayout.addWidget(self.posprocessing_wg, 1, 1)
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/{seriesn:03d}/slice{:06d}.jpg", "output directory")
+        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1) # , (gd_max_i / 2), text_col)
+        btn_accept = QPushButton("Generate skeleton", self)
 
-
-        btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnRun)
         self.mainLayout.addWidget(btn_accept, 2, 1) # , (gd_max_i / 2), text_col)
 
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/slice{:06d}.jpg", "output directory")
-        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget, 3, 1) # , (gd_max_i / 2), text_col)
+        postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
+        self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
+        self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
-        btn_save = QPushButton("Save", self)
+
+
+
+        btn_save = QPushButton("Generate volumetric data", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
@@ -223,7 +234,12 @@ class TeigenWidget(QtGui.QWidget):
         import pyqtgraph
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
-            "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
+            "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'),
+            "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
+                name="Expandable Parameter Group", children=[
+                    {'name': '0.2', 'type': 'float', 'value': "100"},
+                    {'name': '0.4', 'type': 'float', 'value': "115"},
+                ])
         }
         gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts={})
         p = Parameter.create(**gr_struct)
@@ -255,40 +271,28 @@ class TeigenWidget(QtGui.QWidget):
         # )
         # filename = str(filename)
 
-        if self.gen is None:
+        if self.teigen.need_run:
             self.run()
             self._show_stats()
 
-        # postprocessing
-        if "generate_volume" in dir(self.gen):
-            self.teigen.data3d = self.gen.generate_volume()
-            self.teigen.voxelsize_mm = self.gen.voxelsize_mm
-            postprocessing_params = self.posprocessing_wg.config_as_dict()
-            data3d = self.teigen.postprocessing(**postprocessing_params)
-            self.gen.data3d = data3d
 
         # filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
-        filename = self.ui_output_dir_widget.get_dir()
+        filename = self.config["filepattern"]
 
-        filename = iowidgetqt.str_format_old_to_new(filename)
+        # filename = iowidgetqt.str_format_old_to_new(filename)
 
 
 
-        self.gen.saveVolumeToFile(filename)
-        fn_base = self.filename_base(filename)
+        fn_base, fn_ext = self.teigen.filepattern_split()
         for dfname in self.dataframes:
             df = self.dataframes[dfname].to_csv(fn_base+"_" + dfname + ".csv")
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
         self.figure.savefig(fn_base + "_" + "graph.svg")
 
-    def filename_base(self, filename):
+        # self.teigen.gen.saveVolumeToFile(filename)
+        self.teigen.save_volume()
 
-        import re
-        filename = re.sub(r"({.*})", r"", filename)
-
-        root, ext = op.splitext(filename)
-        return root
 
 
     def on_config_update(self):
@@ -312,6 +316,8 @@ class Teigen():
     def __init__(self):
         self.data3d = None
         self.voxelsize_mm = None
+        self.need_run = True
+        self.gen = None
         self.generators_classes =  [
             generators.cylinders.CylinderGenerator,
             generators.gensei_wrapper.GenseiGenerator
@@ -324,6 +330,8 @@ class Teigen():
         self.config = self.configs[0]
 
     def run(self, **config):
+        import io3d.misc
+        self.config = copy.deepcopy(config)
         id = config.pop('generator_id')
         cfg_export_fcn = [
             self._area_sampling_cylinder_generator_export,
@@ -338,13 +346,50 @@ class Teigen():
         cfg = cfg_export_fcn[id](area_dct)
         # config.update(cfg)
 
-        self.config = config
         generator_class = self.generators_classes[id]
         # self.config = get_default_args(generator_class)
-        self.gen = generator_class(**self.config)
+
+        # select only parameters for generator
+        generator_default_config = dictwidgetqt.get_default_args(generator_class)
+        generator_config = dictwidgetqt.subdict(config,generator_default_config.keys())
+        self.gen = generator_class(**generator_config)
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
+        self.need_run = False
+
+    def filepattern_split(self):
+        """
+        Return base and ext of file. The slice_number and slice_position is ignored.
+        :return:
+        """
+        import io3d.datawriter
+        filepattern = self.config["filepattern"]
+
+        import re
+        filepattern = re.sub(r"({\s*})", r"", filepattern)
+        filepattern = re.sub(r"({\s*:.*})", r"", filepattern)
+        filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
+        filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
+        filepattern = re.sub(r"({\s*slicep\s*:?.*})", r"", filepattern)
+        filepattern = re.sub(r"({\s*slice_position\s*:?.*})", r"", filepattern)
+
+        filename = io3d.datawriter.get_first_filename(filepattern=filepattern)
+        root, ext = op.splitext(filename)
+        return root, ext
+
+    def save_volume(self):
+        import io3d.misc
+        fn_base, fn_ext = self.filepattern_split()
+        io3d.misc.obj_to_file(self.config, filename=op.join(fn_base, "parameters.yaml"))
+        # postprocessing
+        if "generate_volume" in dir(self.gen):
+            self.data3d = self.gen.generate_volume()
+            self.voxelsize_mm = self.gen.voxelsize_mm
+            postprocessing_params = self.config["postprocessing"]
+            data3d = self.teigen.postprocessing(**postprocessing_params)
+            self.gen.data3d = data3d
+        self.teigen.gen.saveVolumeToFile(self.config["filepattern"])
 
     def postprocessing(self, gaussian_filter=True, gaussian_filter_sigma_mm=1.0, gaussian_noise=True, gaussian_noise_stddev=10.0, gaussian_noise_center=0.0, limit_negative_intensities=True):
         if gaussian_filter:

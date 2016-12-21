@@ -249,6 +249,39 @@ class AreaSamplingParameter(pTypes.GroupParameter):
     # def bChanged(self):
     #     self.a.setValue(1.0 / self.b.value(), blockSignal=self.aChanged)
 
+
+## test add/remove
+## this group includes a menu allowing the user to add new parameters into its child list
+class ScalableGroup(pTypes.GroupParameter):
+    def __init__(self, **opts):
+        opts['type'] = 'group'
+        opts['addText'] = "Add"
+        opts['addList'] = ['str', 'float', 'int']
+        pTypes.GroupParameter.__init__(self, **opts)
+
+    def addNew(self, typ):
+        val = {
+            'str': '',
+            'float': 0.0,
+            'int': 0
+        }[typ]
+        self.addChild(dict(name="ScalableParam %d" % (len(self.childs)+1), type=typ, value=val, removable=True, renamable=True))
+
+class ScalableFloatGroup(pTypes.GroupParameter):
+    def __init__(self, **opts):
+        opts['type'] = 'group'
+        opts['addText'] = "Add"
+        # opts['addList'] = ['str', 'float', 'int']
+        pTypes.GroupParameter.__init__(self, **opts)
+
+    def addNew(self):
+        # val = {
+        #     'str': '',
+        #     'float': 0.0,
+        #     'int': 0
+        # }[typ]
+        self.addChild(dict(name="%f" % ((len(self.childs)+1) * 0.20), type='float', value=0.0, removable=True, renamable=True))
+
 def main():
     logger = logging.getLogger()
 

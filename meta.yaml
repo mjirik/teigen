@@ -41,13 +41,14 @@ requirements:
     - numpy
     - scipy
     - scikit-image
+    - ndnoise
 #    - pyqt 4.11.*
 
   run:
     - python
 #    - collections
     - vtk
-    - io3d
+    - io3d >=1.1.7
     - numpy
     - scikit-image
     - pyqt 4.11.*
@@ -58,6 +59,7 @@ requirements:
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei
+    - ndnoise
 
 test:
   # Python imports
