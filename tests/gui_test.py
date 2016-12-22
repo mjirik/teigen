@@ -107,5 +107,13 @@ class GuiTest(unittest.TestCase):
         # self.assertTrue(False)
 
 
+    def test_fill_series_number(self):
+        # from teigen.gui import filepattern_fill_series_number
+        from io3d.datawriter import filepattern_fill_series_number
+
+        out = filepattern_fill_series_number("{seriesn:03d}/{slicen:06d}", series_number=15)
+        self.assertEqual(out, '015/{slicen:06d}')
+
+
 if __name__ == '__main__':
     unittest.main()

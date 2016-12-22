@@ -30,12 +30,15 @@ import inspect
 import collections
 import numpy as np
 import scipy
+import re
 
 import dictwidgetqt
 import iowidgetqt
 import dictwidgetpyqtgraph
 import generators.cylinders
 import generators.gensei_wrapper
+import io3d.datawriter
+import io3d.misc
 
 from pyqtconfig import ConfigManager
 
@@ -49,27 +52,32 @@ class TeigenWidget(QtGui.QWidget):
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen()
-        self.version = "0.1.20"
+        self.version = self.teigen.version
         self.config = {}
         self.init_ui()
 
     def collect_config(self):
         print "generator args"
         id = self.gen_tab_wg.currentIndex()
-        new_cfg = self._ui_generator_widgets[id].config_as_dict()
-        logger.debug(str(new_cfg))
+        config = self._ui_generator_widgets[id].config_as_dict()
+        logger.debug(str(config))
 
         none, area_cfg = dictwidgetpyqtgraph.from_pyqtgraph_struct(self.area_sampling_params.saveState())
 
-        new_cfg.update(area_cfg["Area Sampling"])
-        new_cfg["filepattern"] = self.ui_output_dir_widget.get_dir()
-        new_cfg["generator_id"] = id
+        config.update(area_cfg["Area Sampling"])
+        filepattern = self.ui_output_dir_widget.get_dir()
+        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=filepattern)
+        config["filepattern"] = filepattern
+        config['filepattern_series_number'] = series_number
+        config["generator_id"] = id
 
-        self.config["postprocessing"] = self.posprocessing_wg.config_as_dict()
-        self.config = new_cfg
+        config["postprocessing"] = self.posprocessing_wg.config_as_dict()
+        config["required_teigen_version"] = self.teigen.version
+        self.config = config
 
 
     def run(self):
+
         self.collect_config()
 
         # self.config = new_cfg
@@ -283,6 +291,7 @@ class TeigenWidget(QtGui.QWidget):
 
 
 
+        self.teigen.save_volume()
         fn_base, fn_ext = self.teigen.filepattern_split()
         for dfname in self.dataframes:
             df = self.dataframes[dfname].to_csv(fn_base+"_" + dfname + ".csv")
@@ -291,7 +300,6 @@ class TeigenWidget(QtGui.QWidget):
         self.figure.savefig(fn_base + "_" + "graph.svg")
 
         # self.teigen.gen.saveVolumeToFile(filename)
-        self.teigen.save_volume()
 
 
 
@@ -314,6 +322,7 @@ class TeigenWidget(QtGui.QWidget):
 
 class Teigen():
     def __init__(self):
+        self.version = "0.1.20"
         self.data3d = None
         self.voxelsize_mm = None
         self.need_run = True
@@ -332,6 +341,25 @@ class Teigen():
     def run(self, **config):
         import io3d.misc
         self.config = copy.deepcopy(config)
+
+        if "required_teigen_version" in config.keys():
+            reqired_version = config["required_teigen_version"]
+            if  reqired_version != self.version:
+                logger.error(
+                    "Wrong teigen version. Required: " + reqired_version + " , actual " + self.version)
+                return
+
+        filepattern = config["filepattern"]
+        if "filepattern_series_number" in config.keys():
+            series_number = config["filepattern_series_number"]
+            config['filepattern'] = io3d.datawriter.filepattern_fill_series_number(
+                filepattern,
+                series_number=series_number
+            )
+
+
+
+
         id = config.pop('generator_id')
         cfg_export_fcn = [
             self._area_sampling_cylinder_generator_export,
@@ -365,31 +393,32 @@ class Teigen():
         """
         import io3d.datawriter
         filepattern = self.config["filepattern"]
+        filepattern_series_number = self.config["filepattern_series_number"]
 
-        import re
+        # filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
+        # filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
+        # filepattern = re.sub(r"({\s*slicep\s*:?.*})", r"", filepattern)
+        # filepattern = re.sub(r"({\s*slice_position\s*:?.*})", r"", filepattern)
+
         filepattern = re.sub(r"({\s*})", r"", filepattern)
-        filepattern = re.sub(r"({\s*:.*})", r"", filepattern)
-        filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
-        filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
-        filepattern = re.sub(r"({\s*slicep\s*:?.*})", r"", filepattern)
-        filepattern = re.sub(r"({\s*slice_position\s*:?.*})", r"", filepattern)
 
-        filename = io3d.datawriter.get_first_filename(filepattern=filepattern)
-        root, ext = op.splitext(filename)
+        filepattern = io3d.datawriter.filepattern_fill_series_number(filepattern, filepattern_series_number)
+        filepattern = re.sub(r"({.*?})", r"", filepattern)
+        root, ext = op.splitext(filepattern)
         return root, ext
 
     def save_volume(self):
         import io3d.misc
         fn_base, fn_ext = self.filepattern_split()
-        io3d.misc.obj_to_file(self.config, filename=op.join(fn_base, "parameters.yaml"))
+        io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
         # postprocessing
         if "generate_volume" in dir(self.gen):
             self.data3d = self.gen.generate_volume()
             self.voxelsize_mm = self.gen.voxelsize_mm
             postprocessing_params = self.config["postprocessing"]
-            data3d = self.teigen.postprocessing(**postprocessing_params)
+            data3d = self.postprocessing(**postprocessing_params)
             self.gen.data3d = data3d
-        self.teigen.gen.saveVolumeToFile(self.config["filepattern"])
+        self.gen.saveVolumeToFile(self.config["filepattern"])
 
     def postprocessing(self, gaussian_filter=True, gaussian_filter_sigma_mm=1.0, gaussian_noise=True, gaussian_noise_stddev=10.0, gaussian_noise_center=0.0, limit_negative_intensities=True):
         if gaussian_filter:
@@ -459,10 +488,10 @@ def main():
         description=__doc__
     )
     parser.add_argument(
-        '-i', '--inputfile',
+        '-p', '--parameterfile',
         default=None,
         # required=True,
-        help='input file'
+        help='input parameter file'
     )
     parser.add_argument(
         '-d', '--debug', action='store_true',
@@ -473,10 +502,17 @@ def main():
         ch.setLevel(logging.DEBUG)
 
 
-    app = QApplication(sys.argv)
-    cw = TeigenWidget()
-    cw.show()
-    app.exec_()
+    if args.parameterfile is None:
+        app = QApplication(sys.argv)
+        cw = TeigenWidget()
+        cw.show()
+        app.exec_()
+    else:
+        params = io3d.misc.obj_from_file(args.parameterfile)
+        tg = Teigen()
+        tg.run(**params)
+        tg.save_volume()
+
 
 
 if __name__ == "__main__":

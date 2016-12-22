@@ -8,3 +8,7 @@ Test Image Generator
 ## Windows
 
 [Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)
+
+# Outputs
+
+# Parameters
