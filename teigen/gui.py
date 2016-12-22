@@ -450,17 +450,45 @@ class Teigen():
             self.gen.data3d = data3d
         self.gen.saveVolumeToFile(self.config["filepattern"])
 
-    def postprocessing(self, gaussian_filter=True, gaussian_filter_sigma_mm=1.0, gaussian_noise=True, gaussian_noise_stddev=10.0, gaussian_noise_center=0.0, limit_negative_intensities=True):
-        if gaussian_filter:
+    def postprocessing(
+            self,
+            gaussian_blur=True,
+            gaussian_filter_sigma_mm=1.0,
+            add_noise=True,
+            # gaussian_noise_stddev=10.0,
+            # gaussian_noise_center=0.0,
+            limit_negative_intensities=True,
+            noise_random_generator_seed=0,
+            exponent=-1,
+            freq_start=0,
+            freq_range=-1,
+            noise_amplitude = 40.0,
+            noise_mean = 30.0
+    ):
+        if gaussian_blur:
             sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm
 
             self.data3d = scipy.ndimage.filters.gaussian_filter(
                 self.data3d,
                 sigma=sigma_px)
 
-        if gaussian_noise:
+        if add_noise:
+            import ndnoise.generator
+
             dt = self.data3d.dtype
-            noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
+            noise = ndnoise.generate(
+                shape=self.data3d.shape,
+                random_generator_seed=noise_random_generator_seed,
+                exponent=exponent,
+                freq_start=freq_start,
+                freq_range=freq_range
+
+            ).astype(np.float16)
+            mx = np.max(noise)
+            noise = noise_amplitude * noise/mx
+            noise += noise_mean
+            noise = noise.astype(self.data3d.dtype)
+            # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
             self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
 
         if limit_negative_intensities:
