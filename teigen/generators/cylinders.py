@@ -73,6 +73,7 @@ class CylinderGenerator:
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
         self.radius_maximum = radius_distribution_maximum
+        self.radius_minimum = radius_distribution_minimum
         # self.intensity_profile = intensity_profile
         self.intensity_profile = dict(zip(intensity_profile_radius, intensity_profile_intensity))
         self._cylinder_nodes = []
@@ -101,6 +102,7 @@ class CylinderGenerator:
         self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
         self.tree_data = {}
         self.data3d = None
+        self.progress_callback = None
 
     def _const(self, value):
         return value
@@ -158,7 +160,9 @@ class CylinderGenerator:
                 z = vor3.vertices[simplex, 2]
                 for two_points_id in itertools.combinations(simplex, 2):
                     radius = self.radius_generator(*self.radius_generator_args)
-                    if radius > self.radius_generator:
+                    if radius > self.radius_maximum:
+                        continue
+                    if radius < self.radius_minimum:
                         continue
                     pt1 = vor3.vertices[two_points_id[0]]
                     pt2 = vor3.vertices[two_points_id[1]]
@@ -240,6 +244,7 @@ class CylinderGenerator:
         self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
         self.tvgvol.shape = self.areasize_px # [100, 100, 100]
         self.tvgvol.tree_data = self.tree_data
+        self.tvgvol.finish_progress_callback = self.progress_callback
         if self.intensity_profile is not None:
             self.tvgvol.intensity_profile = self.intensity_profile
         self.data3d = self.tvgvol.buildTree()

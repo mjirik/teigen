@@ -20,7 +20,7 @@ import argparse
 import PyQt4
 from PyQt4.QtGui import QGridLayout, QLabel,\
     QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget
+        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar
 
 from PyQt4 import QtGui
 import sys
@@ -44,7 +44,7 @@ from pyqtconfig import ConfigManager
 
 
 class TeigenWidget(QtGui.QWidget):
-    def __init__(self, ncols=2):
+    def __init__(self, ncols=2, qapp=None):
         super(TeigenWidget, self).__init__()
         self.ncols = ncols
         self.gen = None
@@ -54,6 +54,8 @@ class TeigenWidget(QtGui.QWidget):
         self.teigen = Teigen()
         self.version = self.teigen.version
         self.config = {}
+        self.run_number = 0
+        self.qapp = qapp
         self.init_ui()
 
     def collect_config(self):
@@ -84,12 +86,13 @@ class TeigenWidget(QtGui.QWidget):
         self.teigen.run(**self.config)
 
 
+
     def _show_stats(self):
         to_rename = {
             "length": "length [mm]",
             "volume": "volume [mm^3]",
             "surface": "surface [mm^2]",
-            "radius": "radius [mm^2]"
+            "radius": "radius [mm]"
         }
         to_rename_density = {
             "length": "length [mm^-2]",
@@ -98,6 +101,7 @@ class TeigenWidget(QtGui.QWidget):
             # "radius": "radius [mm^-2]"
         }
 
+        run_number_alpha = chr(ord("A") + self.run_number)
         if self.ui_stats_shown:
         #     self._wg_tab_describe.deleteLater()
         #     self._wg_tab_describe = None
@@ -116,7 +120,7 @@ class TeigenWidget(QtGui.QWidget):
             self.figure = plt.figure()
             self.canvas = FigureCanvas(self.figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
-            self.stats_tab_wg.addTab(self.canvas, 'Graphs')
+            self.stats_tab_wg.addTab(self.canvas, 'Graphs ' + run_number_alpha)
 
         df = self.teigen.gen.getStats()
 
@@ -130,6 +134,7 @@ class TeigenWidget(QtGui.QWidget):
 
         plt.subplot(144)
         df[["volume"]].rename(columns=to_rename).boxplot(return_type='axes')
+        self.figure.tight_layout()
 
         import tablewidget
 
@@ -151,7 +156,7 @@ class TeigenWidget(QtGui.QWidget):
         self.dataframes["describe"] = dfdescribe
 
         self._wg_tab_describe = tablewidget.TableWidget(self, dataframe=dfdescribe)
-        self._wg_tab_describe.setMinimumWidth(600)
+        self._wg_tab_describe.setMinimumWidth(800)
         self._wg_tab_describe.setMinimumHeight(200)
 
         self._wg_tables = QtGui.QWidget()
@@ -163,7 +168,7 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_describe.raise_()
         # self.mainLayout.addWidget(self._wg_tab_describe, 0, 2, 5, 2)
         # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
-        self.stats_tab_wg.addTab(self._wg_tables, "Sumary")
+        self.stats_tab_wg.addTab(self._wg_tables, "Sumary " + run_number_alpha)
         # self.resize(600,700)
 
 
@@ -198,6 +203,14 @@ class TeigenWidget(QtGui.QWidget):
         self.setWindowTitle(wtitle)
         self.mainLayout = QGridLayout(self)
 
+        self.statusBar = QStatusBar()
+        self.mainLayout.addWidget(self.statusBar, 10, 0, 1, 2)
+        self.progressBar = QtGui.QProgressBar()
+        self.progressBar.setRange(0, 10000)
+        self.progressBar.setValue(0)
+
+        self.statusBar.addWidget(self.progressBar)
+        self.progressBar.show()
 
 
 
@@ -269,13 +282,19 @@ class TeigenWidget(QtGui.QWidget):
         self.area_sampling_wg = t
         self.area_sampling_params = p
 
+        self.teigen.progress_callback = self._progressbar_update
+
+    def _progressbar_update(self, obj, level, *args, **kwargs):
+        self.progressBar.setValue(int(10000*level))
         ## end of pyqtgraph tree
+
     def btnRun(self):
 
         logger.debug("btnAccept")
         # logger.debug(str(self.config))
         self.run()
         self._show_stats()
+        self.run_number += 1
 
     def btnSave(self):
         # filename = "file{:05d}.jpg"
@@ -346,6 +365,7 @@ class Teigen():
         ]
         self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
         self.config = self.configs[0]
+        self.progress_callback = None
 
     def run(self, **config):
         import io3d.misc
@@ -390,6 +410,7 @@ class Teigen():
         generator_default_config = dictwidgetqt.get_default_args(generator_class)
         generator_config = dictwidgetqt.subdict(config,generator_default_config.keys())
         self.gen = generator_class(**generator_config)
+        self.gen.progress_callback = self.progress_callback
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()

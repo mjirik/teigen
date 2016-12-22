@@ -134,7 +134,7 @@ class TBVolume:
 
     def finish(self):
         """
-        :param self.finish_progress_callback: function with input parameter from 0.0 to 1.0
+        :param self.finish_progress_callback(self, progress): function with iprogress parameter from 0.0 to 1.0
         :return:
         """
         progress_step = 1.0/(len(self.intensity_profile) * len(self._cylinders_params))
@@ -147,7 +147,7 @@ class TBVolume:
                 self._add_cylinder(cyl[0], cyl[1], cyl[2] * radk, cyl[3])
 
                 if self.finish_progress_callback is not None:
-                    self.finish_progress_callback(progress)
+                    self.finish_progress_callback(self, progress)
                     progress += progress_step
 
             self.data3d[self.data3d==self._temp_intensity] = radk_intensity
