@@ -69,7 +69,7 @@ class CylinderGenerator:
         # ]
         self.build = build
         # self.filename = "output{:05d}.jpg"
-        self.area_shape = np.asarray(area_shape)
+        self.areasize_px = np.asarray(areasize_px)
         self.voxelsize_mm = np.asarray(voxelsize_mm)
         self.element_number = element_number
         self.radius_maximum = radius_distribution_maximum
@@ -79,7 +79,7 @@ class CylinderGenerator:
         self.random_generator_seed = random_generator_seed
         self.radius_generator = self._const
         self.radius_generator_args=[radius_distribution_mean]
-        self.area_volume = np.prod(self.area_shape * self.voxelsize_mm)
+        self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
         if uniform_radius_distribution:
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
@@ -131,7 +131,7 @@ class CylinderGenerator:
 
         }
         np.random.seed(self.random_generator_seed)
-        pts = np.random.random([self.element_number, 3]) * self.area_shape * self.voxelsize_mm
+        pts = np.random.random([self.element_number, 3]) * self.areasize_px * self.voxelsize_mm
 
         # construct voronoi
         import scipy.spatial
@@ -213,7 +213,7 @@ class CylinderGenerator:
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
-            tvg.shape = self.area_shape
+            tvg.shape = self.areasize_px
             tvg.tree_data = tree_data
             output = tvg.buildTree() # noqa
             # tvg.show()
@@ -238,7 +238,7 @@ class CylinderGenerator:
 
         self.tvgvol = TreeBuilder('vol')
         self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
-        self.tvgvol.shape = self.area_shape # [100, 100, 100]
+        self.tvgvol.shape = self.areasize_px # [100, 100, 100]
         self.tvgvol.tree_data = self.tree_data
         if self.intensity_profile is not None:
             self.tvgvol.intensity_profile = self.intensity_profile
@@ -284,7 +284,7 @@ class CylinderGenerator:
         if radius is None:
             radius = self.radius_maximum
 
-        if np.all(node > (0 + radius)) and np.all(node < (self.area_shape - radius)):
+        if np.all(node > (0 + radius)) and np.all(node < (self.areasize_px - radius)):
             return  True
         else:
             return False

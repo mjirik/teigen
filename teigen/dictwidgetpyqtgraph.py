@@ -196,8 +196,8 @@ class AreaSamplingParameter(pTypes.GroupParameter):
         opts['type'] = 'bool'
         opts['value'] = True
         voxelsize_mm = [1.0, 1.0, 1.0]
-        areasize_mm = [10.0, 10.0, 10.0]
-        areasize_px = [10, 10, 10]
+        areasize_mm = [100.0, 100.0, 100.0]
+        areasize_px = [100, 100, 100]
 
         if "voxelsize_mm" in opts.keys():
             voxelsize_mm = opts.pop('voxelsize_mm')

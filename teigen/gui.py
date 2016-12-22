@@ -85,6 +85,19 @@ class TeigenWidget(QtGui.QWidget):
 
 
     def _show_stats(self):
+        to_rename = {
+            "length": "length [mm]",
+            "volume": "volume [mm^3]",
+            "surface": "surface [mm^2]",
+            "radius": "radius [mm^2]"
+        }
+        to_rename_density = {
+            "length": "length [mm^-2]",
+            "volume": "volume []",
+            "surface": "surface [mm^-1]"
+            # "radius": "radius [mm^-2]"
+        }
+
         if self.ui_stats_shown:
         #     self._wg_tab_describe.deleteLater()
         #     self._wg_tab_describe = None
@@ -105,33 +118,7 @@ class TeigenWidget(QtGui.QWidget):
             # self.toolbar = NavigationToolbar(self.canvas, self)
             self.stats_tab_wg.addTab(self.canvas, 'Graphs')
 
-
-
         df = self.teigen.gen.getStats()
-        import tablewidget
-        to_rename = {
-            "length": "length [mm]",
-            "volume": "volume [mm^3]",
-            "surface": "surface [mm^2]",
-            "radius": "radius [mm^2]"
-        }
-        to_rename_density = {
-            "length": "length [mm^-2]",
-            "volume": "volume []",
-            "surface": "surface [mm^-1]",
-            "radius": "radius [mm^-2]"
-        }
-
-        dfmerne = df[["length", "volume", "surface", "radius"]].sum() / self.teigen.gen.area_volume
-        print "merne"
-        print dfmerne
-        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
-        # dfmernef.insert(0, "", dfmernef.index)
-        # import ipdb; ipdb.set_trace()
-
-        self._wg_tab_merne = tablewidget.TableWidget(self, dataframe=dfmernef)
-        self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
-        self.dataframes["density"] = dfmernef
 
         plt.subplot(141)
         df[["length"]].rename(columns=to_rename).boxplot(return_type='axes')
@@ -144,20 +131,42 @@ class TeigenWidget(QtGui.QWidget):
         plt.subplot(144)
         df[["volume"]].rename(columns=to_rename).boxplot(return_type='axes')
 
+        import tablewidget
+
+        dfmerne = df[["length", "volume", "surface"]].sum() / self.teigen.gen.area_volume
+        print "merne"
+        print dfmerne
+        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
+        # dfmernef.insert(0, "", dfmernef.index)
+        # import ipdb; ipdb.set_trace()
+
+        self._wg_tab_merne = tablewidget.TableWidget(self, dataframe=dfmernef)
+        # self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
+        self.dataframes["density"] = dfmernef
+
+
         # TODO take care about redrawing
         dfdescribe = df.describe()
         dfdescribe.insert(0, "", dfdescribe.index)
         self.dataframes["describe"] = dfdescribe
 
         self._wg_tab_describe = tablewidget.TableWidget(self, dataframe=dfdescribe)
-        self._wg_tab_describe.show()
-        self._wg_tab_describe.raise_()
         self._wg_tab_describe.setMinimumWidth(600)
         self._wg_tab_describe.setMinimumHeight(200)
 
+        self._wg_tables = QtGui.QWidget()
+        self._wg_tables.setLayout(QGridLayout())
+        self._wg_tables.layout().addWidget(self._wg_tab_describe)
+        self._wg_tables.layout().addWidget(self._wg_tab_merne)
+
+        self._wg_tab_describe.show()
+        self._wg_tab_describe.raise_()
         # self.mainLayout.addWidget(self._wg_tab_describe, 0, 2, 5, 2)
-        self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
-        self.resize(600,700)
+        # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
+        self.stats_tab_wg.addTab(self._wg_tables, "Sumary")
+        # self.resize(600,700)
+
+
 
         self.ui_stats_shown = True
 
@@ -192,7 +201,7 @@ class TeigenWidget(QtGui.QWidget):
 
 
 
-        hide_keys = ["build", "gtree", "voxelsize_mm", "area_shape", "resolution", "n_slice", "dims"]
+        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
         self.gen_tab_wg = QTabWidget()
         self.mainLayout.addWidget(self.gen_tab_wg, 0, 1)
 
