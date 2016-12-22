@@ -12,3 +12,5 @@ Test Image Generator
 # Outputs
 
 # Parameters
+
+python teigen.__main__ -p parameters.yaml

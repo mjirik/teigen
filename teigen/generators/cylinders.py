@@ -39,7 +39,7 @@ class CylinderGenerator:
                  # voxelsize_mm_z=1.0,
                  # voxelsize_mm_x=1.0,
                  # voxelsize_mm_y=1.0,
-                 area_shape=[100, 100, 100],
+                 areasize_px=[100, 100, 100],
                  # area_shape_z=100,
                  # area_shape_x=100,
                  # area_shape_y=100,

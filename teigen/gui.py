@@ -362,7 +362,7 @@ class Teigen():
 
         id = config.pop('generator_id')
         cfg_export_fcn = [
-            self._area_sampling_cylinder_generator_export,
+            self._area_sampling_general_export,
             self._area_sampling_gensei_export,
         ]
 
@@ -372,7 +372,7 @@ class Teigen():
         config.pop("areasize_px")
 
         cfg = cfg_export_fcn[id](area_dct)
-        # config.update(cfg)
+        config.update(cfg)
 
         generator_class = self.generators_classes[id]
         # self.config = get_default_args(generator_class)
@@ -450,10 +450,10 @@ class Teigen():
         return dct
 
 
-    def _area_sampling_cylinder_generator_export(self, area_sampling_params):
+    def _area_sampling_general_export(self, area_sampling_params):
         return {
             'voxelsize_mm': area_sampling_params["voxelsize_mm"],
-            'area_shape': area_sampling_params["areasize_px"]
+            'areasize_px': area_sampling_params["areasize_px"]
         }
     # def save_volume_to_file(self, filename):
     #
