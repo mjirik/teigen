@@ -265,11 +265,12 @@ class TeigenWidget(QtGui.QWidget):
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
             "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'),
-            "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
-                name="Expandable Parameter Group", children=[
-                    {'name': '0.2', 'type': 'float', 'value': "100"},
-                    {'name': '0.4', 'type': 'float', 'value': "115"},
-                ])
+            # TODO add more lines here
+            # "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
+            #     name="Intensity Profile", children=[
+            #         {'name': '0.2', 'type': 'float', 'value': "100"},
+            #         {'name': '0.4', 'type': 'float', 'value': "115"},
+            #     ])
         }
         gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts={})
         p = Parameter.create(**gr_struct)
