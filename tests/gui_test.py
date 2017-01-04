@@ -26,7 +26,7 @@ class GuiTest(unittest.TestCase):
         params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct("pokus", cfg)
         print params
         self.assertDictEqual(
-            params[0],
+            params["children"][0],
             {'type': 'bool', 'name':'bool', 'value': True}
         )
 
