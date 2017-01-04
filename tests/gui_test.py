@@ -27,7 +27,7 @@ class GuiTest(unittest.TestCase):
         print params
         self.assertDictEqual(
             params["children"][0],
-            {'type': 'bool', 'name':'bool', 'value': True}
+            {'type': 'bool', 'name':'bool', 'value': True, "reconstruction_type": "bool"}
         )
 
 
