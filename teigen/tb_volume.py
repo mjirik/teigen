@@ -80,15 +80,22 @@ class TBVolume:
         xvalues = np.linspace(p1[2], p2[2], num_points)
 
         # drawing a line
+        no_index_error_occured = True
         for i in range(0, len(xvalues)):
             # TODO make something with indexes out of requested area
             try:
                 cyl_data3d[int(zvalues[i])][int(yvalues[i])][int(xvalues[i])] = 0
+            except IndexError:
+                if no_index_error_occured:
+                    import traceback
+                    traceback.print_exc()
+                    logger.warning("Cylinder drawing out of bounds. Other same type warnings are suppressed.")
+                    no_index_error_occured = False
             except:
                 import traceback
                 traceback.print_exc()
                 print "except in drawing line"
-                logger.warning("cylinder drawing problem")
+                logger.warning("Cylinder drawing problem")
                 # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
 
         # cuting size of 3d space needed for calculating distances (smaller ==
