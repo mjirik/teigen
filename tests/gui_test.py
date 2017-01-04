@@ -23,7 +23,7 @@ class GuiTest(unittest.TestCase):
         )
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct(cfg)
+        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct("pokus", cfg)
         print params
         self.assertDictEqual(
             params[0],
