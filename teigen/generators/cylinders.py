@@ -100,6 +100,7 @@ class CylinderGenerator:
         self.LEN_STEP_CONSTANT = 0.1
         self.MAKE_IT_SHORTER_CONSTANT = 3.0
         self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
+        self.OVERLAPS_ALOWED = False
         self.tree_data = {}
         self.data3d = None
         self.progress_callback = None
@@ -109,6 +110,9 @@ class CylinderGenerator:
 
 
     def _check_cylinder_position(self, pt1, pt2, step):
+
+        if self.OVERLAPS_ALOWED:
+            return True
 
         if pt1 is not None \
             and self._is_in_area(pt1) \

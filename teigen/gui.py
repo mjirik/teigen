@@ -191,6 +191,7 @@ class TeigenWidget(QtGui.QWidget):
         self.stats_tab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
         noise = self.teigen.generate_noise()
         plt.imshow(noise[0, :, :], cmap="gray")
+        plt.colorbar()
 
 
     def complicated_to_yaml(self, cfg):
@@ -373,11 +374,13 @@ class Teigen():
         self.gen = None
         self.generators_classes =  [
             generators.cylinders.CylinderGenerator,
-            generators.gensei_wrapper.GenseiGenerator
+            generators.gensei_wrapper.GenseiGenerator,
+            generators.cylinders.CylinderGenerator,
         ]
         self.generators_names = [
             "Cylinder generator",
-            "Gensei generator"
+            "Gensei generator",
+            "Cylinder continues"
         ]
         self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
         self.config = self.configs[0]
@@ -410,6 +413,7 @@ class Teigen():
         cfg_export_fcn = [
             self._area_sampling_general_export,
             self._area_sampling_gensei_export,
+            self._area_sampling_general_export,
         ]
 
         area_dct = dictwidgetqt.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
@@ -427,6 +431,9 @@ class Teigen():
         generator_default_config = dictwidgetqt.get_default_args(generator_class)
         generator_config = dictwidgetqt.subdict(config,generator_default_config.keys())
         self.gen = generator_class(**generator_config)
+        if id == 2:
+            self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0
+            self.gen.OVERLAPS_ALOWED = True
         self.gen.progress_callback = self.progress_callback
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
@@ -495,9 +502,9 @@ class Teigen():
             # gaussian_noise_center=0.0,
             limit_negative_intensities=True,
             noise_random_generator_seed=0,
-            exponent=-1,
-            lambda_start=0,
-            lambda_range=-1,
+            exponent=0.0001,
+            lambda_start=0.1,
+            lambda_stop=3.0,
             noise_amplitude = 40.0,
             noise_mean = 30.0
     ):
@@ -512,6 +519,7 @@ class Teigen():
 
             dt = self.data3d.dtype
             noise = self.generate_noise()
+            noise = noise.astype(self.data3d.dtype)
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
             self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
 
@@ -521,6 +529,7 @@ class Teigen():
         return self.data3d
 
     def generate_noise(self):
+        import ndnoise
         import ndnoise.generator
         pparams = self.config["postprocessing"]
         # data3d = self.postprocessing(**postprocessing_params)
@@ -530,13 +539,12 @@ class Teigen():
             exponent=pparams["exponent"],
             random_generator_seed=pparams["noise_random_generator_seed"],
             lambda_start=pparams["lambda_start"],
-            lambda_range=pparams["lambda_range"],
+            lambda_stop=pparams["lambda_stop"],
 
         ).astype(np.float16)
         mx = np.max(noise)
         noise = pparams["noise_amplitude"] * noise/mx
         noise += pparams["noise_mean"]
-        noise = noise.astype(self.data3d.dtype)
         return noise
 
     def _area_sampling_gensei_export(self, area_sampling_params):
