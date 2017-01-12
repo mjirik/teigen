@@ -123,3 +123,53 @@ def plane_fit(points):
     x = points - ctr[:,np.newaxis]
     M = np.dot(x, x.T) # Could also use np.cov(x) here.
     return ctr, svd(M)[0][:,-1]
+
+def is_in_area(pt, areasize_px, radius=None):
+    """
+    check if point is in area with considering eventual maximum radius
+    :param node:
+    :param radius:
+    :return:
+    """
+    node = np.asarray(pt)
+    if radius is None:
+        radius = 0
+
+    if np.all(node > (0 + radius)) and np.all(node < (areasize_px - radius)):
+        return  True
+    else:
+        return False
+
+
+def check_collision_along_line(
+        pt1,
+        pt2,
+        radius,
+        radius_maximum,
+        other_points,
+        step,
+        areasize_px,
+        DIST_MAX_RADIUS_MULTIPLICATOR,
+        OVERLAPS_ALOWED
+):
+
+    radius = 0
+
+    if pt1 is not None \
+            and is_in_area(pt1, areasize_px, radius) \
+            and is_in_area(pt2, areasize_px, radius):
+
+        if OVERLAPS_ALOWED:
+            return True
+
+        if len(other_points) == 0:
+            return True
+        else:
+            line_nodes = get_points_in_line_segment(pt1, pt2, step)
+            safe_dist2 = (radius_maximum * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
+            for node in line_nodes:
+                dist_closest = closest_node_square_dist(node, other_points)
+                if dist_closest < safe_dist2:
+                    return False
+            return True
+    return False

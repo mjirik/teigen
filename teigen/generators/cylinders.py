@@ -110,13 +110,15 @@ class CylinderGenerator:
 
 
     def _check_cylinder_position(self, pt1, pt2, step):
+        # TODO use geometry3.check_collision_along_line
 
-        if self.OVERLAPS_ALOWED:
-            return True
 
         if pt1 is not None \
             and self._is_in_area(pt1) \
             and self._is_in_area(pt2):
+
+            if self.OVERLAPS_ALOWED:
+                return True
 
             if len(self._cylinder_nodes) == 0:
                 return True
@@ -292,13 +294,7 @@ class CylinderGenerator:
         node = np.asarray(node)
         if radius is None:
             radius = self.radius_maximum
-
-        if np.all(node > (0 + radius)) and np.all(node < (self.areasize_px - radius)):
-            return  True
-        else:
-            return False
-
-
+        return g3.is_in_area(node, self.areasize_px, radius=radius)
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
 
