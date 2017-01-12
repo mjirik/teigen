@@ -48,14 +48,14 @@ requirements:
     - python
 #    - collections
     - vtk
-    - io3d >=1.1.7
+    - io3d >=1.1.9
     - numpy
     - scikit-image
     - pyqt 4.11.*
     - pyqtconfig
     - pandas
     - simpleitk
-    - imtools >=0.1.21
+    - imtools >=0.1.24
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei

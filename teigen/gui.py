@@ -138,10 +138,16 @@ class TeigenWidget(QtGui.QWidget):
 
         import tablewidget
 
+        dfdescribe = df.describe()
+        dfdescribe.insert(0, "", dfdescribe.index)
+        count = dfdescribe["length"][0]
+        dfdescribe = dfdescribe.ix[1:]
+        dfdescribe = dfdescribe.rename(columns=to_rename)
+        self.dataframes["describe"] = dfdescribe
+
         dfmerne = df[["length", "volume", "surface"]].sum() / self.teigen.gen.area_volume
-        print "merne"
-        print dfmerne
         dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
+        dfmernef["count"] = [count]
         # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()
 
@@ -151,9 +157,6 @@ class TeigenWidget(QtGui.QWidget):
 
 
         # TODO take care about redrawing
-        dfdescribe = df.describe()
-        dfdescribe.insert(0, "", dfdescribe.index)
-        self.dataframes["describe"] = dfdescribe
 
         self._wg_tab_describe = tablewidget.TableWidget(self, dataframe=dfdescribe)
         self._wg_tab_describe.setMinimumWidth(800)
@@ -170,6 +173,12 @@ class TeigenWidget(QtGui.QWidget):
         # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
         self.stats_tab_wg.addTab(self._wg_tables, "Sumary " + run_number_alpha)
         # self.resize(600,700)
+
+        import imtools.show_segmentation_qt
+        self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
+
+        self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
+        self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization" + run_number_alpha)
 
 
 
@@ -252,7 +261,7 @@ class TeigenWidget(QtGui.QWidget):
 
 
 
-        btn_save = QPushButton("Generate volumetric data", self)
+        btn_save = QPushButton("Generate and save volumetric data", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
@@ -367,6 +376,7 @@ class Teigen():
         self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
         self.config = self.configs[0]
         self.progress_callback = None
+        self.temp_vtk_file = op.expanduser("~/tree.vtk")
 
     def run(self, **config):
         import io3d.misc
