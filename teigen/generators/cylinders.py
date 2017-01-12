@@ -111,26 +111,37 @@ class CylinderGenerator:
 
     def _check_cylinder_position(self, pt1, pt2, step):
         # TODO use geometry3.check_collision_along_line
+        return g3.check_collision_along_line(
+            pt1,
+            pt2,
+            self.radius_maximum,
+            self.radius_maximum,
+            other_points=self._cylinder_nodes,
+            step=step,
+            areasize_px=self.areasize_px,
+            DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
+            OVERLAPS_ALOWED=self.OVERLAPS_ALOWED
+        )
 
 
-        if pt1 is not None \
-            and self._is_in_area(pt1) \
-            and self._is_in_area(pt2):
-
-            if self.OVERLAPS_ALOWED:
-                return True
-
-            if len(self._cylinder_nodes) == 0:
-                return True
-            else:
-                line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
-                safe_dist2 = (self.radius_maximum * self.DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
-                for node in line_nodes:
-                    dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
-                    if dist_closest < safe_dist2:
-                        return False
-                return True
-        return False
+        # if pt1 is not None \
+        #     and self._is_in_area(pt1) \
+        #     and self._is_in_area(pt2):
+        #
+        #     if self.OVERLAPS_ALOWED:
+        #         return True
+        #
+        #     if len(self._cylinder_nodes) == 0:
+        #         return True
+        #     else:
+        #         line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
+        #         safe_dist2 = (self.radius_maximum * self.DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
+        #         for node in line_nodes:
+        #             dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
+        #             if dist_closest < safe_dist2:
+        #                 return False
+        #         return True
+        # return False
 
     def run(self):
 

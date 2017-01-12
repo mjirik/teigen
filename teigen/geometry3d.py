@@ -24,15 +24,28 @@ def closest_node_2d(node, nodes, return_more=False):
         return nodes[id], id, dst.min()
     return nodes[id]
 
-def closest_node(node, nodes):
-    nodes = np.asarray(nodes)
-    dist_2 = np.sum((nodes - node)**2, axis=1)
+def closest_node(*args, **kwargs):
+    dist_2 = node_to_spheres_square_dist(*args, **kwargs)
     return np.argmin(dist_2)
 
-def closest_node_square_dist(node, nodes):
+def closest_node_square_dist(*args, **kwargs):
+    dist_2 = node_to_spheres_square_dist(*args, **kwargs)
+    return np.min(dist_2)
+
+def node_to_spheres_square_dist(node, nodes, nodes_radius=None):
+    """
+    return point distance to spheres surface
+
+    :param node: one point
+    :param nodes: center
+    :param nodes_radius:
+    :return:
+    """
     nodes = np.asarray(nodes)
     dist_2 = np.sum((nodes - node)**2, axis=1)
-    return np.min(dist_2)
+    if nodes_radius is not None:
+        dist_2 = dist_2 - np.asarray(nodes)**2
+    return dist_2
 
 def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
     nodeA = np.asarray(nodeA)
@@ -147,13 +160,13 @@ def check_collision_along_line(
         radius,
         radius_maximum,
         other_points,
-        step,
+        # step,
         areasize_px,
-        DIST_MAX_RADIUS_MULTIPLICATOR,
-        OVERLAPS_ALOWED
+        DIST_MAX_RADIUS_MULTIPLICATOR=1.5, # higher than sqrt(2)
+        OVERLAPS_ALOWED=False
 ):
 
-    radius = 0
+    step = 2 * radius
 
     if pt1 is not None \
             and is_in_area(pt1, areasize_px, radius) \
