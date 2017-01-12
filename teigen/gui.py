@@ -367,7 +367,7 @@ class TeigenWidget(QtGui.QWidget):
 
 class Teigen():
     def __init__(self):
-        self.version = "0.1.21"
+        self.version = "0.1.22"
         self.data3d = None
         self.voxelsize_mm = None
         self.need_run = True
