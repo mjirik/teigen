@@ -178,13 +178,19 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
 
         self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
-        self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization" + run_number_alpha)
+        self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
 
 
         self.ui_stats_shown = True
 
 
+        self._noise_figure = plt.figure()
+        self._noise_canvas = FigureCanvas(self._noise_figure)
+        # self.toolbar = NavigationToolbar(self.canvas, self)
+        self.stats_tab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
+        noise = self.teigen.generate_noise()
+        plt.imshow(noise[0, :, :], cmap="gray")
 
 
     def complicated_to_yaml(self, cfg):
@@ -503,22 +509,9 @@ class Teigen():
                 sigma=sigma_px)
 
         if add_noise:
-            import ndnoise.generator
 
             dt = self.data3d.dtype
-            noise = ndnoise.noises(
-                shape=self.data3d.shape,
-                sample_spacing=self.voxelsize_mm,
-                exponent=exponent,
-                random_generator_seed=noise_random_generator_seed,
-                lambda_start=lambda_start,
-                lambda_range=lambda_range
-
-            ).astype(np.float16)
-            mx = np.max(noise)
-            noise = noise_amplitude * noise/mx
-            noise += noise_mean
-            noise = noise.astype(self.data3d.dtype)
+            noise = self.generate_noise()
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
             self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
 
@@ -526,6 +519,25 @@ class Teigen():
             self.data3d[self.data3d < 0] = 0
 
         return self.data3d
+
+    def generate_noise(self):
+        import ndnoise.generator
+        pparams = self.config["postprocessing"]
+        # data3d = self.postprocessing(**postprocessing_params)
+        noise = ndnoise.noises(
+            shape=self.gen.areasize_px,
+            sample_spacing=self.gen.voxelsize_mm,
+            exponent=pparams["exponent"],
+            random_generator_seed=pparams["noise_random_generator_seed"],
+            lambda_start=pparams["lambda_start"],
+            lambda_range=pparams["lambda_range"],
+
+        ).astype(np.float16)
+        mx = np.max(noise)
+        noise = pparams["noise_amplitude"] * noise/mx
+        noise += pparams["noise_mean"]
+        noise = noise.astype(self.data3d.dtype)
+        return noise
 
     def _area_sampling_gensei_export(self, area_sampling_params):
         asp = area_sampling_params
