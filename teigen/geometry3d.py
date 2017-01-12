@@ -153,12 +153,13 @@ def is_in_area(pt, areasize_px, radius=None):
     else:
         return False
 
+def is_cylinder_in_area(pt1, pt2, radius, areasize):
+    return is_in_area(pt1, areasize, radius) and is_in_area(pt2, areasize,  radius)
 
-def check_collision_along_line(
+def check_cylinder_collision(
         pt1,
         pt2,
         radius,
-        radius_maximum,
         other_points,
         # step,
         areasize_px,
@@ -168,10 +169,7 @@ def check_collision_along_line(
 
     step = 2 * radius
 
-    if pt1 is not None \
-            and is_in_area(pt1, areasize_px, radius) \
-            and is_in_area(pt2, areasize_px, radius):
-
+    if pt1 is not None and is_cylinder_in_area(pt1, pt2, radius, areasize_px):
         if OVERLAPS_ALOWED:
             return True
 
@@ -179,7 +177,7 @@ def check_collision_along_line(
             return True
         else:
             line_nodes = get_points_in_line_segment(pt1, pt2, step)
-            safe_dist2 = (radius_maximum * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
+            safe_dist2 = (radius * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
             for node in line_nodes:
                 dist_closest = closest_node_square_dist(node, other_points)
                 if dist_closest < safe_dist2:

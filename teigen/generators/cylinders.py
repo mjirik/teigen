@@ -99,7 +99,7 @@ class CylinderGenerator:
         self.surface = 0
         self.LEN_STEP_CONSTANT = 0.1
         self.MAKE_IT_SHORTER_CONSTANT = 3.0
-        self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
+        # self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
         self.OVERLAPS_ALOWED = False
         self.tree_data = {}
         self.data3d = None
@@ -109,17 +109,15 @@ class CylinderGenerator:
         return value
 
 
-    def _check_cylinder_position(self, pt1, pt2, step):
+    def _check_cylinder_position(self, pt1, pt2, radius):
         # TODO use geometry3.check_collision_along_line
-        return g3.check_collision_along_line(
+        return g3.check_cylinder_collision(
             pt1,
             pt2,
-            self.radius_maximum,
-            self.radius_maximum,
+            radius,
             other_points=self._cylinder_nodes,
-            step=step,
             areasize_px=self.areasize_px,
-            DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
+            # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
             OVERLAPS_ALOWED=self.OVERLAPS_ALOWED
         )
 
