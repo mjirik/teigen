@@ -415,7 +415,26 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
+
+        self.__generate_vtk()
+
         self.need_run = False
+
+    def __generate_vtk(self, vtk_file="~/tree.vtk"):
+        vtk_file = op.expanduser(vtk_file)
+        from tree import TreeBuilder
+
+        if "tree_data" in dir(self.gen):
+
+            tvg = TreeBuilder('vtk')
+            # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
+            # tvg.importFromYaml(yaml_path)
+            tvg.voxelsize_mm = self.voxelsize_mm
+            tvg.shape = self.gen.areasize_px
+            tvg.tree_data = self.gen.tree_data
+            output = tvg.buildTree() # noqa
+            # tvg.show()
+            tvg.saveToFile(vtk_file)
 
     def filepattern_split(self):
         """
@@ -461,8 +480,8 @@ class Teigen():
             limit_negative_intensities=True,
             noise_random_generator_seed=0,
             exponent=-1,
-            freq_start=0,
-            freq_range=-1,
+            lambda_start=0,
+            lambda_range=-1,
             noise_amplitude = 40.0,
             noise_mean = 30.0
     ):
@@ -477,12 +496,13 @@ class Teigen():
             import ndnoise.generator
 
             dt = self.data3d.dtype
-            noise = ndnoise.generate(
+            noise = ndnoise.noises(
                 shape=self.data3d.shape,
-                random_generator_seed=noise_random_generator_seed,
+                sample_spacing=self.voxelsize_mm,
                 exponent=exponent,
-                freq_start=freq_start,
-                freq_range=freq_range
+                random_generator_seed=noise_random_generator_seed,
+                lambda_start=lambda_start,
+                lambda_range=lambda_range
 
             ).astype(np.float16)
             mx = np.max(noise)
