@@ -77,6 +77,7 @@ class CylinderGenerator:
         # self.intensity_profile = intensity_profile
         self.intensity_profile = dict(zip(intensity_profile_radius, intensity_profile_intensity))
         self._cylinder_nodes = []
+        self._cylinder_nodes_radiuses = []
         self.random_generator_seed = random_generator_seed
         self.radius_generator = self._const
         self.radius_generator_args=[radius_distribution_mean]
@@ -109,17 +110,25 @@ class CylinderGenerator:
         return value
 
 
-    def _check_cylinder_position(self, pt1, pt2, radius):
+    def _cylinder_collision(self, pt1, pt2, radius):
         # TODO use geometry3.check_collision_along_line
-        return g3.check_cylinder_collision(
+        collision, new_nodes = g3.cylinder_collision(
             pt1,
             pt2,
             radius,
             other_points=self._cylinder_nodes,
-            areasize_px=self.areasize_px,
+            other_points_radiuses=self._cylinder_nodes_radiuses,
+            areasize_mm=self.areasize_px,
             # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
             OVERLAPS_ALOWED=self.OVERLAPS_ALOWED
         )
+
+        if not collision:
+            self._cylinder_nodes.extend(new_nodes)
+            self._cylinder_nodes_radiuses.extend([radius] * len(new_nodes))
+
+        return collision
+
 
 
         # if pt1 is not None \
@@ -184,7 +193,7 @@ class CylinderGenerator:
                     pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
                     pt1 = np.asarray(pt1)
                     pt2 = np.asarray(pt2)
-                    if self._check_cylinder_position(pt1, pt2, radius*self.LEN_STEP_CONSTANT):
+                    if not self._cylinder_collision(pt1, pt2, radius):
 
 
                         edge = {
@@ -195,8 +204,8 @@ class CylinderGenerator:
                             "radius_mm": radius,
                         }
                         tree_data[i] = edge
-                        line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
-                        self._cylinder_nodes.extend(line_nodes)
+                        # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
+                        # self._cylinder_nodes.extend(line_nodes)
                         length = np.linalg.norm(pt1 - pt2)
                         surf = 2 * np.pi * (radius + length)
                         volume =  np.pi * radius**2 * length

@@ -44,7 +44,7 @@ def node_to_spheres_square_dist(node, nodes, nodes_radius=None):
     nodes = np.asarray(nodes)
     dist_2 = np.sum((nodes - node)**2, axis=1)
     if nodes_radius is not None:
-        dist_2 = dist_2 - np.asarray(nodes)**2
+        dist_2 = dist_2 - np.asarray(nodes_radius)**2
     return dist_2
 
 def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
@@ -144,6 +144,9 @@ def is_in_area(pt, areasize_px, radius=None):
     :param radius:
     :return:
     """
+    if areasize_px is None:
+        return True
+
     node = np.asarray(pt)
     if radius is None:
         radius = 0
@@ -156,31 +159,31 @@ def is_in_area(pt, areasize_px, radius=None):
 def is_cylinder_in_area(pt1, pt2, radius, areasize):
     return is_in_area(pt1, areasize, radius) and is_in_area(pt2, areasize,  radius)
 
-def check_cylinder_collision(
-        pt1,
-        pt2,
-        radius,
+def cylinder_collision(
+        pt1_mm,
+        pt2_mm,
+        radius_mm,
         other_points,
-        # step,
-        areasize_px,
+        other_points_radiuses=None,
+        areasize_mm=None,
         DIST_MAX_RADIUS_MULTIPLICATOR=1.5, # higher than sqrt(2)
         OVERLAPS_ALOWED=False
 ):
 
-    step = 2 * radius
+    step = 2 * radius_mm
 
-    if pt1 is not None and is_cylinder_in_area(pt1, pt2, radius, areasize_px):
+    if pt1_mm is not None and is_cylinder_in_area(pt1_mm, pt2_mm, radius_mm, areasize_mm):
+        line_nodes = get_points_in_line_segment(pt1_mm, pt2_mm, step)
         if OVERLAPS_ALOWED:
-            return True
+            return False, line_nodes
 
         if len(other_points) == 0:
-            return True
+            return False, line_nodes
         else:
-            line_nodes = get_points_in_line_segment(pt1, pt2, step)
-            safe_dist2 = (radius * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
+            safe_dist2 = (radius_mm * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
             for node in line_nodes:
-                dist_closest = closest_node_square_dist(node, other_points)
+                dist_closest = closest_node_square_dist(node, other_points, other_points_radiuses)
                 if dist_closest < safe_dist2:
-                    return False
-            return True
-    return False
+                    return True, []
+            return False, line_nodes
+    return True, []
