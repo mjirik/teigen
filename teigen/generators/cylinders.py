@@ -98,8 +98,8 @@ class CylinderGenerator:
         # self.endDistMultiplicator = endDistMultiplicator
         # self.use_joints = use_joints
         self.surface = 0
-        self.LEN_STEP_CONSTANT = 0.1
-        self.MAKE_IT_SHORTER_CONSTANT = 3.0
+        # self.LEN_STEP_CONSTANT = 0.1
+        self.MAKE_IT_SHORTER_CONSTANT = 2.0
         # self.DIST_MAX_RADIUS_MULTIPLICATOR = 3.0
         self.OVERLAPS_ALOWED = False
         self.tree_data = {}
