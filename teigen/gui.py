@@ -17,7 +17,7 @@ import argparse
 # conda install -c conda-forge begins
 # import begin
 
-import logging.handler
+import logging.handlers
 import PyQt4
 from PyQt4.QtGui import QGridLayout, QLabel,\
     QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
