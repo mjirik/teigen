@@ -75,7 +75,8 @@ class TeigenWidget(QtGui.QWidget):
         config['filepattern_series_number'] = series_number
         config["generator_id"] = id
 
-        config["postprocessing"] = self.posprocessing_wg.config_as_dict()
+        # config["postprocessing"] = self.posprocessing_wg.config_as_dict()
+        config["postprocessing"] = area_cfg["Postprocessing"]
         config["required_teigen_version"] = self.teigen.version
         self.config = config
 
@@ -283,6 +284,7 @@ class TeigenWidget(QtGui.QWidget):
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
             "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'),
+            "Postprocessing": postprocessing_params,
             # TODO add more lines here
             # "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
             #     name="Intensity Profile", children=[
