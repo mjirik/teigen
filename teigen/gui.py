@@ -276,8 +276,20 @@ class TeigenWidget(QtGui.QWidget):
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
+        # def name_fcn(*args, **kwargs):
+        #     print args
+        #     print kwargs
+        #     return "save"
+        # btn_save.name = name_fcn
+        # btn_save.remove = name_fcn
+        # btn_save.parentChanged = name_fcn
+        # btn_save.sigTreeStateChanged = name_fcn
 
 
+        import pyqtgraph as pg
+        i5  = pg.TreeWidgetItem(["Item 5"])
+        b5 = QtGui.QPushButton('Button')
+        i5.setWidget(1, b5)
         ## pyqtgraph experiments
         import dictwidgetpyqtgraph
         import pyqtgraph
@@ -285,6 +297,7 @@ class TeigenWidget(QtGui.QWidget):
         input_params = {
             "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'),
             "Postprocessing": postprocessing_params,
+            # "dur": i5,
             # TODO add more lines here
             # "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
             #     name="Intensity Profile", children=[
@@ -293,12 +306,16 @@ class TeigenWidget(QtGui.QWidget):
             #     ])
         }
         gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts={})
+        # gr_struct["children"].append(i5)
         p = Parameter.create(**gr_struct)
 
         t = ParameterTree()
         t.setParameters(p, showTop=False)
-        t.setMinimumWidth(300)
+        t.setMinimumWidth(400)
+        t.setColumnCount(3)
         t.show()
+
+        t.addTopLevelItem(i5)
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.area_sampling_wg = t
         self.area_sampling_params = p
