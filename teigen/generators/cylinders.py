@@ -11,7 +11,6 @@
 """
 
 import logging
-
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
@@ -151,6 +150,7 @@ class CylinderGenerator:
         # return False
 
     def run(self):
+        logger.info("cylynder generator running")
 
 
         tree_data = {

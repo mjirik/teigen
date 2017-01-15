@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 
+import logging
+logger = logging.getLogger(__name__)
+
 import os, glob, copy, time
 from optparse import OptionParser
 import numpy as np
@@ -35,6 +38,7 @@ class GenseiGenerator:
 
 
     def run(self):
+        logger.info("gensei generator running")
         from gensei.base import Config, Object
         from gensei import Objects, Box
         from gensei.utils import get_suffix

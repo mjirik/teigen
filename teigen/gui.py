@@ -45,14 +45,15 @@ from pyqtconfig import ConfigManager
 
 
 class TeigenWidget(QtGui.QWidget):
-    def __init__(self, ncols=2, qapp=None):
+    def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log"):
         super(TeigenWidget, self).__init__()
+        self.logfile = logfile
         self.ncols = ncols
         self.gen = None
         self.dataframes = {}
         self.figures = {}
         self.ui_stats_shown = False
-        self.teigen = Teigen()
+        self.teigen = Teigen(logfile=self.logfile)
         self.version = self.teigen.version
         self.config = {}
         self.run_number = 0
@@ -367,7 +368,23 @@ class TeigenWidget(QtGui.QWidget):
 
 
 class Teigen():
-    def __init__(self):
+    def __init__(self, logfile='~/tegen.log'):
+
+        logger = logging.getLogger()
+        handler = logging.handlers.RotatingFileHandler(
+            op.expanduser(logfile),
+            maxBytes=100000,
+            backupCount=9
+        )
+        handler.setLevel(logging.DEBUG)
+        # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
+        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+        logger.info("Starting Teigen")
+
+        self.logfile=logfile
         self.version = "0.1.22"
         self.data3d = None
         self.voxelsize_mm = None
@@ -613,12 +630,6 @@ def main():
         help='Debug mode')
     args = parser.parse_args()
 
-    chf = logging.handlers.RotatingFileHandler(
-        op.expanduser(args.logfile),
-        maxBytes=100000,
-        backupCount=9
-    )
-    chf.setLevel(logging.DEBUG)
 
     if args.debug:
         ch.setLevel(logging.DEBUG)
@@ -626,12 +637,12 @@ def main():
 
     if args.parameterfile is None:
         app = QApplication(sys.argv)
-        cw = TeigenWidget()
+        cw = TeigenWidget(logfile=args.logfile)
         cw.show()
         app.exec_()
     else:
         params = io3d.misc.obj_from_file(args.parameterfile)
-        tg = Teigen()
+        tg = Teigen(logfile=args.logfile)
         tg.run(**params)
         tg.save_volume()
 
