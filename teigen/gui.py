@@ -17,6 +17,7 @@ import argparse
 # conda install -c conda-forge begins
 # import begin
 
+import logging.handler
 import PyQt4
 from PyQt4.QtGui import QGridLayout, QLabel,\
     QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
@@ -605,7 +606,19 @@ def main():
     parser.add_argument(
         '-d', '--debug', action='store_true',
         help='Debug mode')
+
+    parser.add_argument(
+        '-l', '--logfile',
+        default="~/teigen.log",
+        help='Debug mode')
     args = parser.parse_args()
+
+    chf = logging.handlers.RotatingFileHandler(
+        op.expanduser(args.logfile),
+        maxBytes=100000,
+        backupCount=9
+    )
+    chf.setLevel(logging.DEBUG)
 
     if args.debug:
         ch.setLevel(logging.DEBUG)
