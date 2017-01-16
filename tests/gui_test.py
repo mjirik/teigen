@@ -48,6 +48,7 @@ class GuiTest(unittest.TestCase):
         cfg = collections.OrderedDict({
             "bool": True,
             "int":5,
+            "expected_float": 2,
             'str': 'strdrr',
             'vs':[1.0, 2.5, 7]
             # 'Area Sampling' : dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
@@ -55,30 +56,34 @@ class GuiTest(unittest.TestCase):
         captions = {"int": "toto je int"}
 
         opts = {}
-        # opts = {
-        #     "children": {
-        #         "voxelsize_mm": {
-        #             "title": 'voxelsize [mm]',
-        #             "children": {
-        #                 "0": {
-        #                     "title": "z",
-        #                     'suffix': 'm',
-        #                     'siPrefix': True
-        #                 },
-        #                 "1": {
-        #                     "title": "x",
-        #                     'suffix': 'm',
-        #                     'siPrefix': True
-        #                 },
-        #                 "2": {
-        #                     "title": "y",
-        #                     'suffix': 'm',
-        #                     'siPrefix': True
-        #                 }
-        #             }
-        #         }
-        #     }
-        # }
+        opts = {
+            "children": {
+                "vs": {
+                    "title": 'voxelsize [mm]',
+                    "children": {
+                        "0": {
+                            "title": "z",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        },
+                        "1": {
+                            "title": "x",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        },
+                        "2": {
+                            "title": "y",
+                            'suffix': 'm',
+                            'siPrefix': True
+                        }
+                    }
+                },
+                "expected_float": {
+                    "type": "float",
+                    "title": "Exp. float"
+                }
+            }
+        }
         import teigen.dictwidgetpyqtgraph
         params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg, opts=opts)
         params['children'].append(

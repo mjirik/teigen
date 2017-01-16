@@ -51,7 +51,11 @@ def to_pyqtgraph_struct(name, value, opts={}):
     :return:
     """
 
-    tp = value.__class__.__name__
+    if "type" in opts:
+        tp = opts["type"]
+    else:
+        tp = value.__class__.__name__
+
     if tp in (
         'list', 'ndarray', 'OrderedDict', 'dict',
         'int', 'float', 'bool', 'str', 'color', 'colormap'

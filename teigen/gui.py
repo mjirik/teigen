@@ -265,8 +265,8 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(btn_accept, 2, 1) # , (gd_max_i / 2), text_col)
 
         postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
-        self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
-        self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
+        # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
+        # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
 
 
