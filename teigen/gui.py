@@ -38,6 +38,7 @@ import iowidgetqt
 import dictwidgetpyqtgraph
 import generators.cylinders
 import generators.gensei_wrapper
+import generators.unconnected_cylinders
 import io3d.datawriter
 import io3d.misc
 
@@ -413,11 +414,13 @@ class Teigen():
             generators.cylinders.CylinderGenerator,
             generators.gensei_wrapper.GenseiGenerator,
             generators.cylinders.CylinderGenerator,
+            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
         ]
         self.generators_names = [
             "Cylinder generator",
             "Gensei generator",
-            "Cylinder continues"
+            "Cylinder continues",
+            "Unconnected cylinders"
         ]
         self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
         self.config = self.configs[0]
@@ -450,6 +453,7 @@ class Teigen():
         cfg_export_fcn = [
             self._area_sampling_general_export,
             self._area_sampling_gensei_export,
+            self._area_sampling_general_export,
             self._area_sampling_general_export,
         ]
 
