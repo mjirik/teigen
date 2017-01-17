@@ -11,7 +11,6 @@ import teigen
 
 class MyTestCase(unittest.TestCase):
 
-
     @attr('interactive')
     def test_teigen_interactive(self):
         import PyQt4

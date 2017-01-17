@@ -178,11 +178,13 @@ class TeigenWidget(QtGui.QWidget):
         self.stats_tab_wg.addTab(self._wg_tables, "Sumary " + run_number_alpha)
         # self.resize(600,700)
 
-        import imtools.show_segmentation_qt
-        self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
+        if self.teigen.polydata is not None:
+            import imtools.show_segmentation_qt
+            self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
 
-        self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
-        self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
+            # self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
+            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata)
+            self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
 
 
@@ -426,6 +428,8 @@ class Teigen():
         self.config = self.configs[0]
         self.progress_callback = None
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
+        # 3D visualization data, works for some generators
+        self.polydata = None
 
     def run(self, **config):
         import io3d.misc
@@ -480,7 +484,7 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         self.gen.run()
 
-        self.__generate_vtk()
+        self.polydata = self.__generate_vtk(self.temp_vtk_file)
 
         self.need_run = False
 
@@ -499,6 +503,7 @@ class Teigen():
             output = tvg.buildTree() # noqa
             # tvg.show()
             tvg.saveToFile(vtk_file)
+            return tvg.gen.polyData
 
     def filepattern_split(self):
         """

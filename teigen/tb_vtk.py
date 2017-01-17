@@ -42,6 +42,7 @@ class TBVTK:
     def save(self, outputfile):
 
         import vtk
+        logger.debug("vtk version " + str(vtk.VTK_BUILD_VERSION))
         writer = vtk.vtkPolyDataWriter()
         writer.SetFileName(outputfile)
         try:
