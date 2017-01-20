@@ -22,8 +22,8 @@ class GuiTest(unittest.TestCase):
              ['vs',[1.0, 2.5, 7]]]
         )
         captions = {"int": "toto je int"}
-        import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct("pokus", cfg)
+        import teigen.dictwidgetpg
+        params = teigen.dictwidgetpg.to_pyqtgraph_struct("pokus", cfg)
         print params
         self.assertDictEqual(
             params["children"][0],
@@ -84,10 +84,10 @@ class GuiTest(unittest.TestCase):
                 }
             }
         }
-        import teigen.dictwidgetpyqtgraph
-        params = teigen.dictwidgetpyqtgraph.to_pyqtgraph_struct('params', cfg, opts=opts)
+        import teigen.dictwidgetpg
+        params = teigen.dictwidgetpg.to_pyqtgraph_struct('params', cfg, opts=opts)
         params['children'].append(
-            teigen.dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'))
+            teigen.dictwidgetpg.AreaSamplingParameter(name='Area Sampling'))
         # print params
 
         # params[0]['title'] = "Pokusny title"
@@ -103,7 +103,7 @@ class GuiTest(unittest.TestCase):
         lst = p.saveState()
         vals = p.getValues()
 
-        name, dict_again = teigen.dictwidgetpyqtgraph.from_pyqtgraph_struct(lst)
+        name, dict_again = teigen.dictwidgetpg.from_pyqtgraph_struct(lst)
         t.setParameters(p, showTop=False)
         t.show()
 

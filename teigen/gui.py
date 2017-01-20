@@ -35,7 +35,7 @@ import re
 
 import dictwidgetqt
 import iowidgetqt
-import dictwidgetpyqtgraph
+import dictwidgetpg
 import generators.cylinders
 import generators.gensei_wrapper
 import generators.unconnected_cylinders
@@ -67,7 +67,7 @@ class TeigenWidget(QtGui.QWidget):
         config = self._ui_generator_widgets[id].config_as_dict()
         logger.debug(str(config))
 
-        none, area_cfg = dictwidgetpyqtgraph.from_pyqtgraph_struct(self.area_sampling_params.saveState())
+        none, area_cfg = dictwidgetpg.from_pyqtgraph_struct(self.area_sampling_params.saveState())
 
         config.update(area_cfg["Area Sampling"])
         filepattern = self.ui_output_dir_widget.get_dir()
@@ -294,11 +294,11 @@ class TeigenWidget(QtGui.QWidget):
         b5 = QtGui.QPushButton('Button')
         i5.setWidget(1, b5)
         ## pyqtgraph experiments
-        import dictwidgetpyqtgraph
+        import dictwidgetpg
         import pyqtgraph
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
-            "Area Sampling":  dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling'),
+            "Area Sampling":  dictwidgetpg.AreaSamplingParameter(name='Area Sampling'),
             "Postprocessing": postprocessing_params,
             # "dur": i5,
             # TODO add more lines here
@@ -308,7 +308,7 @@ class TeigenWidget(QtGui.QWidget):
             #         {'name': '0.4', 'type': 'float', 'value': "115"},
             #     ])
         }
-        gr_struct = dictwidgetpyqtgraph.to_pyqtgraph_struct('params', input_params, opts={})
+        gr_struct = dictwidgetpg.to_pyqtgraph_struct('params', input_params, opts={})
         # gr_struct["children"].append(i5)
         p = Parameter.create(**gr_struct)
 
@@ -503,7 +503,7 @@ class Teigen():
             output = tvg.buildTree() # noqa
             # tvg.show()
             tvg.saveToFile(vtk_file)
-            return tvg.gen.polyData
+            return tvg.generator.polyData
 
     def filepattern_split(self):
         """
