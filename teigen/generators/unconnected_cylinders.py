@@ -153,16 +153,27 @@ class UnconnectedCylinderGenerator:
         logger.info("cylynder generator running")
 
 
-        tree_data = {
+        self.tree_data = {
 
         }
         np.random.seed(self.random_generator_seed)
-        pts = np.random.random([self.element_number, 3]) * self.areasize_px * self.voxelsize_mm
+        self.surface = 0
+        # pts = np.random.random([self.element_number, 3]) * self.areasize_px * self.voxelsize_mm
 
         # construct voronoi
         import scipy.spatial
         import itertools
-        vor3 = scipy.spatial.Voronoi(pts)
+        self.init_stats()
+
+        # radius = self.radius_maximum
+        # for i, two_points in enumerate(vor3.ridge_points):
+        for i in range(self.element_number):
+            pt1, pt2, radius = self.create_cylinder()
+            self.add_cylinder_to_stats(i, pt1, pt2, radius=radius)
+        self.getStats()
+        self.data3d = None
+
+    def init_stats(self):
         self.geometry_data = {
             "length":[],
             "radius":[],
@@ -171,82 +182,47 @@ class UnconnectedCylinderGenerator:
             "vector":[]
         }
 
-        # radius = self.radius_maximum
-        # for i, two_points in enumerate(vor3.ridge_points):
-        for i in range(len(pts)):
-            # simplex = np.asarray(simplex)
-            # # fallowing line removes all ridges with oulayers
-            # simplex = simplex[simplex > 0]
-            # if np.all(simplex >= 0):
-            #
-            #     x = vor3.vertices[simplex, 0]
-            #     y = vor3.vertices[simplex, 1]
-            #     z = vor3.vertices[simplex, 2]
-            #     for two_points_id in itertools.combinations(simplex, 2):
-                    radius = self.radius_generator(*self.radius_generator_args)
-                    if radius > self.radius_maximum:
-                        continue
-                    if radius < self.radius_minimum:
-                        continue
-                    pt1 = pts[i,:]
-                    pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
-                    # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
-                    pt1 = np.asarray(pt1)
-                    pt2 = np.asarray(pt2)
-                    if not self._cylinder_collision(pt1, pt2, radius):
+    def add_cylinder_to_stats(self, i, pt1, pt2, radius):
+        edge = {
+            "nodeA_ZYX_mm": pt1,
+            "nodeB_ZYX_mm": pt2,
+            # "radius_mm": radius
+            # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
+            "radius_mm": radius,
+        }
+        self.tree_data[i] = edge
+        # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
+        # self._cylinder_nodes.extend(line_nodes)
+        length = np.linalg.norm(pt1 - pt2)
+        surf = 2 * np.pi * (radius + length)
+        volume =  np.pi * radius**2 * length
+        vector = pt1 - pt2
+
+        self.geometry_data["length"].append(length)
+        self.geometry_data["surface"].append(surf)
+        self.geometry_data["radius"].append(radius)
+        self.geometry_data["volume"].append(volume)
+        self.geometry_data["vector"].append(vector)
+        self.surface += surf
 
 
-                        edge = {
-                            "nodeA_ZYX_mm": pt1,
-                            "nodeB_ZYX_mm": pt2,
-                            # "radius_mm": radius
-                            # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
-                            "radius_mm": radius,
-                        }
-                        tree_data[i] = edge
-                        # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
-                        # self._cylinder_nodes.extend(line_nodes)
-                        length = np.linalg.norm(pt1 - pt2)
-                        surf = 2 * np.pi * (radius + length)
-                        volume =  np.pi * radius**2 * length
-                        vector = pt1 - pt2
+    def create_cylinder(self):
+        generated = False
+        while not generated:
+            radius = self.radius_generator(*self.radius_generator_args)
+            if radius > self.radius_maximum:
+                continue
+            if radius < self.radius_minimum:
+                continue
+            pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
+            pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
+            # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
+            pt1 = np.asarray(pt1)
+            pt2 = np.asarray(pt2)
+            if not self._cylinder_collision(pt1, pt2, radius):
+                generated = True
 
-                        self.geometry_data["length"].append(length)
-                        self.geometry_data["surface"].append(surf)
-                        self.geometry_data["radius"].append(radius)
-                        self.geometry_data["volume"].append(volume)
-                        self.geometry_data["vector"].append(vector)
-                        self.surface += surf
-
-        # show_input_points = False
-        # if show_input_points:
-        #     length = len(tree_data)
-        #     for i in range(self.element_number):
-        #         edge = {
-        #             #         #"nodeA_ZYX_mm": np.random.random(3) * 100,
-        #             "nodeA_ZYX_mm": pts[i-1],
-        #             "nodeB_ZYX_mm": pts[i],
-        #             #         "nodeB_ZYX_mm": np.random.random(3) * 100,
-        #             "radius_mm": 1
-        #         }
-        #         tree_data[i+length] = edge
-
-        self.tree_data = tree_data
-        # if self.build:
-        #     from ..tree import TreeBuilder
-        #
-        #     tvg = TreeBuilder('vtk')
-        #     # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
-        #     # tvg.importFromYaml(yaml_path)
-        #     tvg.voxelsize_mm = self.voxelsize_mm
-        #     tvg.shape = self.areasize_px
-        #     tvg.tree_data = tree_data
-        #     output = tvg.buildTree() # noqa
-        #     # tvg.show()
-        #     tvg.saveToFile("tree_output.vtk")
-
-        self.getStats()
-        self.data3d = None
+        return pt1, pt2, radius
 
 
     def getStats(self):
