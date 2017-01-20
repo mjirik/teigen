@@ -109,7 +109,9 @@ class UnconnectedCylinderGenerator:
         return value
 
 
-    def _cylinder_collision(self, pt1, pt2, radius):
+    def _cylinder_collision(self, pt1, pt2, radius,
+                            COLLISION_RADIUS=1.5 # higher then sqrt(2)
+                            ):
         # TODO use geometry3.check_collision_along_line
         collision, new_nodes = g3.cylinder_collision(
             pt1,
@@ -119,12 +121,12 @@ class UnconnectedCylinderGenerator:
             other_points_radiuses=self._cylinder_nodes_radiuses,
             areasize_mm=self.areasize_px,
             # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
-            OVERLAPS_ALOWED=self.OVERLAPS_ALOWED
+            OVERLAPS_ALOWED=self.OVERLAPS_ALOWED,
         )
 
         if not collision:
             self._cylinder_nodes.extend(new_nodes)
-            self._cylinder_nodes_radiuses.extend([radius] * len(new_nodes))
+            self._cylinder_nodes_radiuses.extend([radius * COLLISION_RADIUS] * len(new_nodes))
 
         return collision
 
@@ -151,7 +153,6 @@ class UnconnectedCylinderGenerator:
 
     def run(self):
         logger.info("cylynder generator running")
-
 
         self.tree_data = {
 

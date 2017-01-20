@@ -25,14 +25,15 @@ def closest_node_2d(node, nodes, return_more=False):
     return nodes[id]
 
 def closest_node(*args, **kwargs):
-    dist_2 = node_to_spheres_square_dist(*args, **kwargs)
+    dist_2 = node_to_spheres_dist(*args, **kwargs)
     return np.argmin(dist_2)
 
-def closest_node_square_dist(*args, **kwargs):
-    dist_2 = node_to_spheres_square_dist(*args, **kwargs)
-    return np.min(dist_2)
+def closest_node_dist(*args, **kwargs):
+    dist_2 = node_to_spheres_dist(*args, **kwargs)
+    min_dst_2 = np.min(dist_2)
+    return min_dst_2
 
-def node_to_spheres_square_dist(node, nodes, nodes_radius=None):
+def node_to_spheres_dist(node, nodes, nodes_radius=None):
     """
     return point distance to spheres surface
 
@@ -41,11 +42,11 @@ def node_to_spheres_square_dist(node, nodes, nodes_radius=None):
     :param nodes_radius:
     :return:
     """
+    dist = np.sum((np.asarray(nodes) - node)**2, axis=1)**0.5
     nodes = np.asarray(nodes)
-    dist_2 = np.sum((nodes - node)**2, axis=1)
     if nodes_radius is not None:
-        dist_2 = dist_2 - np.asarray(nodes_radius)**2
-    return dist_2
+        dist = dist - np.asarray(nodes_radius)
+    return dist
 
 def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
     nodeA = np.asarray(nodeA)
@@ -61,7 +62,6 @@ def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
         dist = np.linalg.norm(vector)
     nodes.append(nodeB)
     return nodes
-
 
 def circle(center, perp_vect, radius, element_number=10):
     """
@@ -96,7 +96,6 @@ def circle(center, perp_vect, radius, element_number=10):
 
     return pts
 
-
 def perpendicular_vector(v):
     r""" Finds an arbitrary perpendicular vector to *v*."""
     if v[1] == 0 and v[2] == 0:
@@ -105,7 +104,6 @@ def perpendicular_vector(v):
         else:
             return np.cross(v, [0, 1, 0])
     return np.cross(v, [1, 0, 0])
-
 
 def cylinder_circles(nodeA, nodeB, radius, element_number=10):
     """
@@ -180,9 +178,9 @@ def cylinder_collision(
         if len(other_points) == 0:
             return False, line_nodes
         else:
-            safe_dist2 = (radius_mm * DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
+            safe_dist2 = radius_mm * DIST_MAX_RADIUS_MULTIPLICATOR
             for node in line_nodes:
-                dist_closest = closest_node_square_dist(node, other_points, other_points_radiuses)
+                dist_closest = closest_node_dist(node, other_points, other_points_radiuses)
                 if dist_closest < safe_dist2:
                     return True, []
             return False, line_nodes
