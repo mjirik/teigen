@@ -116,7 +116,7 @@ class CylinderGenerator:
                             COLLISION_RADIUS=1.5 # higher then sqrt(2)
                             ):
         # TODO use geometry3.check_collision_along_line
-        collision, new_nodes = g3.cylinder_collision(
+        collision, new_nodes, nodes_radiuses = g3.cylinder_collision(
             pt1,
             pt2,
             radius,
@@ -129,9 +129,9 @@ class CylinderGenerator:
 
         if not collision:
             self._cylinder_nodes.extend(new_nodes)
-            self._cylinder_nodes_radiuses.extend([radius * COLLISION_RADIUS] * len(new_nodes))
+            self._cylinder_nodes_radiuses.extend(nodes_radiuses)
 
-        return collision
+        return collision, new_nodes, nodes_radiuses
 
 
 
@@ -198,7 +198,8 @@ class CylinderGenerator:
                     pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
                     pt1 = np.asarray(pt1)
                     pt2 = np.asarray(pt2)
-                    if not self._cylinder_collision(pt1, pt2, radius):
+                    collision, outa, outb = self._cylinder_collision(pt1, pt2, radius)
+                    if not collision:
 
 
                         edge = {

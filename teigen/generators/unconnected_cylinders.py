@@ -108,12 +108,11 @@ class UnconnectedCylinderGenerator:
     def _const(self, value):
         return value
 
-
     def _cylinder_collision(self, pt1, pt2, radius,
                             COLLISION_RADIUS=1.5 # higher then sqrt(2)
                             ):
         # TODO use geometry3.check_collision_along_line
-        collision, new_nodes = g3.cylinder_collision(
+        collision, new_nodes, nodes_radiuses = g3.cylinder_collision(
             pt1,
             pt2,
             radius,
@@ -126,30 +125,9 @@ class UnconnectedCylinderGenerator:
 
         if not collision:
             self._cylinder_nodes.extend(new_nodes)
-            self._cylinder_nodes_radiuses.extend([radius * COLLISION_RADIUS] * len(new_nodes))
+            self._cylinder_nodes_radiuses.extend(nodes_radiuses)
 
-        return collision
-
-
-
-        # if pt1 is not None \
-        #     and self._is_in_area(pt1) \
-        #     and self._is_in_area(pt2):
-        #
-        #     if self.OVERLAPS_ALOWED:
-        #         return True
-        #
-        #     if len(self._cylinder_nodes) == 0:
-        #         return True
-        #     else:
-        #         line_nodes = g3.get_points_in_line_segment(pt1, pt2, step)
-        #         safe_dist2 = (self.radius_maximum * self.DIST_MAX_RADIUS_MULTIPLICATOR) ** 2
-        #         for node in line_nodes:
-        #             dist_closest = g3.closest_node_square_dist(node, self._cylinder_nodes)
-        #             if dist_closest < safe_dist2:
-        #                 return False
-        #         return True
-        # return False
+        return collision, new_nodes, nodes_radiuses
 
     def run(self):
         logger.info("cylynder generator running")
@@ -220,7 +198,8 @@ class UnconnectedCylinderGenerator:
             # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
             pt1 = np.asarray(pt1)
             pt2 = np.asarray(pt2)
-            if not self._cylinder_collision(pt1, pt2, radius):
+            collision, a, b = self._cylinder_collision(pt1, pt2, radius)
+            if not collision:
                 generated = True
 
         return pt1, pt2, radius

@@ -48,6 +48,13 @@ def node_to_spheres_dist(node, nodes, nodes_radius=None):
         dist = dist - np.asarray(nodes_radius)
     return dist
 
+def get_spheres_bounding_cyllinder(pt1, pt2, radius):
+    sqrt2 = 1.5
+    pts = get_points_in_line_segment(pt1, pt2, step=radius)
+    radiuses = [radius * sqrt2] * len(pts)
+    return pts, radiuses
+
+
 def get_points_in_line_segment(nodeA, nodeB, step): #, radius, cylinder_id):
     nodeA = np.asarray(nodeA)
     nodeB = np.asarray(nodeB)
@@ -171,17 +178,18 @@ def cylinder_collision(
     step = 2 * radius_mm
 
     if pt1_mm is not None and is_cylinder_in_area(pt1_mm, pt2_mm, radius_mm, areasize_mm):
-        line_nodes = get_points_in_line_segment(pt1_mm, pt2_mm, step)
+        # line_nodes = get_points_in_line_segment(pt1_mm, pt2_mm, step)
+        line_nodes, nodes_radiuses = get_spheres_bounding_cyllinder(pt1_mm, pt2_mm, step)
         if OVERLAPS_ALOWED:
-            return False, line_nodes
+            return False, line_nodes, nodes_radiuses
 
         if len(other_points) == 0:
-            return False, line_nodes
+            return False, line_nodes, nodes_radiuses
         else:
             safe_dist2 = radius_mm * DIST_MAX_RADIUS_MULTIPLICATOR
             for node in line_nodes:
                 dist_closest = closest_node_dist(node, other_points, other_points_radiuses)
                 if dist_closest < safe_dist2:
-                    return True, []
-            return False, line_nodes
-    return True, []
+                    return True, [], []
+            return False, line_nodes, nodes_radiuses
+    return True, [], []
