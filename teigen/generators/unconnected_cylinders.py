@@ -53,6 +53,8 @@ class UnconnectedCylinderGenerator:
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
+                 volume_fraction=0.2,
+                 maximum_1000_iteration_number=100,
                  random_generator_seed=0
                  ):
         """
@@ -87,6 +89,9 @@ class UnconnectedCylinderGenerator:
         if normal_radius_distribution:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
+
+        self.requeseted_volume_fraction = volume_fraction
+        self.max_iteration = 1000 * maximum_1000_iteration_number
         # import ipdb; ipdb.set_trace()
         # input of geometry and topology
         # self.V = []
@@ -146,13 +151,32 @@ class UnconnectedCylinderGenerator:
 
         # radius = self.radius_maximum
         # for i, two_points in enumerate(vor3.ridge_points):
-        for i in range(self.element_number):
+        # for i in range(self.element_number):
+        i = 0
+        while not self.is_final_iteration():
+            i = i+1
             pt1, pt2, radius = self.create_cylinder()
             self.add_cylinder_to_stats(i, pt1, pt2, radius=radius)
         self.getStats()
         self.data3d = None
 
+    def is_final_iteration(self):
+        self.iterations += 1
+        stats = self.getStats()
+        area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
+        object_volume = stats["volume"].sum()
+        actual_volume_fraction = object_volume / area_volume
+
+
+        if self.iterations >  self.max_iteration:
+            return True
+        elif actual_volume_fraction > self.requeseted_volume_fraction:
+            return True
+        else:
+            return False
+
     def init_stats(self):
+        self.iterations = 0
         self.geometry_data = {
             "length":[],
             "radius":[],
@@ -188,6 +212,7 @@ class UnconnectedCylinderGenerator:
     def create_cylinder(self):
         generated = False
         while not generated:
+            self.iterations += 1
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
                 continue
