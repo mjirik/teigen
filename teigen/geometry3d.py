@@ -53,11 +53,21 @@ def node_to_spheres_dist(node, nodes, nodes_radius=None, return_square=False):
         dist = dist - np.asarray(nodes_radius)
     return dist
 
-def get_spheres_bounding_cylinder(pt1, pt2, radius):
+def get_spheres_bounding_cylinder(pt1, pt2, radius): #, relative_step=0.5):
+    # step to raidus
+    relative_step = 0.5
+    safety = 1.00001
+    # sphere_radius_ratio = ((1 + relative_step**2)**0.5) * safety
+    sphere_radius_ratio = 1.118034
+
+    # relative_step = 1.0
     # constant higher than sqrt(2)
-    sqrt2 = 1.414214
-    pts, radius = get_points_in_line_segment(pt1, pt2, step=radius, limit_step_number=100)
-    radiuses = [radius * sqrt2] * len(pts)
+    # sphere_radius_ratio = 1.414214
+    pts, step = get_points_in_line_segment(pt1, pt2, step=radius*relative_step, limit_step_number=100)
+    if radius == step:
+        radiuses = [radius * sphere_radius_ratio] * len(pts)
+    else:
+        radiuses = [(step**2 + radius**2)**0.5 * safety] * len(pts)
     return pts, radiuses
 
 def get_points_closer(nodeA, nodeB, delta=None, relative_length=None): #, radius, cylinder_id):
