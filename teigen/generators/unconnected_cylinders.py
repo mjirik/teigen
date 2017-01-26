@@ -50,11 +50,13 @@ class UnconnectedCylinderGenerator:
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=5.0,
                  radius_distribution_standard_deviation=5.0,
+                 length_distribution_mean=10.0,
+                 length_distribution_standard_deviation=3.0,
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
-                 volume_fraction=0.2,
-                 maximum_1000_iteration_number=100,
+                 volume_fraction=0.1,
+                 maximum_1000_iteration_number=10,
                  random_generator_seed=0
                  ):
         """
@@ -89,6 +91,9 @@ class UnconnectedCylinderGenerator:
         if normal_radius_distribution:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
+
+        self.length_generator = np.random.normal
+        self.length_generator_args = [length_distribution_mean, length_distribution_standard_deviation]
 
         self.requeseted_volume_fraction = volume_fraction
         self.max_iteration = 1000 * maximum_1000_iteration_number
@@ -193,7 +198,12 @@ class UnconnectedCylinderGenerator:
         self.surface += surf
 
 
-    def create_cylinder(self, try_shorter_iteration_number=5):
+    def create_cylinder(
+            self,
+            try_shorter_iteration_number=8,
+            n_nearest=4,
+            length_to_radius_ratio = 4
+    ):
         generated = False
         while not generated:
             self.iterations += 1
@@ -213,8 +223,20 @@ class UnconnectedCylinderGenerator:
             # pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             # pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
-            pt1 = np.asarray(pt1)
-            pt2 = np.asarray(pt2)
+
+
+            center = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
+            if self.collision_model.object_number > 2 * n_nearest:
+                if self.iterations % 5:
+                # if self.collision_model.get_node_number() > n_nearest:
+                    center = np.asarray(center)
+                    npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
+                    center = np.mean(npts, axis=0)
+
+            vector = np.random.random([3])
+            length = self.length_generator(*self.length_generator_args)
+            pt1 = np.asarray(g3.translate(center, vector, 0.5 * length))
+            pt2 = np.asarray(g3.translate(center, vector, -0.5 * length))
 
             try_shorter_i = 0
             collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)

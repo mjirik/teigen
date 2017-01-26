@@ -54,5 +54,18 @@ class GeometryTestCase(unittest.TestCase):
 
         self.assertEqual(collision2, True)
 
+    def test_collision_model_n_closest(self):
+        cm = g3.CollisionBoundaryModel(areasize=[150, 151, 155])
+        distance = 30
+        pt1 = [20, 20, 20]
+        pt2 = [20, 20, 60]
+        pt3 = [20, 20 + distance, 20]
+        pt4 = [20, 20 + distance, 60]
+        r1 = 10
+        r2 = 10
+        collision1 = cm.add_cylinder_if_no_collision(pt1, pt2, radius=r1)
+        nodes, indexes, distances = cm.n_closest_points([25, 35, 41], 3)
+        self.assertEqual(False, True)
+
 if __name__ == '__main__':
     unittest.main()

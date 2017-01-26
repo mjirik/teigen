@@ -627,6 +627,7 @@ def main():
 
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
     logger.addHandler(ch)
 
     # create file handler which logs even debug messages

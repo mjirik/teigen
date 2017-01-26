@@ -28,6 +28,21 @@ def closest_node(*args, **kwargs):
     dist_2 = node_to_spheres_dist(*args, **kwargs)
     return np.argmin(dist_2)
 
+def n_closest_nodes(*args, **kwargs):
+    """
+
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    if "n" in kwargs.keys():
+        n = kwargs.pop("n")
+    dist_2 = node_to_spheres_dist(*args, **kwargs)
+    indexes = np.argsort(dist_2)[:n]
+    distances = dist_2[indexes]
+
+    return indexes, distances
+
 def closest_node_dist(*args, **kwargs):
     dist_2 = node_to_spheres_dist(*args, **kwargs)
     min_dst_2 = np.min(dist_2)
@@ -63,7 +78,7 @@ def get_spheres_bounding_cylinder(pt1, pt2, radius): #, relative_step=0.5):
     # relative_step = 1.0
     # constant higher than sqrt(2)
     # sphere_radius_ratio = 1.414214
-    pts, step = get_points_in_line_segment(pt1, pt2, step=radius*relative_step, limit_step_number=100)
+    pts, step = get_points_in_line_segment(pt1, pt2, step=radius*relative_step, limit_step_number=1000)
     if radius == step:
         radiuses = [radius * sphere_radius_ratio] * len(pts)
     else:
@@ -242,9 +257,12 @@ class CollisionBoundaryModel():
         self.collision_alowed = False
         self._cylinder_nodes = []
         self._cylinder_nodes_radiuses = []
+        self._cylinder_end_nodes = []
+        self._cylinder_end_nodes_radiuses = []
         if areasize is not None:
             areasize = np.asarray(areasize)
         self.areasize = areasize
+        self.object_number = 0
 
 
     def is_in_area(self, node, radius=None):
@@ -277,6 +295,11 @@ class CollisionBoundaryModel():
         if not collision:
             self._cylinder_nodes.extend(new_nodes)
             self._cylinder_nodes_radiuses.extend(nodes_radiuses)
+            self._cylinder_end_nodes.append(pt1)
+            self._cylinder_end_nodes.append(pt2)
+            self._cylinder_end_nodes_radiuses.append(radius)
+            self._cylinder_end_nodes_radiuses.append(radius)
+            self.object_number += 1
 
         return collision
 
@@ -287,3 +310,16 @@ class CollisionBoundaryModel():
             pt1 = np.random.random([3]) * self.areasize
 
         return pt1
+
+    def get_node_number(self):
+        return len(self._cylinder_nodes)
+
+    def n_closest_points(self, node, n):
+        indexes, distances = n_closest_nodes(node=node, n=n, nodes=self._cylinder_nodes, nodes_radius=self._cylinder_nodes_radiuses)
+        nodes = np.asarray(self._cylinder_nodes)[indexes]
+        return nodes, indexes, distances
+
+    def n_closest_end_points(self, node, n):
+        indexes, distances = n_closest_nodes(node=node, n=n, nodes=self._cylinder_end_nodes, nodes_radius=self._cylinder_end_nodes_radiuses)
+        nodes = np.asarray(self._cylinder_end_nodes)[indexes]
+        return nodes, indexes, distances
