@@ -109,30 +109,17 @@ class UnconnectedCylinderGenerator:
         self.tree_data = {}
         self.data3d = None
         self.progress_callback = None
+        self.collision_model = g3.CollisionBoundaryModel(areasize=(self.areasize_px * self.voxelsize_mm))
+
+        self.area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
 
     def _const(self, value):
         return value
 
-    def _cylinder_collision(self, pt1, pt2, radius,
-                            COLLISION_RADIUS=1.5 # higher then sqrt(2)
-                            ):
-        # TODO use geometry3.check_collision_along_line
-        collision, new_nodes, nodes_radiuses = g3.cylinder_collision(
-            pt1,
-            pt2,
-            radius,
-            other_points=self._cylinder_nodes,
-            other_points_radiuses=self._cylinder_nodes_radiuses,
-            areasize_mm=self.areasize_px,
-            # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
-            OVERLAPS_ALOWED=self.OVERLAPS_ALOWED,
-        )
-
-        if not collision:
-            self._cylinder_nodes.extend(new_nodes)
-            self._cylinder_nodes_radiuses.extend(nodes_radiuses)
-
-        return collision, new_nodes, nodes_radiuses
+    def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
+                                      COLLISION_RADIUS=1.5  # higher then sqrt(2)
+                                      ):
+        return self.collision_model.add_cylinder_if_no_collision(pt1, pt2, radius)
 
     def run(self):
         logger.info("cylynder generator running")
@@ -152,22 +139,19 @@ class UnconnectedCylinderGenerator:
         # radius = self.radius_maximum
         # for i, two_points in enumerate(vor3.ridge_points):
         # for i in range(self.element_number):
-        i = 0
         while not self.is_final_iteration():
-            i = i+1
-            pt1, pt2, radius = self.create_cylinder()
-            self.add_cylinder_to_stats(i, pt1, pt2, radius=radius)
+            self.create_cylinder()
         self.getStats()
         self.data3d = None
 
     def is_final_iteration(self):
         self.iterations += 1
         stats = self.getStats()
-        area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
-        object_volume = stats["volume"].sum()
-        actual_volume_fraction = object_volume / area_volume
+        object_volume = np.sum(self.geometry_data["volume"])
+        actual_volume_fraction = object_volume / self.area_volume
 
-
+        logger.debug("iteration: " + str(self.iterations) + " / " + str(self.max_iteration))
+        logger.debug("actual_volume_fraction: " + str(actual_volume_fraction))
         if self.iterations >  self.max_iteration:
             return True
         elif actual_volume_fraction > self.requeseted_volume_fraction:
@@ -185,7 +169,7 @@ class UnconnectedCylinderGenerator:
             "vector":[]
         }
 
-    def add_cylinder_to_stats(self, i, pt1, pt2, radius):
+    def add_cylinder_to_stats(self, pt1, pt2, radius):
         edge = {
             "nodeA_ZYX_mm": pt1,
             "nodeB_ZYX_mm": pt2,
@@ -193,7 +177,7 @@ class UnconnectedCylinderGenerator:
             # "radius_mm": 1 + np.random.rand() * (self.max_radius -1 )
             "radius_mm": radius,
         }
-        self.tree_data[i] = edge
+        self.tree_data[len(self.tree_data)] = edge
         # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
         # self._cylinder_nodes.extend(line_nodes)
         length = np.linalg.norm(pt1 - pt2)
@@ -209,25 +193,41 @@ class UnconnectedCylinderGenerator:
         self.surface += surf
 
 
-    def create_cylinder(self):
+    def create_cylinder(self, try_shorter_iteration_number=5):
         generated = False
         while not generated:
             self.iterations += 1
+            if self.is_final_iteration():
+                return
+            progress = self.iterations / (1. * self.max_iteration)
+            # logger.debug("progress " + str(progress))
+            self.progress_callback(self, progress)
+            # print progress
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
                 continue
             if radius < self.radius_minimum:
                 continue
-            pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
-            pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
+            pt1 = self.collision_model.get_random_point(radius=radius)
+            pt2 = self.collision_model.get_random_point(radius=radius)
+            # pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
+            # pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
             pt1 = np.asarray(pt1)
             pt2 = np.asarray(pt2)
-            collision, a, b = self._cylinder_collision(pt1, pt2, radius)
+
+            try_shorter_i = 0
+            collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
+            while (collision is True and try_shorter_i < try_shorter_iteration_number):
+                try_shorter_i += 1
+                pt1, pt2 = g3.get_points_closer(pt1, pt2, relative_length=0.75)
+                collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
+
             if not collision:
                 generated = True
 
-        return pt1, pt2, radius
+        self.add_cylinder_to_stats(pt1, pt2, radius=radius)
+        # return pt1, pt2, radius
 
 
     def getStats(self):
@@ -282,16 +282,7 @@ class UnconnectedCylinderGenerator:
         return nodeA, nodeB
 
     def _is_in_area(self, node, radius=None):
-        """
-        check if point is in area with considering eventual maximum radius
-        :param node:
-        :param radius:
-        :return:
-        """
-        node = np.asarray(node)
-        if radius is None:
-            radius = self.radius_maximum
-        return g3.is_in_area(node, self.areasize_px, radius=radius)
+        return self.collision_model.is_in_area(node, radius)
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
 
