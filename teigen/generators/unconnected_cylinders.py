@@ -114,7 +114,7 @@ class UnconnectedCylinderGenerator:
         self.tree_data = {}
         self.data3d = None
         self.progress_callback = None
-        self.collision_model = g3.CollisionBoundaryModel(areasize=(self.areasize_px * self.voxelsize_mm))
+        self.collision_model = g3.CollisionSpheresModel(areasize=(self.areasize_px * self.voxelsize_mm))
 
         self.area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
 
