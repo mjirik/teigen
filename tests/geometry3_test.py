@@ -67,5 +67,22 @@ class GeometryTestCase(unittest.TestCase):
         nodes, indexes, distances = cm.n_closest_points([25, 35, 41], 3)
         self.assertEqual(False, True)
 
+    def bbox_collision(self):
+        bb1 = [[10, 20], [10, 20], [10, 20]]
+        bb2 = [[15, 30], [15, 30], [15, 30]]
+        bb3 = [[15, 30], [15, 30], [25, 30]]
+        bb4 = [[5, 35], [5, 35], [15, 18]]
+        params = [
+            [bb1, bb2, True],
+            [bb1, bb3, False],
+            [bb1, bb4, True],
+        ]
+        for param in params:
+            # out = g3.check_Collision(param[0], param[1])
+            out = g3.bbox_collision(param[0], param[1])
+            self.assertEqual(out, param[2])
+
+        # g3.bbox_collision(bb1, bb2)
+
 if __name__ == '__main__':
     unittest.main()

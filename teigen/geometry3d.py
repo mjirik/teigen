@@ -251,6 +251,36 @@ def cylinder_collision(
     return True, [], []
 
 
+def bbox_collision(bbox1, bbox2):
+    """
+    detects collision betwen two boundingboxes.
+
+    :param bbox1: [[minX, maxX], [minY, maxY] ... [...]]
+    :param bbox2: [[minX, maxX], [minY, maxY] ... [...]]
+    :return:
+    """
+
+    bbox1 = np.asarray(bbox1)
+    bbox2 = np.asarray(bbox2)
+
+    max1 = np.max(bbox1, axis=1)
+    min1 = np.min(bbox1, axis=1)
+
+    max2 = np.max(bbox2, axis=1)
+    min2 = np.min(bbox2, axis=1)
+
+    out = (min1 <= max2) & (max1 >= min2)
+    return np.all(out)
+
+class GeometricObject():
+    def __init__(self):
+        self.bbox = None
+
+
+
+
+
+
 class CollisionBoundaryModel():
 
     def __init__(self, areasize=None):
