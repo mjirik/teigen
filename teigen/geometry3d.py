@@ -403,7 +403,17 @@ def get_bbox(points, margin=0):
 
 def get_bbox_corners(bbox):
     import itertools
-    itertools.permutations([0, 1], )
+
+    pts = []
+    for prod in itertools.product([0, 1], repeat=len(bbox)):
+        pt = np.zeros([len(prod)])
+        for axi in range(len(prod)):
+            pt[axi] = bbox[axi, prod[axi]]
+        pts.append(pt)
+
+    return pts
+
+
 
 def cylinder_collision_detection(pointA1, pointA2, radiusA, pointB1, pointB2, radiusB, bboxA=None, bboxB=None):
     """
@@ -461,11 +471,18 @@ class CylinderObject(GeometricObject):
     def __init__(self, point1, point2, radius):
 
         bbox = get_bbox([point1, point2], margin=radius)
-        super(GeometricObject, self).__init__(bbox=bbox)
+        GeometricObject.__init__(self, bbox=bbox)
+
+    def _separable_by_base(self):
+        pass
 
     def collision(self, obj):
-        if type(obj) == CylinderObject:
-            pass
+        if not self.bbox_collision(obj.bbox):
+            # are separable by bbox
+            return False
+        else:
+            if type(obj) == CylinderObject:
+                pass
 
 
 

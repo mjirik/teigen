@@ -144,6 +144,44 @@ class GeometryTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(err, 0)
 
+    def test_cylinder_collision_model_collision(self):
+        cm = g3.CollisionSpheresModel(areasize=[150, 151, 155])
+        distance = 25
+        pt1 = [20, 20, 20]
+        pt2 = [20, 20, 60]
+        pt3 = [20, 20 + distance, 20]
+        pt4 = [20, 20 + distance, 60]
+        ptC1 = [0, 0, 0]
+        ptC2 = [0, 60, 0]
+        rA = 10
+        rB = 10
+        rC = 15
+        cylA = g3.CylinderObject(pt1, pt2, radius=rA)
+        cylB = g3.CylinderObject(pt3, pt4, radius=rB)
+        cylC = g3.CylinderObject(ptC1, ptC2, radius=rC)
+        collision1 = cylA.collision(cylB)
+        collision2 = cylA.collision(cylC)
+
+        self.assertEqual(collision1, True)
+        self.assertEqual(collision2, True)
+
+    def test_cylinder_collision_model_out_of_area(self):
+        """
+        Cylinder end point should be in safe distance from boundary
+        :return:
+        """
+        cm = g3.CollisionSpheresModel(areasize=[150, 151, 65])
+        distance = 25
+        pt1 = [20, 20, 20]
+        pt2 = [20, 20, 60]
+        pt3 = [20, 20 + distance, 20]
+        pt4 = [20, 20 + distance, 60]
+        r1 = 10
+        r2 = 10
+        collision1 = cm.add_cylinder_if_no_collision(pt1, pt2, radius=r1)
+        collision2 = cm.add_cylinder_if_no_collision(pt3, pt4, radius=r2)
+
+        self.assertEqual(collision2, True)
 
 if __name__ == '__main__':
     unittest.main()
