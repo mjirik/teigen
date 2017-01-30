@@ -104,7 +104,7 @@ class GeometryTestCase(unittest.TestCase):
         pa1, pb1, dist1 = g3.closest_distance_between_lines(a0, a1, b0, b1)
         pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clampAll=True)
 
-        # self.assertAlmostEquals(dist, 0)
+        # self.assertAlmostEquals(dist, 0
 
     def test_dist_between_paralel_lines(self):
         a0 = [0, 0, 0]
@@ -115,5 +115,35 @@ class GeometryTestCase(unittest.TestCase):
         pa, pb, dist = g3.closest_distance_between_lines(a0, a1, b0, b1)
 
         self.assertAlmostEquals(dist, 0)
+
+
+    def test_point_in_plane(self):
+        pl_pt = [0, 0, 0]
+        pl_vect = [1, 0, 0]
+
+        pts = np.asarray([
+            [0, 0, 1],
+            [0, -1, 1],
+            [1, 1, 1],
+            [1, 15, 13],
+            [-1, -1, 1],
+            [-8, -1, 1]
+            ]).T
+
+        retval_expected = [
+            0,
+            0,
+            1,
+            1,
+            -1,
+            -1,
+        ]
+        retval = g3.point_in_plane(pl_pt, pl_vect, pts)
+        retval = np.sign(retval)
+        err = np.sum((retval - retval_expected)**2)
+
+        self.assertAlmostEqual(err, 0)
+
+
 if __name__ == '__main__':
     unittest.main()

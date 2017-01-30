@@ -401,6 +401,53 @@ def get_bbox(points, margin=0):
 
     return bbox
 
+def get_bbox_corners(bbox):
+    import itertools
+    itertools.permutations([0, 1], )
+
+def cylinder_collision_detection(pointA1, pointA2, radiusA, pointB1, pointB2, radiusB, bboxA=None, bboxB=None):
+    """
+    Detects the possibility of cylinder intersection.
+gitggggglkjlkjaasdfasdf
+    :param pointA1:
+    :param pointA2:
+    :param radiusA:
+    :param pointB1:
+    :param pointB2:
+    :param radiusB:
+    :param bboxA:
+    :param bboxB:
+    :return:
+    """
+
+    if bboxA is None:
+        bboxA = get_bbox([pointA1, pointA2], margin=radiusA)
+    if bboxB is None:
+            bboxB = get_bbox([pointB1, pointB2], margin=radiusB)
+
+def point_in_plane(plane_point, plane_orientation, point=None):
+    """
+    return 0 if point is in plane
+    :param plane_point:
+    :param plane_orientation:
+    :param point: [x,y,z] or more points [[x1, x2, ...], [y1, y2, ...], [z1, z2, ...]]
+    :return:
+    """
+    vector = plane_orientation
+    vector = vector / np.linalg.norm(vector)
+    a = vector[0]
+    b = vector[1]
+    c = vector[2]
+
+    d = -a * plane_point[0] - b * plane_point[1] - c * plane_point[2]
+
+    point = np.asarray(point)
+    x, y, z = point
+
+    z_out = (a * x + b * y + c*z + d) / (a**2 + b**2 +c**2)**0.5
+
+    return z_out
+
 
 class GeometricObject():
     def __init__(self, bbox=None):
