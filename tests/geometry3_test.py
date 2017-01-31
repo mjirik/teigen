@@ -162,7 +162,7 @@ class GeometryTestCase(unittest.TestCase):
         collision1 = cylA.collision(cylB)
         collision2 = cylA.collision(cylC)
 
-        # self.assertEqual(collision1, True)
+        self.assertEqual(collision1, False)
         self.assertEqual(collision2, False)
 
     def test_bbox_corners(self):

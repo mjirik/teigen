@@ -504,8 +504,9 @@ class CylinderObject(GeometricObject):
         return np.all(position < 0)
 
     def _separable_by_dist(self, obj):
-        # TODO implement
-        return False
+
+        dist = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampAll=True)
+        return dist > (obj.radius + self.radius)
 
     def _separable_by_bbox(self, obj):
         return not self.bbox_collision(obj.bbox)
@@ -515,8 +516,7 @@ class CylinderObject(GeometricObject):
             # are separable by bbox
             return False
         else:
-            print "hu"
-            # Implement type check
+            # TODO Implement type check
             # if type(obj) == CylinderObject:
             if True:
                 if self._separable_by_dist(obj):
