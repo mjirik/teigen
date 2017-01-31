@@ -1,3 +1,9 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 from scipy.spatial.distance import cdist
 
@@ -435,12 +441,13 @@ gitggggglkjlkjaasdfasdf
     if bboxB is None:
             bboxB = get_bbox([pointB1, pointB2], margin=radiusB)
 
-def point_in_plane(plane_point, plane_orientation, point=None):
+def point_and_plane(plane_point, plane_orientation, points=None, xyz=None):
     """
     return 0 if point is in plane
     :param plane_point:
     :param plane_orientation:
-    :param point: [x,y,z] or more points [[x1, x2, ...], [y1, y2, ...], [z1, z2, ...]]
+    :param points: [[x1, y1, z1], [x2, y2, z2], ... ]
+    :param xyz: [x,y,z] or more points [[x1, x2, ...], [y1, y2, ...], [z1, z2, ...]]
     :return:
     """
     vector = plane_orientation
@@ -451,9 +458,16 @@ def point_in_plane(plane_point, plane_orientation, point=None):
 
     d = -a * plane_point[0] - b * plane_point[1] - c * plane_point[2]
 
-    point = np.asarray(point)
-    x, y, z = point
+    if xyz is not None:
+        xyz = np.asarray(xyz)
+    elif points is not None:
+        points = np.asarray(points)
+        xyz = points.T
+    else:
+        logger.error("points or xyz must be declared")
 
+
+    x, y, z = xyz
     z_out = (a * x + b * y + c*z + d) / (a**2 + b**2 +c**2)**0.5
 
     return z_out
@@ -472,12 +486,26 @@ class CylinderObject(GeometricObject):
 
         bbox = get_bbox([point1, point2], margin=radius)
         GeometricObject.__init__(self, bbox=bbox)
+        self.point1 = point1
+        self.point2 = point2
+        self.radius = radius
 
     def _separable_by_bases(self, obj):
+        sep1 = self._separable_by_one_bbox_and_base(obj.bbox, self.point1, self.point2)
+        sep2 = self._separable_by_one_bbox_and_base(obj.bbox, self.point2, self.point1)
+        sep3 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
+        sep4 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
+        return sep1 | sep2 | sep3 | sep4
 
-        pass
-    def _separable_by_one_bbox_and_base(self, bbox, base):
-        pass
+    def _separable_by_one_bbox_and_base(self, bbox, base_point, other_point):
+        vector = np.asarray(other_point) - np.asarray(base_point)
+        points = get_bbox_corners(bbox)
+        position = point_and_plane(base_point, vector, points)
+        return np.all(position < 0)
+
+    def _separable_by_dist(self, obj):
+        # TODO implement
+        return False
 
     def _separable_by_bbox(self, obj):
         return not self.bbox_collision(obj.bbox)
@@ -487,12 +515,15 @@ class CylinderObject(GeometricObject):
             # are separable by bbox
             return False
         else:
-            if type(obj) == CylinderObject:
-                if self._separable_by_bases(obj)
-                pass
-
-
-
+            print "hu"
+            # Implement type check
+            # if type(obj) == CylinderObject:
+            if True:
+                if self._separable_by_dist(obj):
+                    return False
+                elif self._separable_by_bases(obj):
+                    return False
+        return True
 
 
 class CollisionModel():
