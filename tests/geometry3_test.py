@@ -168,7 +168,16 @@ class GeometryTestCase(unittest.TestCase):
     def test_bbox_corners(self):
         bbox = [[5, 10], [13, 17], [16, 18]]
         points = g3.get_bbox_corners(bbox)
-        self.assertTrue(False)
+
+        expected_point = np.array([10,13,16])
+        found = False
+        for point in points:
+            err = np.sum((point - expected_point)**2)
+            if err == 0:
+                found = True
+                break
+
+        self.assertTrue(found)
 
     def test_cylinder_collision_model_out_of_area(self):
         """

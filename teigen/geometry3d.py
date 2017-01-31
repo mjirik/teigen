@@ -473,15 +473,22 @@ class CylinderObject(GeometricObject):
         bbox = get_bbox([point1, point2], margin=radius)
         GeometricObject.__init__(self, bbox=bbox)
 
-    def _separable_by_base(self):
+    def _separable_by_bases(self, obj):
+
+        pass
+    def _separable_by_one_bbox_and_base(self, bbox, base):
         pass
 
+    def _separable_by_bbox(self, obj):
+        return not self.bbox_collision(obj.bbox)
+
     def collision(self, obj):
-        if not self.bbox_collision(obj.bbox):
+        if self._separable_by_bbox(obj):
             # are separable by bbox
             return False
         else:
             if type(obj) == CylinderObject:
+                if self._separable_by_bases(obj)
                 pass
 
 
