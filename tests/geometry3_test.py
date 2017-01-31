@@ -165,6 +165,11 @@ class GeometryTestCase(unittest.TestCase):
         self.assertEqual(collision1, True)
         self.assertEqual(collision2, True)
 
+    def test_bbox_corners(self):
+        bbox = [[5, 10], [13, 17], [16, 18]]
+        points = g3.get_bbox_corners(bbox)
+        self.assertTrue(False)
+
     def test_cylinder_collision_model_out_of_area(self):
         """
         Cylinder end point should be in safe distance from boundary

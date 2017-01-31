@@ -408,7 +408,7 @@ def get_bbox_corners(bbox):
     for prod in itertools.product([0, 1], repeat=len(bbox)):
         pt = np.zeros([len(prod)])
         for axi in range(len(prod)):
-            pt[axi] = bbox[axi, prod[axi]]
+            pt[axi] = bbox[axi][prod[axi]]
         pts.append(pt)
 
     return pts
