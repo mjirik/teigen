@@ -9,7 +9,7 @@ import teigen.geometry3d as g3
 
 class GeometryTestCase(unittest.TestCase):
     def test_collision_model_no_collision(self):
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 155])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
         distance = 30
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
@@ -24,7 +24,7 @@ class GeometryTestCase(unittest.TestCase):
 
 
     def test_collision_model_collision(self):
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 155])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
         distance = 25
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
@@ -42,7 +42,7 @@ class GeometryTestCase(unittest.TestCase):
         Cylinder end point should be in safe distance from boundary
         :return:
         """
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 65])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 65])
         distance = 25
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
@@ -56,7 +56,7 @@ class GeometryTestCase(unittest.TestCase):
         self.assertEqual(collision2, True)
 
     def test_collision_model_n_closest(self):
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 155])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
         distance = 30
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
@@ -145,7 +145,7 @@ class GeometryTestCase(unittest.TestCase):
         self.assertAlmostEqual(err, 0)
 
     def test_cylinder_collision_model_collision(self):
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 155])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
         distance = 25
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
@@ -184,7 +184,7 @@ class GeometryTestCase(unittest.TestCase):
         Cylinder end point should be in safe distance from boundary
         :return:
         """
-        cm = g3.CollisionSpheresModel(areasize=[150, 151, 65])
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 65])
         distance = 25
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]

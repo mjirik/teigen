@@ -114,7 +114,8 @@ class UnconnectedCylinderGenerator:
         self.tree_data = {}
         self.data3d = None
         self.progress_callback = None
-        self.collision_model = g3.CollisionSpheresModel(areasize=(self.areasize_px * self.voxelsize_mm))
+        # self.collision_model = g3.CollisionModelSpheres(areasize=(self.areasize_px * self.voxelsize_mm))
+        self.collision_model = g3.CollisionModelCombined(areasize=(self.areasize_px * self.voxelsize_mm))
 
         self.area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
 
@@ -304,7 +305,7 @@ class UnconnectedCylinderGenerator:
         return nodeA, nodeB
 
     def _is_in_area(self, node, radius=None):
-        return self.collision_model.is_in_area(node, radius)
+        return self.collision_model.is_point_in_area(node, radius)
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
 

@@ -519,31 +519,31 @@ class CylinderObject(GeometricObject):
             # TODO Implement type check
             # if type(obj) == CylinderObject:
             if True:
-                if self._separable_by_dist(obj):
-                    return False
-                elif self._separable_by_bases(obj):
+                # if self._separable_by_dist(obj):
+                #     return False
+                if self._separable_by_bases(obj):
                     return False
         return True
 
 
 class CollisionModel():
-    pass
-
-class CollisionSpheresModel():
-
-    def __init__(self, areasize=None):
+    def __init__(self, areasize):
         self.collision_alowed = False
-        self._cylinder_nodes = []
-        self._cylinder_nodes_radiuses = []
-        self._cylinder_end_nodes = []
-        self._cylinder_end_nodes_radiuses = []
         if areasize is not None:
             areasize = np.asarray(areasize)
         self.areasize = areasize
         self.object_number = 0
+        self._cylinder_end_nodes = []
+        self._cylinder_end_nodes_radiuses = []
 
+    def get_random_point(self, radius=None):
+        if radius is not None:
+            pt1 = (np.random.random([3]) * (self.areasize - (2 * radius))) + radius
+        else:
+            pt1 = np.random.random([3]) * self.areasize
+        return pt1
 
-    def is_in_area(self, node, radius=None):
+    def is_point_in_area(self, node, radius=None):
         """
         check if point is in area with considering eventual maximum radius
         :param node:
@@ -554,6 +554,56 @@ class CollisionSpheresModel():
         if radius is None:
             radius = self.radius_maximum
         return is_in_area(node, self.areasize, radius=radius)
+
+    def n_closest_end_points(self, node, n):
+        indexes, distances = n_closest_nodes(node=node, n=n, nodes=self._cylinder_end_nodes, nodes_radius=self._cylinder_end_nodes_radiuses)
+        nodes = np.asarray(self._cylinder_end_nodes)[indexes]
+        return nodes, indexes, distances
+
+    def _add_cylinder_basic(self, point1, point2, radius):
+        """
+        function creates basic staistics of end points and its radiuses
+        :param point1:
+        :param point2:
+        :param radius:
+        :return:
+        """
+
+        self._cylinder_end_nodes.append(point1)
+        self._cylinder_end_nodes.append(point2)
+        self._cylinder_end_nodes_radiuses.append(radius)
+        self._cylinder_end_nodes_radiuses.append(radius)
+        self.object_number += 1
+
+class CollisionModelCombined(CollisionModel):
+
+    def __init__(self, areasize=None):
+        CollisionModel.__init__(self, areasize)
+        self.objects = []
+
+    def add_cylinder_if_no_collision(self, pt1, pt2, radius,
+                                         # COLLISION_RADIUS=1.5 # higher then sqrt(2)
+                                         ):
+        new_obj = CylinderObject(pt1, pt2, radius)
+
+        collision = False
+        for obj in self.objects:
+            if obj.collision(new_obj):
+                collision = True
+                break
+
+        if not collision:
+            self.objects.append(new_obj)
+
+        return collision
+
+class CollisionModelSpheres(CollisionModel):
+
+    def __init__(self, areasize=None):
+        CollisionModel.__init__(self, areasize)
+        self._cylinder_nodes = []
+        self._cylinder_nodes_radiuses = []
+
 
     def add_cylinder_if_no_collision(self, pt1, pt2, radius,
                             # COLLISION_RADIUS=1.5 # higher then sqrt(2)
@@ -573,21 +623,9 @@ class CollisionSpheresModel():
         if not collision:
             self._cylinder_nodes.extend(new_nodes)
             self._cylinder_nodes_radiuses.extend(nodes_radiuses)
-            self._cylinder_end_nodes.append(pt1)
-            self._cylinder_end_nodes.append(pt2)
-            self._cylinder_end_nodes_radiuses.append(radius)
-            self._cylinder_end_nodes_radiuses.append(radius)
-            self.object_number += 1
+            self._add_cylinder_basic(pt1, pt2, radius)
 
         return collision
-
-    def get_random_point(self, radius=None):
-        if radius is not None:
-            pt1 = (np.random.random([3]) * (self.areasize - (2 * radius))) + radius
-        else:
-            pt1 = np.random.random([3]) * self.areasize
-
-        return pt1
 
     def get_node_number(self):
         return len(self._cylinder_nodes)
@@ -597,7 +635,3 @@ class CollisionSpheresModel():
         nodes = np.asarray(self._cylinder_nodes)[indexes]
         return nodes, indexes, distances
 
-    def n_closest_end_points(self, node, n):
-        indexes, distances = n_closest_nodes(node=node, n=n, nodes=self._cylinder_end_nodes, nodes_radius=self._cylinder_end_nodes_radiuses)
-        nodes = np.asarray(self._cylinder_end_nodes)[indexes]
-        return nodes, indexes, distances
