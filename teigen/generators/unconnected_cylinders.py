@@ -212,7 +212,11 @@ class UnconnectedCylinderGenerator:
                 return
             progress = self.iterations / (1. * self.max_iteration)
             # logger.debug("progress " + str(progress))
-            self.progress_callback(self, progress)
+            object_volume = np.sum(self.geometry_data["volume"])
+            actual_volume_fraction = object_volume / self.area_volume
+
+            statusbar_text = str(self.iterations) + " Vv " + str(actual_volume_fraction)
+            self.progress_callback(self, progress, statusbar_text=statusbar_text)
             # print progress
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
@@ -234,10 +238,10 @@ class UnconnectedCylinderGenerator:
                     npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
                     center = np.mean(npts, axis=0)
 
-            vector = np.random.random([3])
+            direction_vector = g3.random_direction_vector()
             length = self.length_generator(*self.length_generator_args)
-            pt1 = np.asarray(g3.translate(center, vector, 0.5 * length))
-            pt2 = np.asarray(g3.translate(center, vector, -0.5 * length))
+            pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
+            pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
 
             try_shorter_i = 0
             collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)

@@ -368,6 +368,32 @@ def closest_distance_between_lines(a0,a1,b0,b1,clampAll=False,clampA0=False,clam
 
     return pA,pB,np.linalg.norm(pA-pB)
 
+def random_direction_vector(return_angles=False):
+    """
+    Get random direction vector
+    :param return_angles: gives also the angles
+
+    :return:
+        vector
+        or
+        vector, theta, phi
+    """
+    xi1 = np.random.rand()
+    xi2 = np.random.rand()
+
+    # theta = np.arccos(np.sqrt(1.0-xi1))
+    theta = np.arccos(1.0 - (xi1 * 1))
+    phi = xi2 * 2 * np.pi
+
+    xs = np.sin(theta) * np.cos(phi)
+    ys = np.sin(theta) * np.sin(phi)
+    zs = np.cos(theta)
+
+    vector = np.asarray([xs, ys, zs])
+    if return_angles:
+        return vector, theta, phi
+    return vector
+
 def bbox_collision(bbox1, bbox2):
     """
     detects collision betwen two boundingboxes.
@@ -505,8 +531,15 @@ class CylinderObject(GeometricObject):
 
     def _separable_by_dist(self, obj):
 
-        dist = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampAll=True)
-        return dist > (obj.radius + self.radius)
+        safe_dist = obj.radius + self.radius
+        pt1, pt2, dist = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2) #, clampAll=True)
+        if dist > safe_dist:
+            return True
+
+        return False
+        # dist1 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampA0=True, clampA1=True) #, clampAll=True)
+        # dist2 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampB0=True, clampB1=True) #, clampAll=True)
+        # return np.min([dist1, dist2]) > safe_dist
 
     def _separable_by_bbox(self, obj):
         return not self.bbox_collision(obj.bbox)
@@ -519,8 +552,8 @@ class CylinderObject(GeometricObject):
             # TODO Implement type check
             # if type(obj) == CylinderObject:
             if True:
-                # if self._separable_by_dist(obj):
-                #     return False
+                if self._separable_by_dist(obj):
+                    return False
                 if self._separable_by_bases(obj):
                     return False
         return True

@@ -327,6 +327,9 @@ class TeigenWidget(QtGui.QWidget):
 
     def _progressbar_update(self, obj, level, *args, **kwargs):
         self.progressBar.setValue(int(10000*level))
+        if "statusbar_text" in kwargs:
+            # add this in gui
+            print "statusbar_text " + kwargs["statusbar_text"]
         ## end of pyqtgraph tree
 
     def btnRun(self):
@@ -433,7 +436,9 @@ class Teigen():
 
     def run(self, **config):
         import io3d.misc
+        import time
         self.config = copy.deepcopy(config)
+        t0 = time.time()
 
         if "required_teigen_version" in config.keys():
             reqired_version = config["required_teigen_version"]
@@ -486,6 +491,9 @@ class Teigen():
 
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
 
+        t1 = time.time()
+        self.time_run = t1 - t0
+        logger.info("time: " + str(self.time_run))
         self.need_run = False
 
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
