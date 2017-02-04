@@ -535,10 +535,10 @@ class CylinderObject(GeometricObject):
         pt1, pt2, dist = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2) #, clampAll=True)
         if dist > safe_dist:
             return True
-
         return False
-        # dist1 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampA0=True, clampA1=True) #, clampAll=True)
-        # dist2 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampB0=True, clampB1=True) #, clampAll=True)
+
+        # pt1, pt2, dist1 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampA0=True, clampA1=True) #, clampAll=True)
+        # pt1, pt2, dist2 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampB0=True, clampB1=True) #, clampAll=True)
         # return np.min([dist1, dist2]) > safe_dist
 
     def _separable_by_bbox(self, obj):

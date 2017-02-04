@@ -238,7 +238,10 @@ class UnconnectedCylinderGenerator:
                     npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
                     center = np.mean(npts, axis=0)
 
-            direction_vector = g3.random_direction_vector()
+            # direction_vector = g3.random_direction_vector()
+            # TODO add option for fixed direction
+            direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
+            # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
             pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
             pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))

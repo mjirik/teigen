@@ -197,5 +197,36 @@ class GeometryTestCase(unittest.TestCase):
 
         self.assertEqual(collision2, True)
 
+    def test_cylinder_collision_model_dist_problem(self):
+        """
+        check where is problem in two lines dist function
+        :return:
+        """
+
+        cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
+
+        distance = 25
+        pt1 = [20, 20, 20]
+        pt2 = [20, 20, 60]
+        pt3 = [20, 20 + distance, 20]
+        pt4 = [20, 20 + distance, 60]
+        ptC1 = [0, 0, 0]
+        ptC2 = [0, 60, 0]
+        rA = 10
+        rB = 10
+        rC = 15
+        cylA = g3.CylinderObject(
+            [ 8.2932388 , -0.65185999,  9.54170155],
+            [8.2932388 ,  11.23408448,  21.42764602],
+            radius=5.691834898023455)
+        cylB = g3.CylinderObject(
+            [ 2.76365903,  0.86076129,  4.30361747],
+            [2.76365903,   7.00253318,  10.44538936],
+            radius=7.2248666037231875
+        )
+        collision1 = cylA.collision(cylB)
+
+        self.assertEqual(collision1, False)
+
 if __name__ == '__main__':
     unittest.main()
