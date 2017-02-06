@@ -159,7 +159,8 @@ class TBVolume:
 
             self.data3d[self.data3d==self._temp_intensity] = radk_intensity
 
-        self.finish_progress_callback(self, 1.0)
+        if self.finish_progress_callback is not None:
+            self.finish_progress_callback(self, 1.0)
 
     def save(self, outputfile, filetype='pklz'):
         import io3d

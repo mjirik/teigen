@@ -505,13 +505,13 @@ class Teigen():
         config.update(area_cfg)
 
         generator_class = self.generators_classes[id]
-        generator_class.update(area_cfg)
         # self.config = get_default_args(generator_class)
 
         # select only parameters for generator
         # generator_default_config = dictwidgetqt.get_default_args(generator_class)
         # generator_config = dictwidgetqt.subdict(config["generators"][id], generator_default_config.keys())
         generator_config = config["generators"].items()[id][1]
+        generator_config.update(area_cfg)
         self.gen = generator_class(**generator_config)
         if id == 2:
             self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0
