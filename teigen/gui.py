@@ -41,6 +41,7 @@ import generators.gensei_wrapper
 import generators.unconnected_cylinders
 import io3d.datawriter
 import io3d.misc
+import dili
 
 from pyqtconfig import ConfigManager
 
@@ -441,7 +442,9 @@ class Teigen():
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
         self.config["generators"] = collections.OrderedDict()
         for generator_cl, generator_name in zip(self.generators_classes, self.generators_names):
-            self.config["generators"][generator_name] = dictwidgetqt.get_default_args(generator_cl)
+            generator_params = dictwidgetqt.get_default_args(generator_cl)
+            generator_params = dili.kick_from_dict(generator_params, hide_keys)
+            self.config["generators"][generator_name] = generator_params
 
         # self.config["generator_id"] = self.generators_names[0]
         self.config["generator_id"] = 0

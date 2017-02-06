@@ -27,3 +27,23 @@ def get_default_args(obj):
 def subdict(dct, keys):
     p = {key: value for key, value in dct.items() if key in keys}
     return p
+
+def kick_from_dict(dct, keys):
+    p = {key: value for key, value in dct.items() if key not in keys}
+    return p
+
+def split_dict(dct, keys):
+    """
+    Split dict into two subdicts based on keys
+    :param dct:
+    :param keys:
+    :return: dict_in, dict_out
+    """
+    dict_in = {}
+    dict_out = {}
+    for key, value in dct.items:
+        if key in keys:
+            dict_in[key] = value
+        else:
+            dict_out[key] = value
+    return dict_in, dict_out

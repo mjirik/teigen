@@ -60,9 +60,16 @@ class DictWidget(QtGui.QWidget):
         self.init_ui()
 
     def _get_tmp_composed_keys(self, cfg):
-        # vytvoří to seznam pomocných klíčů pro seznamy a ndarray
+        """
+        Get list of temporary keys for lists and ndarrays. This keys are used for reconstruction.
+
+        vytvoří to seznam pomocných klíčů pro seznamy a ndarray
+        :param cfg:
+        :return:
+        """
         self._tmp_composed_keys_dict = {}
         self._tmp_composed_keys_list = []
+        toappend = {}
         for key, value in cfg.iteritems():
             if type(value) in (list, np.ndarray):
                 self._tmp_composed_keys_dict[key] = []
@@ -74,12 +81,8 @@ class DictWidget(QtGui.QWidget):
                     self._tmp_composed_keys_dict[key].append(key_i)
                     self._tmp_composed_keys_list.append(key_i)
                     key_array_i += 1
-                    cfg[key_i] = val
-
-        # self._tmp_composed_keys.keys()
-
-
-
+                    toappend[key_i] = val
+        cfg.update(toappend)
 
     def complicated_to_yaml(self, cfg):
         import yaml
