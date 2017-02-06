@@ -75,7 +75,8 @@ class TeigenWidget(QtGui.QWidget):
 
         none, area_cfg = dictwidgetpg.from_pyqtgraph_struct(self.area_sampling_params.saveState())
 
-        config.update(area_cfg["Area Sampling"])
+        # config.update(area_cfg["Area Sampling"])
+        config["areasampling"] = area_cfg["Area Sampling"]
         filepattern = self.ui_output_dir_widget.get_dir()
         series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=filepattern)
         config["filepattern"] = filepattern
@@ -299,7 +300,7 @@ class TeigenWidget(QtGui.QWidget):
         import pyqtgraph
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
-            "Area Sampling":  dictwidgetpg.AreaSamplingParameter(name='Area Sampling'),
+            "Area Sampling":  dictwidgetpg.AreaSamplingParameter(name='Area Sampling', **self.teigen.config["areasampling"]),
             "Postprocessing": postprocessing_params,
             # "dur": i5,
             # TODO add more lines here
@@ -450,6 +451,14 @@ class Teigen():
         self.config["generator_id"] = 0
         # self.config = self.configs[0]
         self.config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
+        self.config["areasampling"] = {
+            "voxelsize_mm": [1.0, 1.0, 1.0],
+            "areasize_mm": [110.0, 100.0, 100.0],
+            "areasize_px": [110, 100, 100]
+        }
+        # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
+        # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
+        # self.config["areasize_px"] = [100, 100, 100]
 
     def run(self, **config):
         import io3d.misc
@@ -483,15 +492,20 @@ class Teigen():
             self._area_sampling_general_export,
         ]
 
-        area_dct = dictwidgetqt.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
-        config.pop("voxelsize_mm")
-        config.pop("areasize_mm")
-        config.pop("areasize_px")
+        # area_dct = dili.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
+        # config.pop("voxelsize_mm")
+        # config.pop("areasize_mm")
+        # config.pop("areasize_px")
 
-        cfg = cfg_export_fcn[id](area_dct)
-        config.update(cfg)
+        area_dct = config["areasampling"]
+
+        area_cfg = cfg_export_fcn[id](area_dct)
+
+        # TODO probably unused
+        config.update(area_cfg)
 
         generator_class = self.generators_classes[id]
+        generator_class.update(area_cfg)
         # self.config = get_default_args(generator_class)
 
         # select only parameters for generator
