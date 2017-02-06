@@ -226,7 +226,7 @@ class GeometryTestCase(unittest.TestCase):
         )
         collision1 = cylA.collision(cylB)
 
-        self.assertEqual(collision1, False)
+        self.assertEqual(collision1, True)
 
 if __name__ == '__main__':
     unittest.main()

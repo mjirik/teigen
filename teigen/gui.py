@@ -61,10 +61,15 @@ class TeigenWidget(QtGui.QWidget):
         self.qapp = qapp
         self.init_ui()
 
-    def collect_config(self):
+    def collect_config_from_gui(self):
         print "generator args"
         id = self.gen_tab_wg.currentIndex()
-        config = self._ui_generator_widgets[id].config_as_dict()
+        config = collections.OrderedDict()
+        config["generators"] = collections.OrderedDict()
+        for i, wg in enumerate(self._ui_generator_widgets):
+            config["generators"][self.teigen.generators_names[i]] = wg.config_as_dict()
+
+        # config = self._ui_generator_widgets[id].config_as_dict()
         logger.debug(str(config))
 
         none, area_cfg = dictwidgetpg.from_pyqtgraph_struct(self.area_sampling_params.saveState())
@@ -84,7 +89,7 @@ class TeigenWidget(QtGui.QWidget):
 
     def run(self):
 
-        self.collect_config()
+        self.collect_config_from_gui()
 
         # self.config = new_cfg
         self.teigen.run(**self.config)
@@ -270,9 +275,6 @@ class TeigenWidget(QtGui.QWidget):
         postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
-
-
-
 
         btn_save = QPushButton("Generate and save volumetric data", self)
         btn_save.setToolTip("Save image slices and meta information")
@@ -478,8 +480,9 @@ class Teigen():
         # self.config = get_default_args(generator_class)
 
         # select only parameters for generator
-        generator_default_config = dictwidgetqt.get_default_args(generator_class)
-        generator_config = dictwidgetqt.subdict(config,generator_default_config.keys())
+        # generator_default_config = dictwidgetqt.get_default_args(generator_class)
+        # generator_config = dictwidgetqt.subdict(config["generators"][id], generator_default_config.keys())
+        generator_config = config["generators"].items()[id][1]
         self.gen = generator_class(**generator_config)
         if id == 2:
             self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0

@@ -256,9 +256,8 @@ class UnconnectedCylinderGenerator:
             if not collision:
                 generated = True
 
-        self.add_cylinder_to_stats(pt1, pt2, radius=radius)
-        # return pt1, pt2, radius
-
+        if generated:
+            self.add_cylinder_to_stats(pt1, pt2, radius=radius)
 
     def getStats(self):
         # self.assertTrue(False)
