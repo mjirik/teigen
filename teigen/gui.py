@@ -94,8 +94,6 @@ class TeigenWidget(QtGui.QWidget):
         # self.config = new_cfg
         self.teigen.run(**self.config)
 
-
-
     def _show_stats(self):
         to_rename = {
             "length": "length [mm]",
@@ -250,15 +248,15 @@ class TeigenWidget(QtGui.QWidget):
             }
 
         self._ui_generator_widgets = []
-        for i, config in enumerate(self.teigen.configs):
+        for generator_name in self.teigen.config["generators"]:
             wg = dictwidgetqt.DictWidget(
-                self.teigen.configs[i],
+                self.teigen.config["generators"][generator_name],
                 hide_keys=hide_keys,
                 captions=rename_captions_dict,
                 ncols=1,
             )
             self._ui_generator_widgets.append(wg)
-            self.gen_tab_wg.addTab(wg, self.teigen.generators_names[i])
+            self.gen_tab_wg.addTab(wg, generator_name)
         # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
         # self.gen_tab_wg.addTab(gen_wg, "gensei generator")
 
@@ -272,7 +270,7 @@ class TeigenWidget(QtGui.QWidget):
         btn_accept.clicked.connect(self.btnRun)
         self.mainLayout.addWidget(btn_accept, 2, 1) # , (gd_max_i / 2), text_col)
 
-        postprocessing_params = dictwidgetqt.get_default_args(self.teigen.postprocessing)
+        postprocessing_params = self.teigen.config["postprocessing"]
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
@@ -429,12 +427,26 @@ class Teigen():
             "Cylinder continues",
             "Unconnected cylinders"
         ]
-        self.configs = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
-        self.config = self.configs[0]
+        self.use_default_config()
         self.progress_callback = None
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
         # 3D visualization data, works for some generators
         self.polydata = None
+
+    def use_default_config(self):
+
+        self.config = {}
+        # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
+
+        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
+        self.config["generators"] = collections.OrderedDict()
+        for generator_cl, generator_name in zip(self.generators_classes, self.generators_names):
+            self.config["generators"][generator_name] = dictwidgetqt.get_default_args(generator_cl)
+
+        # self.config["generator_id"] = self.generators_names[0]
+        self.config["generator_id"] = 0
+        # self.config = self.configs[0]
+        self.config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
 
     def run(self, **config):
         import io3d.misc
