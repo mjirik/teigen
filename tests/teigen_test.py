@@ -8,11 +8,14 @@ import sys
 
 from nose.plugins.attrib import attr
 import teigen
+import io3d
 
 class MyTestCase(unittest.TestCase):
 
     @attr('interactive')
     def test_teigen_interactive(self):
+        import os.path as op
+        params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/018/slice_parameters.yaml"))
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
         # from teigen.dictwidgetqt import DictWidget
@@ -20,7 +23,7 @@ class MyTestCase(unittest.TestCase):
         import teigen.geometry3d
         import teigen.gui
         app = QApplication(sys.argv)
-        cw = teigen.gui.TeigenWidget()
+        cw = teigen.gui.TeigenWidget(config=params)
         cw.show()
         app.exec_()
 
