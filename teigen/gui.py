@@ -47,7 +47,7 @@ from pyqtconfig import ConfigManager
 
 
 class TeigenWidget(QtGui.QWidget):
-    def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log"):
+    def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log", config=None):
         super(TeigenWidget, self).__init__()
         self.logfile = logfile
         self.ncols = ncols
@@ -56,6 +56,8 @@ class TeigenWidget(QtGui.QWidget):
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen(logfile=self.logfile)
+        if config is not None:
+            self.teigen.set_config(**config)
         self.version = self.teigen.version
         self.config = {}
         self.run_number = 0
@@ -94,7 +96,8 @@ class TeigenWidget(QtGui.QWidget):
         self.collect_config_from_gui()
 
         # self.config = new_cfg
-        self.teigen.run(**self.config)
+        self.teigen.set_config(**self.config)
+        self.teigen.run()
 
     def _show_stats(self):
         to_rename = {
@@ -259,6 +262,7 @@ class TeigenWidget(QtGui.QWidget):
             )
             self._ui_generator_widgets.append(wg)
             self.gen_tab_wg.addTab(wg, generator_name)
+        self.gen_tab_wg.setCurrentIndex(self.teigen.config["generator_id"])
         # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
         # self.gen_tab_wg.addTab(gen_wg, "gensei generator")
 
@@ -429,6 +433,12 @@ class Teigen():
             "Cylinder continues",
             "Unconnected cylinders"
         ]
+        self._cfg_export_fcn = [
+            self._area_sampling_general_export,
+            self._area_sampling_gensei_export,
+            self._area_sampling_general_export,
+            self._area_sampling_general_export,
+        ]
         self.use_default_config()
         self.progress_callback = None
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
@@ -460,11 +470,8 @@ class Teigen():
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
         # self.config["areasize_px"] = [100, 100, 100]
 
-    def run(self, **config):
+    def set_config(self, **config):
         import io3d.misc
-        import time
-        self.config = copy.deepcopy(config)
-        t0 = time.time()
 
         if "required_teigen_version" in config.keys():
             reqired_version = config["required_teigen_version"]
@@ -472,25 +479,25 @@ class Teigen():
                 logger.error(
                     "Wrong teigen version. Required: " + reqired_version + " , actual " + self.version)
                 return
+        self.config = copy.deepcopy(config)
 
-        filepattern = config["filepattern"]
-        if "filepattern_series_number" in config.keys():
-            series_number = config["filepattern_series_number"]
-            config['filepattern'] = io3d.datawriter.filepattern_fill_series_number(
-                filepattern,
-                series_number=series_number
-            )
+    def run(self):
+        import time
+
+        t0 = time.time()
+        config = copy.deepcopy(self.config)
+        # filepattern = config["filepattern"]
+        # if "filepattern_series_number" in config.keys():
+        #     series_number = config["filepattern_series_number"]
+        #     config['filepattern'] = io3d.datawriter.filepattern_fill_series_number(
+        #         filepattern,
+        #         series_number=series_number
+        #     )
 
 
 
 
         id = config.pop('generator_id')
-        cfg_export_fcn = [
-            self._area_sampling_general_export,
-            self._area_sampling_gensei_export,
-            self._area_sampling_general_export,
-            self._area_sampling_general_export,
-        ]
 
         # area_dct = dili.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
         # config.pop("voxelsize_mm")
@@ -499,7 +506,7 @@ class Teigen():
 
         area_dct = config["areasampling"]
 
-        area_cfg = cfg_export_fcn[id](area_dct)
+        area_cfg = self._cfg_export_fcn[id](area_dct)
 
         # TODO probably unused
         config.update(area_cfg)
@@ -694,6 +701,10 @@ def main():
         help='Debug mode')
 
     parser.add_argument(
+        '-ni', '--nointeractivity', action='store_true',
+        help='No interactivity mode')
+
+    parser.add_argument(
         '-l', '--logfile',
         default="~/teigen.log",
         help='Debug mode')
@@ -704,17 +715,22 @@ def main():
         ch.setLevel(logging.DEBUG)
 
 
-    if args.parameterfile is None:
+    if args.nointeractivity:
+        tg = Teigen(logfile=args.logfile)
+        if args.parameterfile is not None:
+            params = io3d.misc.obj_from_file(args.parameterfile)
+            tg.set_config(**params)
+        tg.run()
+        # tg.run(**params)
+        tg.save_volume()
+    else:
         app = QApplication(sys.argv)
-        cw = TeigenWidget(logfile=args.logfile)
+        params = None
+        if args.parameterfile is not None:
+            params = io3d.misc.obj_from_file(args.parameterfile)
+        cw = TeigenWidget(logfile=args.logfile, config=params)
         cw.show()
         app.exec_()
-    else:
-        params = io3d.misc.obj_from_file(args.parameterfile)
-        tg = Teigen(logfile=args.logfile)
-        tg.run(**params)
-        tg.save_volume()
-
 
 
 if __name__ == "__main__":
