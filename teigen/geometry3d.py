@@ -288,9 +288,16 @@ def closest_distance_between_lines(a0,a1,b0,b1,clampAll=False,clampA0=False,clam
     _A = A / magA
     _B = B / magB
 
-    cross = np.cross(_A, _B);
-    denom = np.linalg.norm(cross)**2
-
+    # due to numerical instabilities there is a test for the case _A and _B are almost parallel
+    if not((np.allclose(_A, _B) or np.allclose(_A, -_B))):
+        # non parallel
+        # worsk also for strong parallel lines
+        cross = np.cross(_A, _B);
+        denom = np.linalg.norm(cross)**2
+    else:
+        # almost paralel vectors
+        # this is due to numerical stability
+        denom = 0
 
     # If lines are parallel (denom=0) test if lines overlap.
     # If they don't overlap then there is a closest point solution.
@@ -532,8 +539,13 @@ class CylinderObject(GeometricObject):
     def _separable_by_dist(self, obj):
 
         safe_dist = obj.radius + self.radius
-        pt1, pt2, dist = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2) #, clampAll=True)
+        pta1 = obj.point1
+        pta2 = obj.point2
+        ptb1 = self.point1
+        ptb2 = self.point2
+        pt1, pt2, dist = closest_distance_between_lines(pta1, pta2, ptb1, ptb2) #, clampAll=True)
         if dist > safe_dist:
+            pt1, pt2, dist = closest_distance_between_lines(pta1, pta2, ptb1, ptb2) #, clampAll=True)
             return True
         return False
 

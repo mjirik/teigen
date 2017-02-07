@@ -106,6 +106,16 @@ class GeometryTestCase(unittest.TestCase):
 
         # self.assertAlmostEquals(dist, 0
 
+    def test_dist_between_lines_problematic_case(self):
+        # TODO
+        a0 = [15.66021867, 18.12350593, 14.89322993]
+        a1 = [15.66021867, 17.10675439, 13.87647838]
+        b0 = [16.05191401, 21.03424487, 10.59026252]
+        b1 = [16.05191401, 13.6576145, 3.21363215]
+
+        pa1, pb1, dist1 = g3.closest_distance_between_lines(a0, a1, b0, b1)
+        pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clampAll=True)
+
     def test_dist_between_paralel_lines(self):
         a0 = [0, 0, 0]
         a1 = [0, 0, 1]

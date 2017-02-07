@@ -258,6 +258,8 @@ class UnconnectedCylinderGenerator:
 
         if generated:
             self.add_cylinder_to_stats(pt1, pt2, radius=radius)
+        print "aa"
+        return
 
     def getStats(self):
         # self.assertTrue(False)
