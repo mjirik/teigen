@@ -42,7 +42,7 @@ class UnconnectedCylinderGenerator:
                  # area_shape_z=100,
                  # area_shape_x=100,
                  # area_shape_y=100,
-                 element_number=30,
+                 element_number=-1,
                  uniform_radius_distribution=True,
                  normal_radius_distribution=False,
                  fixed_radius_distribution=False,
@@ -55,6 +55,9 @@ class UnconnectedCylinderGenerator:
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
+                 orientation_anisotropic = False,
+                 orientation_main=[1.0, 1.0, 0.0],
+                 orientation_variance_rad=0.1,
                  volume_fraction=0.1,
                  maximum_1000_iteration_number=10,
                  random_generator_seed=0
@@ -118,6 +121,9 @@ class UnconnectedCylinderGenerator:
         self.collision_model = g3.CollisionModelCombined(areasize=(self.areasize_px * self.voxelsize_mm))
 
         self.area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
+        self.orientation_anisotropic = orientation_anisotropic
+        self.orientation_main = orientation_main
+        self.orientation_variance_rad = orientation_variance_rad
 
     def _const(self, value):
         return value
@@ -125,7 +131,7 @@ class UnconnectedCylinderGenerator:
     def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
                                       COLLISION_RADIUS=1.5  # higher then sqrt(2)
                                       ):
-        return self.collision_model.add_cylinder_if_no_collision(pt1, pt2, radius)
+        return self.collision_model.add_tube_if_no_collision(pt1, pt2, radius)
 
     def run(self):
         logger.info("cylynder generator running")
@@ -153,6 +159,11 @@ class UnconnectedCylinderGenerator:
     def is_final_iteration(self):
         self.iterations += 1
         stats = self.getStats()
+
+        if self.element_number > 0:
+            n = len(self.geometry_data["volume"])
+            if n >= self.element_number:
+                return True
         object_volume = np.sum(self.geometry_data["volume"])
         actual_volume_fraction = object_volume / self.area_volume
 
@@ -172,7 +183,9 @@ class UnconnectedCylinderGenerator:
             "radius":[],
             "volume":[],
             "surface":[],
-            "vector":[]
+            "vector":[],
+            "point1":[],
+            "point2":[]
         }
 
     def add_cylinder_to_stats(self, pt1, pt2, radius):
@@ -187,8 +200,15 @@ class UnconnectedCylinderGenerator:
         # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
         # self._cylinder_nodes.extend(line_nodes)
         length = np.linalg.norm(pt1 - pt2)
-        surf = 2 * np.pi * radius * (radius + length)
-        volume =  np.pi * radius**2 * length
+        # if it is cylinder
+        # surf = 2 * np.pi * radius * (radius + length)
+
+        # if it is tube (pill)
+        surf = (2 * np.pi * radius * length) + 4 * np.pi*radius**2
+        # cylinder
+        # volume =  np.pi * radius**2 * length
+        # tube
+        volume =  (np.pi * radius**2 * length) + ((4. / 3.) * np.pi * radius**3)
         vector = pt1 - pt2
 
         self.geometry_data["length"].append(length)
@@ -196,6 +216,8 @@ class UnconnectedCylinderGenerator:
         self.geometry_data["radius"].append(radius)
         self.geometry_data["volume"].append(volume)
         self.geometry_data["vector"].append(vector)
+        self.geometry_data["point1"].append(pt1)
+        self.geometry_data["point2"].append(pt2)
         self.surface += surf
 
 
@@ -238,9 +260,13 @@ class UnconnectedCylinderGenerator:
                     npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
                     center = np.mean(npts, axis=0)
 
-            # direction_vector = g3.random_direction_vector()
-            # TODO add option for fixed direction
-            direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
+            if self.orientation_anisotropic:
+                direction_vector = g3.random_direction_vector()
+            else:
+                direction_vector = np.asarray(self.orientation_main)
+                direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
+                direction_vector = direction_vector / np.linalg.norm(direction_vector)
+            # direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
             # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
             pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))

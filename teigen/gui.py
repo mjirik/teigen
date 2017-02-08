@@ -210,6 +210,20 @@ class TeigenWidget(QtGui.QWidget):
         plt.imshow(noise[0, :, :], cmap="gray")
         plt.colorbar()
 
+    def update_stats(self):
+        import tablewidget
+        self._wg_tab_overall.deleteLater()
+        self._wg_tab_overall = None
+        #     self._wg_tab_describe.deleteLater()
+        # self._wg_tables
+        dfoverall = self.teigen.dataframes["overall"]
+        self._wg_tab_overall = tablewidget.TableWidget(self, dataframe=dfoverall)
+        self._wg_tab_overall.setMaximumHeight(80)
+        self._wg_tables.layout().addWidget(self._wg_tab_overall)
+        #     self._wg_tab_describe.deleteLater()
+        #     self._wg_tab_describe = None
+        #     self._wg_tab_merne.deleteLater()
+        #     self._wg_tab_merne = None
 
     def complicated_to_yaml(self, cfg):
         import yaml
@@ -374,13 +388,12 @@ class TeigenWidget(QtGui.QWidget):
 
         self.teigen.save_volume()
         fn_base, fn_ext = self.teigen.filepattern_split()
-        for dfname in self.dataframes:
-            df = self.dataframes[dfname].to_csv(fn_base+"_" + dfname + ".csv")
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
         self.figure.savefig(fn_base + "_" + "graph.svg")
 
         # self.teigen.gen.saveVolumeToFile(filename)
+        self.update_stats()
 
 
 
@@ -581,7 +594,7 @@ class Teigen():
         import io3d.misc
         fn_base, fn_ext = self.filepattern_split()
         io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
-        self._surface_area_numeric_measurement()
+        self._numeric_measurement(fn_base)
         self.save_stats(fn_base)
         # postprocessing
         if "generate_volume" in dir(self.gen):
@@ -657,19 +670,32 @@ class Teigen():
         }
         return dct
 
-    def _surface_area_numeric_measurement(self):
+    def _numeric_measurement(self, fn_base):
+        # import numpy as np
         from tree import TreeBuilder
+        vxsz = self.config["areasampling"]["voxelsize_mm"]
+        shape = self.config["areasampling"]["areasize_px"]
         tvgvol = TreeBuilder("vol")
-        tvgvol.voxelsize_mm = self.config["areasampling"]["voxelsize_mm"]
-        tvgvol.shape = self.config["areasampling"]["areasize_px"]
+        tvgvol.voxelsize_mm = vxsz
+        tvgvol.shape = shape
         tvgvol.tree_data = self.gen.tree_data
 
         data3d = tvgvol.buildTree()
         import measurement
         surface = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm)
+        volume = np.sum(data3d > 0) * np.prod(vxsz)
 
-        self.dataframes["overall"]["surface num. [mm^2]"] = [surface]
-        print surface
+        self.dataframes["overall"]["surf. num. [mm^2]"] = [surface]
+        self.dataframes["overall"]["vol. num. [mm^3]"] = [volume]
+
+        filename = fn_base + "_raw_{:06d}.jpg"
+        import io3d.misc
+        data = {
+            'data3d': data3d.astype(np.uint8) * 70, #* self.output_intensity,
+            'voxelsize_mm': vxsz,
+            # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
+        }
+        io3d.write(data, filename)
         return surface
 
     def prepare_stats(self):

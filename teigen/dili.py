@@ -25,11 +25,26 @@ def get_default_args(obj):
     return dc
 
 def subdict(dct, keys):
-    p = {key: value for key, value in dct.items() if key in keys}
+    if type(dct) == collections.OrderedDict:
+        p = collections.OrderedDict()
+    else:
+        p = {}
+    for key, value in dct.items():
+        if key in keys:
+            p[key] = value
+    # p = {key: value for key, value in dct.items() if key in keys}
     return p
 
 def kick_from_dict(dct, keys):
-    p = {key: value for key, value in dct.items() if key not in keys}
+    if type(dct) == collections.OrderedDict:
+        p = collections.OrderedDict()
+    else:
+        p = {}
+    for key, value in dct.items():
+        if key not in keys:
+            p[key] = value
+
+    # p = {key: value for key, value in dct.items() if key not in keys}
     return p
 
 def split_dict(dct, keys):
@@ -39,8 +54,13 @@ def split_dict(dct, keys):
     :param keys:
     :return: dict_in, dict_out
     """
-    dict_in = {}
-    dict_out = {}
+    if type(dct) == collections.OrderedDict:
+        dict_in = collections.OrderedDict()
+        dict_out = collections.OrderedDict()
+    else:
+        dict_in = {}
+        dict_out = {}
+
     for key, value in dct.items:
         if key in keys:
             dict_in[key] = value

@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
     @attr('interactive')
     def test_teigen_interactive(self):
         import os.path as op
-        params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/020/slice_parameters.yaml"))
+        params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
         # from teigen.dictwidgetqt import DictWidget

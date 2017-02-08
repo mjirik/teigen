@@ -513,6 +513,63 @@ class GeometricObject():
     def bbox_collision(self, bbox):
         return bbox_collision(self.bbox, bbox)
 
+class TubeObject(GeometricObject):
+
+    def __init__(self, point1, point2, radius):
+
+        bbox = get_bbox([point1, point2], margin=radius)
+        GeometricObject.__init__(self, bbox=bbox)
+        self.point1 = point1
+        self.point2 = point2
+        self.radius = radius
+
+    def _separable_by_bases(self, obj):
+        sep1 = self._separable_by_one_bbox_and_base(obj.bbox, self.point1, self.point2)
+        sep2 = self._separable_by_one_bbox_and_base(obj.bbox, self.point2, self.point1)
+        sep3 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
+        sep4 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
+        return sep1 | sep2 | sep3 | sep4
+
+    def _separable_by_one_bbox_and_base(self, bbox, base_point, other_point):
+        vector = np.asarray(other_point) - np.asarray(base_point)
+        points = get_bbox_corners(bbox)
+        position = point_and_plane(base_point, vector, points)
+        return np.all(position < 0)
+
+    def _separable_by_dist(self, obj):
+
+        safe_dist = obj.radius + self.radius
+        pta1 = obj.point1
+        pta2 = obj.point2
+        ptb1 = self.point1
+        ptb2 = self.point2
+        pt1, pt2, dist = closest_distance_between_lines(pta1, pta2, ptb1, ptb2) #, clampAll=True)
+        if dist > safe_dist:
+            pt1, pt2, dist = closest_distance_between_lines(pta1, pta2, ptb1, ptb2) #, clampAll=True)
+            return True
+        return False
+
+        # pt1, pt2, dist1 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampA0=True, clampA1=True) #, clampAll=True)
+        # pt1, pt2, dist2 = closest_distance_between_lines(obj.point1, obj.point2, self.point1, self.point2, clampB0=True, clampB1=True) #, clampAll=True)
+        # return np.min([dist1, dist2]) > safe_dist
+
+    def _separable_by_bbox(self, obj):
+        return not self.bbox_collision(obj.bbox)
+
+    def collision(self, obj):
+        if self._separable_by_bbox(obj):
+            # are separable by bbox
+            return False
+        else:
+            # TODO Implement type check
+            # if type(obj) == CylinderObject:
+            if True:
+                if self._separable_by_dist(obj):
+                    return False
+                if self._separable_by_bases(obj):
+                    return False
+        return True
+
 class CylinderObject(GeometricObject):
 
     def __init__(self, point1, point2, radius):
@@ -625,10 +682,37 @@ class CollisionModelCombined(CollisionModel):
     def __init__(self, areasize=None):
         CollisionModel.__init__(self, areasize)
         self.objects = []
+    def add_tube_if_no_collision(self, pt1, pt2, radius,
+                                 # COLLISION_RADIUS=1.5 # higher then sqrt(2)
+                                 ):
+        if not (
+                    self.is_point_in_area(pt1, radius) and
+                    self.is_point_in_area(pt2, radius)
+        ):
+            return True
+
+        new_obj = TubeObject(pt1, pt2, radius)
+
+        collision = False
+        for obj in self.objects:
+            if obj.collision(new_obj):
+                collision = True
+                break
+
+        if not collision:
+            self.objects.append(new_obj)
+
+        return collision
 
     def add_cylinder_if_no_collision(self, pt1, pt2, radius,
                                          # COLLISION_RADIUS=1.5 # higher then sqrt(2)
                                          ):
+        if not (
+                    self.is_point_in_area(pt1, radius) and
+                    self.is_point_in_area(pt2, radius)
+        ):
+            return True
+
         new_obj = CylinderObject(pt1, pt2, radius)
 
         collision = False
