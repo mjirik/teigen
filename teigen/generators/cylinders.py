@@ -213,7 +213,7 @@ class CylinderGenerator:
                         # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
                         # self._cylinder_nodes.extend(line_nodes)
                         length = np.linalg.norm(pt1 - pt2)
-                        surf = 2 * np.pi * (radius + length)
+                        surf = 2 * np.pi * radius * (radius + length)
                         volume =  np.pi * radius**2 * length
                         vector = pt1 - pt2
 

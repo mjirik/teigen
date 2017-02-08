@@ -52,7 +52,6 @@ class TeigenWidget(QtGui.QWidget):
         self.logfile = logfile
         self.ncols = ncols
         self.gen = None
-        self.dataframes = {}
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen(logfile=self.logfile)
@@ -107,11 +106,18 @@ class TeigenWidget(QtGui.QWidget):
             "radius": "radius [mm]"
         }
         to_rename_density = {
-            "length": "length [mm^-2]",
-            "volume": "volume []",
-            "surface": "surface [mm^-1]"
+            "length": "length d. [mm^-2]",
+            "volume": "volume d. []",
+            "surface": "surface d. [mm^-1]"
             # "radius": "radius [mm^-2]"
         }
+
+        # to_rename_density = {
+        #     "length": "length [mm]",
+        #     "volume": "volume [mm^3]",
+        #     "surface": "surface [mm^2]"
+        #     # "radius": "radius [mm^-2]"
+        # }
 
         run_number_alpha = chr(ord("A") + self.run_number)
         if self.ui_stats_shown:
@@ -134,7 +140,9 @@ class TeigenWidget(QtGui.QWidget):
             # self.toolbar = NavigationToolbar(self.canvas, self)
             self.stats_tab_wg.addTab(self.canvas, 'Graphs ' + run_number_alpha)
 
-        df = self.teigen.gen.getStats()
+        # df = self.teigen.gen.getStats()
+        self.teigen.prepare_stats()
+        df = self.teigen.dataframes["elements"]
 
         plt.subplot(141)
         df[["length"]].rename(columns=to_rename).boxplot(return_type='axes')
@@ -150,34 +158,29 @@ class TeigenWidget(QtGui.QWidget):
 
         import tablewidget
 
-        dfdescribe = df.describe()
-        dfdescribe.insert(0, "", dfdescribe.index)
-        count = dfdescribe["length"][0]
-        dfdescribe = dfdescribe.ix[1:]
-        dfdescribe = dfdescribe.rename(columns=to_rename)
-        self.dataframes["describe"] = dfdescribe
-
-        dfmerne = df[["length", "volume", "surface"]].sum() / self.teigen.gen.area_volume
-        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
-        dfmernef["count"] = [count]
         # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()
 
-        self._wg_tab_merne = tablewidget.TableWidget(self, dataframe=dfmernef)
-        # self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
-        self.dataframes["density"] = dfmernef
-
-
         # TODO take care about redrawing
+        # self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
+
+        dfdescribe = self.teigen.dataframes["describe"]
+        dfmerne = self.teigen.dataframes["density"]
+        dfoverall = self.teigen.dataframes["overall"]
 
         self._wg_tab_describe = tablewidget.TableWidget(self, dataframe=dfdescribe)
+        self._wg_tab_merne = tablewidget.TableWidget(self, dataframe=dfmerne)
+        self._wg_tab_overall = tablewidget.TableWidget(self, dataframe=dfoverall)
         self._wg_tab_describe.setMinimumWidth(800)
         self._wg_tab_describe.setMinimumHeight(200)
+        self._wg_tab_merne.setMaximumHeight(80)
+        self._wg_tab_overall.setMaximumHeight(80)
 
         self._wg_tables = QtGui.QWidget()
         self._wg_tables.setLayout(QGridLayout())
         self._wg_tables.layout().addWidget(self._wg_tab_describe)
         self._wg_tables.layout().addWidget(self._wg_tab_merne)
+        self._wg_tables.layout().addWidget(self._wg_tab_overall)
 
         self._wg_tab_describe.show()
         self._wg_tab_describe.raise_()
@@ -320,8 +323,8 @@ class TeigenWidget(QtGui.QWidget):
 
         t = ParameterTree()
         t.setParameters(p, showTop=False)
-        t.setMinimumWidth(400)
-        t.setColumnCount(3)
+        t.setMinimumWidth(350)
+        # t.setColumnCount(3)
         t.show()
 
         t.addTopLevelItem(i5)
@@ -444,6 +447,7 @@ class Teigen():
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
         # 3D visualization data, works for some generators
         self.polydata = None
+        self.dataframes = {}
 
     def use_default_config(self):
 
@@ -577,6 +581,8 @@ class Teigen():
         import io3d.misc
         fn_base, fn_ext = self.filepattern_split()
         io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
+        self._surface_area_numeric_measurement()
+        self.save_stats(fn_base)
         # postprocessing
         if "generate_volume" in dir(self.gen):
             self.data3d = self.gen.generate_volume()
@@ -650,6 +656,61 @@ class Teigen():
             'resolution': [resolution[1], resolution[2]]
         }
         return dct
+
+    def _surface_area_numeric_measurement(self):
+        from tree import TreeBuilder
+        tvgvol = TreeBuilder("vol")
+        tvgvol.voxelsize_mm = self.config["areasampling"]["voxelsize_mm"]
+        tvgvol.shape = self.config["areasampling"]["areasize_px"]
+        tvgvol.tree_data = self.gen.tree_data
+
+        data3d = tvgvol.buildTree()
+        import measurement
+        surface = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm)
+
+        self.dataframes["overall"]["surface num. [mm^2]"] = [surface]
+        print surface
+        return surface
+
+    def prepare_stats(self):
+        to_rename = {
+            "length": "length [mm]",
+            "volume": "volume [mm^3]",
+            "surface": "surface [mm^2]",
+            "radius": "radius [mm]"
+        }
+        to_rename_density = {
+            "length": "length d. [mm^-2]",
+            "volume": "volume d. []",
+            "surface": "surface d. [mm^-1]"
+            # "radius": "radius [mm^-2]"
+        }
+
+        df = self.gen.getStats()
+        self.dataframes["elements"] = df
+
+        dfdescribe = df.describe()
+        dfdescribe.insert(0, "", dfdescribe.index)
+        count = dfdescribe["length"][0]
+        dfdescribe = dfdescribe.ix[1:]
+        dfdescribe = dfdescribe.rename(columns=to_rename)
+        self.dataframes["describe"] = dfdescribe
+
+        dfmerne = df[["length", "volume", "surface"]].sum() / self.gen.area_volume
+        dfmernef = dfmerne.to_frame().transpose().rename(columns=to_rename_density)
+        self.dataframes["density"] = dfmernef
+
+        # whole sumary data
+        dfoverall = df[["length", "volume", "surface"]].sum()
+        dfoverallf = dfoverall.to_frame().transpose().rename(columns=to_rename)
+        dfoverallf["area volume [mm^3]"] = [self.gen.area_volume]
+        dfoverallf["count []"] = [count]
+
+        self.dataframes["overall"] = dfoverallf
+
+    def save_stats(self, fn_base):
+        for dfname in self.dataframes:
+            self.dataframes[dfname].to_csv(fn_base + "_" + dfname + ".csv")
 
 
     def _area_sampling_general_export(self, area_sampling_params):
