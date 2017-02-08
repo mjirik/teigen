@@ -525,8 +525,8 @@ class TubeObject(GeometricObject):
         vector = self.point2 - self.point1
         vector = vector / np.linalg.norm(vector)
         # points on the tip of the pill
-        self.bounding_point1 = self.point1 + (vector * radius)
-        self.bounding_point2 = self.point2 - (vector * radius)
+        self.bounding_point1 = self.point1 - (vector * radius)
+        self.bounding_point2 = self.point2 + (vector * radius)
 
     def _separable_by_bases(self, obj):
         sep1 = self._separable_by_one_bbox_and_base(obj.bbox, self.bounding_point1, self.bounding_point2)
