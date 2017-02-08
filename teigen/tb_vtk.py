@@ -121,6 +121,13 @@ def get_cylinder(upper, height, radius,
 
     return tr2.GetOutput()
 
+def get_sphere(center, radius):
+    # create source
+    import vtk
+    source = vtk.vtkSphereSource()
+    source.SetCenter(center[0], center[1], center[2])
+    source.SetRadius(radius)
+    return source.GetOutput()
 
 def gen_tree(tree_data):
 
@@ -151,6 +158,22 @@ def gen_tree(tree_data):
 
             polyData.InsertNextCell(cell.GetCellType(),
                                     cell.GetPointIds())
+        # spheres part
+        # cyl = get_sphere(br['upperVertex'],
+        #                    br['radius']
+        #                    )
+        # for ii in xrange(cyl.GetNumberOfPoints()):
+        #     points.InsertPoint(poffset + ii, cyl.GetPoint(ii))
+        #
+        # for ii in xrange(cyl.GetNumberOfCells()):
+        #     cell = cyl.GetCell(ii)
+        #     cellIds = cell.GetPointIds()
+        #     for jj in xrange(cellIds.GetNumberOfIds()):
+        #         oldId = cellIds.GetId(jj)
+        #         cellIds.SetId(jj, oldId + poffset)
+        #
+        #     polyData.InsertNextCell(cell.GetCellType(),
+        #                             cell.GetPointIds())
 
         poffset += cyl.GetNumberOfPoints()
 

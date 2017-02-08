@@ -519,15 +519,20 @@ class TubeObject(GeometricObject):
 
         bbox = get_bbox([point1, point2], margin=radius)
         GeometricObject.__init__(self, bbox=bbox)
-        self.point1 = point1
-        self.point2 = point2
-        self.radius = radius
+        self.point1 = np.asarray(point1)
+        self.point2 = np.asarray(point2)
+        self.radius = np.asarray(radius)
+        vector = self.point2 - self.point1
+        vector = vector / np.linalg.norm(vector)
+        # points on the tip of the pill
+        self.bounding_point1 = self.point1 + (vector * radius)
+        self.bounding_point2 = self.point2 - (vector * radius)
 
     def _separable_by_bases(self, obj):
-        sep1 = self._separable_by_one_bbox_and_base(obj.bbox, self.point1, self.point2)
-        sep2 = self._separable_by_one_bbox_and_base(obj.bbox, self.point2, self.point1)
-        sep3 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
-        sep4 = self._separable_by_one_bbox_and_base(self.bbox, obj.point2, obj.point1)
+        sep1 = self._separable_by_one_bbox_and_base(obj.bbox, self.bounding_point1, self.bounding_point2)
+        sep2 = self._separable_by_one_bbox_and_base(obj.bbox, self.bounding_point2, self.bounding_point1)
+        sep3 = self._separable_by_one_bbox_and_base(self.bbox, obj.bounding_point2, obj.bounding_point1)
+        sep4 = self._separable_by_one_bbox_and_base(self.bbox, obj.bounding_point2, obj.bounding_point1)
         return sep1 | sep2 | sep3 | sep4
 
     def _separable_by_one_bbox_and_base(self, bbox, base_point, other_point):

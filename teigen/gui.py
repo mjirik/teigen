@@ -618,7 +618,9 @@ class Teigen():
             lambda_start=0.1,
             lambda_stop=3.0,
             noise_amplitude = 40.0,
-            noise_mean = 30.0
+            noise_mean = 30.0,
+            measurement_multiplier=2
+
     ):
         if gaussian_blur:
             sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm
@@ -637,6 +639,7 @@ class Teigen():
 
         if limit_negative_intensities:
             self.data3d[self.data3d < 0] = 0
+        self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
 
         return self.data3d
 
@@ -674,7 +677,10 @@ class Teigen():
         # import numpy as np
         from tree import TreeBuilder
         vxsz = self.config["areasampling"]["voxelsize_mm"]
+        vxsz = np.asarray(vxsz).astype(np.float) / self.config["postprocessing"]["measurement_multiplier"]
         shape = self.config["areasampling"]["areasize_px"]
+        shape = np.asarray(shape) * self.config["postprocessing"]["measurement_multiplier"]
+        shape = shape.astype(np.int)
         tvgvol = TreeBuilder("vol")
         tvgvol.voxelsize_mm = vxsz
         tvgvol.shape = shape

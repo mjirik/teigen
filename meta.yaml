@@ -55,7 +55,7 @@ requirements:
     - pyqtconfig
     - pandas
     - simpleitk
-    - imtools >=0.1.24
+    - imtools >=0.1.25
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei
