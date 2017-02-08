@@ -313,9 +313,6 @@ class TeigenWidget(QtGui.QWidget):
 
 
         import pyqtgraph as pg
-        i5  = pg.TreeWidgetItem(["Item 5"])
-        b5 = QtGui.QPushButton('Button')
-        i5.setWidget(1, b5)
         ## pyqtgraph experiments
         import dictwidgetpg
         import pyqtgraph
@@ -341,7 +338,12 @@ class TeigenWidget(QtGui.QWidget):
         # t.setColumnCount(3)
         t.show()
 
-        t.addTopLevelItem(i5)
+        # how to add button
+        # i5  = pg.TreeWidgetItem(["Item 5"])
+        # b5 = QtGui.QPushButton('Button')
+        # i5.setWidget(1, b5)
+        # t.addTopLevelItem(i5)
+
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.area_sampling_wg = t
         self.area_sampling_params = p
