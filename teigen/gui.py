@@ -186,7 +186,7 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_describe.raise_()
         # self.mainLayout.addWidget(self._wg_tab_describe, 0, 2, 5, 2)
         # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
-        self.stats_tab_wg.addTab(self._wg_tables, "Sumary " + run_number_alpha)
+        self.stats_tab_wg.addTab(self._wg_tables, "Summary " + run_number_alpha)
         # self.resize(600,700)
 
         if self.teigen.polydata is not None:
