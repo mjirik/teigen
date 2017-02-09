@@ -764,6 +764,39 @@ class Teigen():
     #     }
     #     io3d.write(data, filename)
 
+class ConfigFileManager():
+    def __init__(
+            self,
+            appname=None,
+            config_dir_pattern="~/.config/",
+            default_config_file_pattern="default.yaml",
+            favorite_config_file_pattern="favorite.yaml"
+    ):
+        self.appname = appname
+        self.config_dir = op.expanduser(op.join(config_dir_pattern, appname))
+
+        self.default_config_file = op.join(self.config_dir, default_config_file_pattern)
+        self.default_config = None
+        self.favorite_config_file = op.join(self.config_dir, default_config_file_pattern)
+        self.favorite_config = None
+
+    def init_config_dir(self):
+        if not op.exists(self.config_dir):
+            import os
+            os.makedirs(self.config_dir)
+
+    def save_default(self, config):
+        io3d.misc.obj_to_file(config, self.default_config_file)
+
+    def load_default(self):
+        return io3d.misc.obj_from_file(self.default_config_file)
+
+    def save_favorite(self, config):
+        io3d.misc.obj_to_file(config, self.favorite_config_file)
+
+    def load_favorite(self):
+        return io3d.misc.obj_from_file(self.favorite_config_file)
+
 def main():
     logger = logging.getLogger()
 
@@ -772,6 +805,8 @@ def main():
     ch.setLevel(logging.WARNING)
     logger.addHandler(ch)
 
+    config_file_manager = ConfigFileManager("teigen")
+    config_file_manager.init_config_dir()
     # create file handler which logs even debug messages
     # fh = logging.FileHandler('log.txt')
     # fh.setLevel(logging.DEBUG)
@@ -787,7 +822,7 @@ def main():
     )
     parser.add_argument(
         '-p', '--parameterfile',
-        default=None,
+        default=config_file_manager.default_config_file,
         # required=True,
         help='input parameter file'
     )
@@ -809,9 +844,13 @@ def main():
     if args.debug:
         ch.setLevel(logging.DEBUG)
 
+    #default param file
+    if not op.exists(op.expanduser(args.parameterfile)):
+        args.parameterfile = None
 
     if args.nointeractivity:
         tg = Teigen(logfile=args.logfile)
+        tg.
         if args.parameterfile is not None:
             params = io3d.misc.obj_from_file(args.parameterfile)
             tg.set_config(**params)
