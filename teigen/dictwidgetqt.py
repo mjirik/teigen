@@ -76,8 +76,8 @@ class DictWidget(QtGui.QWidget):
                 array = np.asarray(value)
                 key_array_i = 0
                 for val in array.tolist():
-                    # key_i = key + str(hgrid_i)
-                    key_i = (key, key_array_i)
+                    # key_i = (key, key_array_i)
+                    key_i = ComposedDictMetadata((key, key_array_i))
                     self._tmp_composed_keys_dict[key].append(key_i)
                     self._tmp_composed_keys_list.append(key_i)
                     key_array_i += 1
@@ -218,7 +218,8 @@ class DictWidget(QtGui.QWidget):
             from PyQt4.QtCore import pyqtRemoveInputHook
             pyqtRemoveInputHook()
             # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
-            if type(key) == tuple:
+            # if type(key) == tuple:
+            if type(key) == ComposedDictMetadata:
 
                 dict_key, value_index = key
                 dict_key = (dict_key)
@@ -231,7 +232,8 @@ class DictWidget(QtGui.QWidget):
                 dictionary[key] = _primitive_type(value)
 
         for key in dictionary.keys():
-            if type(key) == tuple:
+            # if type(key) == tuple:
+            if type(key) == ComposedDictMetadata:
                 dictionary.pop(key)
 
 
@@ -241,6 +243,8 @@ class DictWidget(QtGui.QWidget):
 
         return dictionary
 
+class ComposedDictMetadata(tuple):
+    pass
 
 def main():
     logger = logging.getLogger()

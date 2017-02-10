@@ -56,7 +56,7 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_stats_shown = False
         self.teigen = Teigen(logfile=self.logfile)
         if config is not None:
-            self.teigen.set_config(**config)
+            self.teigen.update_config(**config)
         self.version = self.teigen.version
         self.config = {}
         self.run_number = 0
@@ -95,7 +95,7 @@ class TeigenWidget(QtGui.QWidget):
         self.collect_config_from_gui()
 
         # self.config = new_cfg
-        self.teigen.set_config(**self.config)
+        self.teigen.update_config(**self.config)
         self.teigen.run()
 
     def _show_stats(self):
@@ -418,6 +418,8 @@ class TeigenWidget(QtGui.QWidget):
 
 class Teigen():
     def __init__(self, logfile='~/tegen.log'):
+        self.config_file_manager = ConfigFileManager("teigen")
+        self.config_file_manager.init_config_dir()
 
         logger = logging.getLogger()
         handler = logging.handlers.RotatingFileHandler(
@@ -432,6 +434,7 @@ class Teigen():
         logger.addHandler(handler)
 
         logger.info("Starting Teigen")
+
 
         self.logfile=logfile
         self.version = "0.1.25"
@@ -465,22 +468,29 @@ class Teigen():
         self.dataframes = {}
 
     def use_default_config(self):
+        self.config = self.get_default_config()
 
-        self.config = {}
+    def get_default_config(self):
+
+        config = {}
         # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
 
-        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
-        self.config["generators"] = collections.OrderedDict()
-        for generator_cl, generator_name in zip(self.generators_classes, self.generators_names):
+        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution",
+                     "n_slice", "dims"]
+        config["generators"] = collections.OrderedDict()
+        for generator_cl, generator_name in zip(
+                self.generators_classes,
+                self.generators_names
+        ):
             generator_params = dictwidgetqt.get_default_args(generator_cl)
             generator_params = dili.kick_from_dict(generator_params, hide_keys)
-            self.config["generators"][generator_name] = generator_params
+            config["generators"][generator_name] = generator_params
 
         # self.config["generator_id"] = self.generators_names[0]
-        self.config["generator_id"] = 0
+        config["generator_id"] = 0
         # self.config = self.configs[0]
-        self.config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
-        self.config["areasampling"] = {
+        config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
+        config["areasampling"] = {
             "voxelsize_mm": [1.0, 1.0, 1.0],
             "areasize_mm": [110.0, 100.0, 100.0],
             "areasize_px": [110, 100, 100]
@@ -488,8 +498,9 @@ class Teigen():
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
         # self.config["areasize_px"] = [100, 100, 100]
+        return config
 
-    def set_config(self, **config):
+    def update_config(self, **config):
         import io3d.misc
 
         if "required_teigen_version" in config.keys():
@@ -498,7 +509,10 @@ class Teigen():
                 logger.error(
                     "Wrong teigen version. Required: " + reqired_version + " , actual " + self.version)
                 return
-        self.config = copy.deepcopy(config)
+        config = copy.deepcopy(config)
+        # there can be stored more than our config. F.e. some GUI dict reconstruction information
+        self.config = dili.update(self.config, config)
+        return
 
     def run(self):
         import time
@@ -512,6 +526,7 @@ class Teigen():
         #         filepattern,
         #         series_number=series_number
         #     )
+        self.config_file_manager.save_init(self.config)
 
 
 
@@ -591,6 +606,7 @@ class Teigen():
         filepattern = re.sub(r"({.*?})", r"", filepattern)
         root, ext = op.splitext(filepattern)
         return root, ext
+
 
     def save_volume(self):
         import io3d.misc
@@ -769,16 +785,21 @@ class ConfigFileManager():
             self,
             appname=None,
             config_dir_pattern="~/.config/",
-            default_config_file_pattern="default.yaml",
-            favorite_config_file_pattern="favorite.yaml"
+            default_config_file="default_config.yaml",
+            favorite_config_file="favorite_config.yaml",
+            init_config_file="init_config.yaml",
+            log_file="favorite.yaml"
     ):
         self.appname = appname
         self.config_dir = op.expanduser(op.join(config_dir_pattern, appname))
 
-        self.default_config_file = op.join(self.config_dir, default_config_file_pattern)
+        self.default_config_file = op.join(self.config_dir, default_config_file)
         self.default_config = None
-        self.favorite_config_file = op.join(self.config_dir, default_config_file_pattern)
+        self.favorite_config_file = op.join(self.config_dir, favorite_config_file)
         self.favorite_config = None
+        self.init_config_file = op.join(self.config_dir, init_config_file)
+        self.init_config = None
+        self.logfile= op.join(self.config_dir, log_file)
 
     def init_config_dir(self):
         if not op.exists(self.config_dir):
@@ -796,6 +817,12 @@ class ConfigFileManager():
 
     def load_favorite(self):
         return io3d.misc.obj_from_file(self.favorite_config_file)
+
+    def save_init(self, config):
+        io3d.misc.obj_to_file(config, self.init_config_file)
+
+    def load_init(self):
+        return io3d.misc.obj_from_file(self.init_config_file)
 
 def main():
     logger = logging.getLogger()
@@ -822,7 +849,7 @@ def main():
     )
     parser.add_argument(
         '-p', '--parameterfile',
-        default=config_file_manager.default_config_file,
+        default=config_file_manager.init_config_file,
         # required=True,
         help='input parameter file'
     )
@@ -850,10 +877,9 @@ def main():
 
     if args.nointeractivity:
         tg = Teigen(logfile=args.logfile)
-        tg.
         if args.parameterfile is not None:
             params = io3d.misc.obj_from_file(args.parameterfile)
-            tg.set_config(**params)
+            tg.update_config(**params)
         tg.run()
         # tg.run(**params)
         tg.save_volume()
