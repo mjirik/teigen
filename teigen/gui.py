@@ -269,20 +269,21 @@ class TeigenWidget(QtGui.QWidget):
             "voxelsize_mm": "voxel size [mm]",
             }
 
+        # list is pointer. It causes problems with temporary reconstruction information
+        # copy fix this issue
+        teigen_config = copy.deepcopy(self.teigen.config)
+
         self._ui_generator_widgets = []
-        for generator_name in self.teigen.config["generators"]:
+        for generator_name in teigen_config["generators"]:
             wg = dictwidgetqt.DictWidget(
-                self.teigen.config["generators"][generator_name],
+                teigen_config["generators"][generator_name],
                 hide_keys=hide_keys,
                 captions=rename_captions_dict,
                 ncols=1,
             )
             self._ui_generator_widgets.append(wg)
             self.gen_tab_wg.addTab(wg, generator_name)
-        self.gen_tab_wg.setCurrentIndex(self.teigen.config["generator_id"])
-        # self.gen_tab_wg.addTab(gen_wg, "cylinder generator")
-        # self.gen_tab_wg.addTab(gen_wg, "gensei generator")
-
+        self.gen_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/{seriesn:03d}/slice{:06d}.jpg", "output directory")
@@ -301,15 +302,6 @@ class TeigenWidget(QtGui.QWidget):
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
-        # self.config.updated.connect(self.on_config_update)
-        # def name_fcn(*args, **kwargs):
-        #     print args
-        #     print kwargs
-        #     return "save"
-        # btn_save.name = name_fcn
-        # btn_save.remove = name_fcn
-        # btn_save.parentChanged = name_fcn
-        # btn_save.sigTreeStateChanged = name_fcn
 
 
         import pyqtgraph as pg
