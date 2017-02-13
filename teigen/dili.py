@@ -68,7 +68,7 @@ def split_dict(dct, keys):
             dict_out[key] = value
     return dict_in, dict_out
 
-def update(d, u):
+def recursive_update(d, u):
     """
     Dict recursive update.
 
@@ -81,7 +81,7 @@ def update(d, u):
     """
     for k, v in u.iteritems():
         if isinstance(v, collections.Mapping):
-            r = update(d.get(k, {}), v)
+            r = recursive_update(d.get(k, {}), v)
             d[k] = r
         else:
             d[k] = u[k]

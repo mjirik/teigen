@@ -25,6 +25,7 @@ from PyQt4.QtGui import QGridLayout, QLabel,\
 
 from PyQt4 import QtGui
 import sys
+import os
 import os.path as op
 import copy
 import inspect
@@ -79,9 +80,9 @@ class TeigenWidget(QtGui.QWidget):
         # config.update(area_cfg["Area Sampling"])
         config["areasampling"] = area_cfg["Area Sampling"]
         filepattern = self.ui_output_dir_widget.get_dir()
-        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=filepattern)
+        # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=filepattern)
         config["filepattern"] = filepattern
-        config['filepattern_series_number'] = series_number
+        # config['filepattern_series_number'] = series_number
         config["generator_id"] = id
 
         # config["postprocessing"] = self.posprocessing_wg.config_as_dict()
@@ -141,7 +142,6 @@ class TeigenWidget(QtGui.QWidget):
             self.stats_tab_wg.addTab(self.canvas, 'Graphs ' + run_number_alpha)
 
         # df = self.teigen.gen.getStats()
-        self.teigen.prepare_stats()
         df = self.teigen.dataframes["elements"]
 
         plt.subplot(141)
@@ -256,7 +256,11 @@ class TeigenWidget(QtGui.QWidget):
         self.progressBar.setRange(0, 10000)
         self.progressBar.setValue(0)
 
+        self.ui_stop_button = QPushButton("Stop", self)
+        self.ui_stop_button.clicked.connect(self.btnStop)
+
         self.statusBar.addWidget(self.progressBar)
+        self.statusBar.addWidget(self.ui_stop_button)
         self.progressBar.show()
 
 
@@ -286,7 +290,8 @@ class TeigenWidget(QtGui.QWidget):
         self.gen_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~/teigen_data/{seriesn:03d}/slice{:06d}.jpg", "output directory")
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
+            self.teigen.config["filepattern"], "output directory")
         self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
         self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1) # , (gd_max_i / 2), text_col)
         btn_accept = QPushButton("Generate skeleton", self)
@@ -356,6 +361,9 @@ class TeigenWidget(QtGui.QWidget):
         self.run()
         self._show_stats()
         self.run_number += 1
+
+    def btnStop(self):
+        pass
 
     def btnSave(self):
         # filename = "file{:05d}.jpg"
@@ -487,6 +495,8 @@ class Teigen():
             "areasize_mm": [110.0, 100.0, 100.0],
             "areasize_px": [110, 100, 100]
         }
+        config["filepattern"] = "~/teigen_data/{seriesn:03d}/slice{:06d}.jpg"
+        # config['filepattern_series_number'] = series_number
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
         # self.config["areasize_px"] = [100, 100, 100]
@@ -503,7 +513,7 @@ class Teigen():
                 return
         config = copy.deepcopy(config)
         # there can be stored more than our config. F.e. some GUI dict reconstruction information
-        self.config = dili.update(self.config, config)
+        self.config = dili.recursive_update(self.config, config)
         return
 
     def run(self):
@@ -556,6 +566,8 @@ class Teigen():
 
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
 
+        self.prepare_stats()
+
         t1 = time.time()
         self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
@@ -602,7 +614,17 @@ class Teigen():
 
     def save_volume(self):
         import io3d.misc
+        # config["filepattern"] = filepattern
+        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+        self.config['filepattern_series_number'] = series_number
+
         fn_base, fn_ext = self.filepattern_split()
+
+        fn_base = op.expanduser(fn_base)
+        dirname = op.dirname(fn_base)
+        if not op.exists(dirname):
+            os.makedirs(dirname)
+
         io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
         self._numeric_measurement(fn_base)
         self.save_stats(fn_base)

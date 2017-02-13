@@ -34,9 +34,9 @@ class TBVolume:
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
-    def __init__(self, gtree):
+    def __init__(self, gtree, dtype=np.int):
         self.shape = gtree.shape
-        self.data3d = np.zeros(gtree.shape, dtype=np.int)
+        self.data3d = np.zeros(gtree.shape, dtype=dtype)
         self.voxelsize_mm = gtree.voxelsize_mm
         if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
             self.intensity_profile = gtree.intensity_profile

@@ -13,7 +13,7 @@ import io3d
 class MyTestCase(unittest.TestCase):
 
     @attr('interactive')
-    def test_teigen_interactive(self):
+    def test_teigen_gui_interactive(self):
         import os.path as op
         params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
         import PyQt4
@@ -27,7 +27,7 @@ class MyTestCase(unittest.TestCase):
         cw.show()
         app.exec_()
 
-    def test_teigen(self):
+    def test_teigen_gui(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
         # from teigen.dictwidgetqt import DictWidget
@@ -39,5 +39,12 @@ class MyTestCase(unittest.TestCase):
         cw.show()
         cw.deleteLater()
         app.deleteLater()
+
+    def test_teigen(self):
+        import teigen.gui
+        tg = teigen.gui.Teigen()
+        tg.run()
+        tg.save_volume()
+
 if __name__ == '__main__':
     unittest.main()

@@ -34,6 +34,7 @@ class TreeBuilder:
         self.use_lar = False
         self.tree_label = None
         self.segments_progress_callback = self.finish_progress_callback
+        self.stop_processing = False
 
         if generator_class in ['vol', 'volume']:
             import tb_volume
@@ -91,13 +92,6 @@ class TreeBuilder:
         if (self.tree_label is None) or (self.tree_label not in  tkeys):
             self.tree_label = tkeys[0]
         self.tree_data = self.rawdata['Graph'][self.tree_label]
-        #
-        # try:
-        #     # key is usually "porta" or "microstructure"
-        #     keys = self.rawdata['graph'].keys()
-        #     self.tree_data = self.rawdata['graph'][keys[0]]
-        # except:
-        #     self.tree_data = self.rawdata['Graph']
 
     def buildTree(self):
         """
@@ -129,6 +123,8 @@ class TreeBuilder:
         progress = 0.0
 
         for cyl_id in self.tree_data:
+            if self.stop_processing:
+                break
             logger.debug("CylinderId: " + str(cyl_id))
             cyl_data = self.tree_data[cyl_id]
 
@@ -175,69 +171,73 @@ class TreeBuilder:
         print progress
         logger.debug(str(progress))
 
-    def generateTree_vtk(self):
-        import vtk
-        from vtk.util import numpy_support
-        """
-        | Funkce na vygenerování objemu stromu ze zadaných dat.
-        | Veze pro generování pomocí VTK
-        | !!! funguje špatně -> vstupní data musí být pouze povrchové body, jinak generuje ve výstupních datech dutiny
-
-        """
-        # get vtkPolyData
-        tree_data = gen_vtk_tree.compatibility_processing(self.rawdata['Graph'])
-        polyData = gen_vtk_tree.gen_tree(tree_data)
-
-        polyData.GetBounds()
-        # bounds = polyData.GetBounds()
-
-        white_image = vtk.vtkImageData()
-        white_image.SetSpacing(self.voxelsize_mm)
-        white_image.SetDimensions(self.shape)
-        white_image.SetExtent(
-            [0, self.shape[0] - 1, 0, self.shape[1] - 1, 0, self.shape[2] - 1])
-        # origin = [(bounds[0] + self.shape[0])/2, (bounds[1] + self.shape[1])/2, (bounds[2] + self.shape[2])/2]
-        # white_image.SetOrigin(origin) #neni potreba?
-        # white_image.SetScalarTypeToUnsignedChar()
-        white_image.AllocateScalars()
-
-        # fill the image with foreground voxels: (still black until stecil)
-        inval = 255
-        outval = 0
-        count = white_image.GetNumberOfPoints()
-        for i in range(0, count):
-            white_image.GetPointData().GetScalars().SetTuple1(i, inval)
-
-        pol2stencil = vtk.vtkPolyDataToImageStencil()
-        pol2stencil.SetInput(polyData)
-
-        # pol2stencil.SetOutputOrigin(origin) # TOHLE BLBNE
-        pol2stencil.SetOutputSpacing(self.voxelsize_mm)
-        pol2stencil.SetOutputWholeExtent(white_image.GetExtent())
-        pol2stencil.Update()
-
-        imgstenc = vtk.vtkImageStencil()
-        imgstenc.SetInput(white_image)
-        imgstenc.SetStencil(pol2stencil.GetOutput())
-        imgstenc.ReverseStencilOff()
-        imgstenc.SetBackgroundValue(outval)
-        imgstenc.Update()
-
-        # VTK -> Numpy
-        vtk_img_data = imgstenc.GetOutput()
-        vtk_data = vtk_img_data.GetPointData().GetScalars()
-        numpy_data = numpy_support.vtk_to_numpy(vtk_data)
-        numpy_data = numpy_data.reshape(
-            self.shape[0], self.shape[1], self.shape[2])
-        numpy_data = numpy_data.transpose(2, 1, 0)
-
-        self.data3d = numpy_data
-
     def saveToFile(self, *args, **kwargs):
         self.generator.save(*args, **kwargs)
 
     def show(self):
         self.generator.show()
+
+    def stop(self):
+        self.stop_processing = True
+
+    # def generateTree_vtk(self):
+    #     import vtk
+    #     from vtk.util import numpy_support
+    #     """
+    #     | Funkce na vygenerování objemu stromu ze zadaných dat.
+    #     | Veze pro generování pomocí VTK
+    #     | !!! funguje špatně -> vstupní data musí být pouze povrchové body, jinak generuje ve výstupních datech dutiny
+    #
+    #     """
+    #     # get vtkPolyData
+    #     tree_data = gen_vtk_tree.compatibility_processing(self.rawdata['Graph'])
+    #     polyData = gen_vtk_tree.gen_tree(tree_data)
+    #
+    #     polyData.GetBounds()
+    #     # bounds = polyData.GetBounds()
+    #
+    #     white_image = vtk.vtkImageData()
+    #     white_image.SetSpacing(self.voxelsize_mm)
+    #     white_image.SetDimensions(self.shape)
+    #     white_image.SetExtent(
+    #         [0, self.shape[0] - 1, 0, self.shape[1] - 1, 0, self.shape[2] - 1])
+    #     # origin = [(bounds[0] + self.shape[0])/2, (bounds[1] + self.shape[1])/2, (bounds[2] + self.shape[2])/2]
+    #     # white_image.SetOrigin(origin) #neni potreba?
+    #     # white_image.SetScalarTypeToUnsignedChar()
+    #     white_image.AllocateScalars()
+    #
+    #     # fill the image with foreground voxels: (still black until stecil)
+    #     inval = 255
+    #     outval = 0
+    #     count = white_image.GetNumberOfPoints()
+    #     for i in range(0, count):
+    #         white_image.GetPointData().GetScalars().SetTuple1(i, inval)
+    #
+    #     pol2stencil = vtk.vtkPolyDataToImageStencil()
+    #     pol2stencil.SetInput(polyData)
+    #
+    #     # pol2stencil.SetOutputOrigin(origin) # TOHLE BLBNE
+    #     pol2stencil.SetOutputSpacing(self.voxelsize_mm)
+    #     pol2stencil.SetOutputWholeExtent(white_image.GetExtent())
+    #     pol2stencil.Update()
+    #
+    #     imgstenc = vtk.vtkImageStencil()
+    #     imgstenc.SetInput(white_image)
+    #     imgstenc.SetStencil(pol2stencil.GetOutput())
+    #     imgstenc.ReverseStencilOff()
+    #     imgstenc.SetBackgroundValue(outval)
+    #     imgstenc.Update()
+    #
+    #     # VTK -> Numpy
+    #     vtk_img_data = imgstenc.GetOutput()
+    #     vtk_data = vtk_img_data.GetPointData().GetScalars()
+    #     numpy_data = numpy_support.vtk_to_numpy(vtk_data)
+    #     numpy_data = numpy_data.reshape(
+    #         self.shape[0], self.shape[1], self.shape[2])
+    #     numpy_data = numpy_data.transpose(2, 1, 0)
+    #
+    #     self.data3d = numpy_data
+
 
 
 def main():
