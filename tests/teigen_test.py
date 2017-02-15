@@ -43,6 +43,12 @@ class MyTestCase(unittest.TestCase):
     def test_teigen(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
+        conf = {
+            "voxelsize_mm": [1., 1., 1.],
+            "areasize_px": [100, 100, 100],
+            "areasize_mm": [100, 100, 100],
+        }
+        tg.update_config(**conf)
         tg.run()
         tg.save_volume()
 
