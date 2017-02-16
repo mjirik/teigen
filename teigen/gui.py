@@ -590,7 +590,7 @@ class Teigen():
             tvg.saveToFile(vtk_file)
             return tvg.generator.polyData
 
-    def filepattern_split(self):
+    def filepattern_fill_series(self):
         """
         Return base and ext of file. The slice_number and slice_position is ignored.
         :return:
@@ -607,6 +607,10 @@ class Teigen():
         filepattern = re.sub(r"({\s*})", r"", filepattern)
 
         filepattern = io3d.datawriter.filepattern_fill_series_number(filepattern, filepattern_series_number)
+        return filepattern
+
+    def filepattern_split(self):
+        filepattern = self.filepattern_fill_series()
         filepattern = re.sub(r"({.*?})", r"", filepattern)
         root, ext = op.splitext(filepattern)
         return root, ext
@@ -635,7 +639,8 @@ class Teigen():
             postprocessing_params = self.config["postprocessing"]
             data3d = self.postprocessing(**postprocessing_params)
             self.gen.data3d = data3d
-        self.gen.saveVolumeToFile(self.config["filepattern"])
+        # self.gen.saveVolumeToFile(self.config["filepattern"])
+        self.gen.saveVolumeToFile(self.filepattern_fill_series())
 
     def postprocessing(
             self,
@@ -711,29 +716,34 @@ class Teigen():
         vxsz = self.config["areasampling"]["voxelsize_mm"]
         vxsz = np.asarray(vxsz).astype(np.float) / self.config["postprocessing"]["measurement_multiplier"]
         shape = self.config["areasampling"]["areasize_px"]
-        shape = np.asarray(shape) * self.config["postprocessing"]["measurement_multiplier"]
-        shape = shape.astype(np.int)
-        tvgvol = TreeBuilder("vol")
-        tvgvol.voxelsize_mm = vxsz
-        tvgvol.shape = shape
-        tvgvol.tree_data = self.gen.tree_data
+        measurement_multiplier = self.config["postprocessing"]["measurement_multiplier"]
+        if measurement_multiplier > 0:
+            shape = np.asarray(shape) * measurement_multiplier
 
-        data3d = tvgvol.buildTree()
-        import measurement
-        surface = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm)
-        volume = np.sum(data3d > 0) * np.prod(vxsz)
+            shape = shape.astype(np.int)
+            tvgvol = TreeBuilder("vol")
+            tvgvol.voxelsize_mm = vxsz
+            tvgvol.shape = shape
+            tvgvol.tree_data = self.gen.tree_data
 
-        self.dataframes["overall"]["surf. num. [mm^2]"] = [surface]
-        self.dataframes["overall"]["vol. num. [mm^3]"] = [volume]
+            data3d = tvgvol.buildTree()
+            import measurement
+            surface = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm)
+            volume = np.sum(data3d > 0) * np.prod(vxsz)
 
-        filename = fn_base + "_raw_{:06d}.jpg"
-        import io3d.misc
-        data = {
-            'data3d': data3d.astype(np.uint8) * 70, #* self.output_intensity,
-            'voxelsize_mm': vxsz,
-            # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
-        }
-        io3d.write(data, filename)
+            self.dataframes["overall"]["surf. num. [mm^2]"] = [surface]
+            self.dataframes["overall"]["vol. num. [mm^3]"] = [volume]
+
+            filename = fn_base + "_raw_{:06d}.jpg"
+            import io3d.misc
+            data = {
+                'data3d': data3d.astype(np.uint8) * 70, #* self.output_intensity,
+                'voxelsize_mm': vxsz,
+                # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
+            }
+            io3d.write(data, filename)
+        else:
+            surface = 0
         return surface
 
     def prepare_stats(self):
