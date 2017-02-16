@@ -44,9 +44,11 @@ class MyTestCase(unittest.TestCase):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {
-            "voxelsize_mm": [1., 1., 1.],
-            "areasize_px": [100, 100, 100],
-            "areasize_mm": [100, 100, 100],
+            "areasampling":{
+                "voxelsize_mm": [1., 1., 1.],
+                "areasize_px": [150, 160, 170],
+                "areasize_mm": [150, 160, 170],
+            }
         }
         tg.update_config(**conf)
         tg.run()
