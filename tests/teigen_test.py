@@ -46,8 +46,11 @@ class MyTestCase(unittest.TestCase):
         conf = {
             "areasampling":{
                 "voxelsize_mm": [1., 1., 1.],
-                "areasize_px": [150, 160, 170],
-                "areasize_mm": [150, 160, 170],
+                "areasize_px": [510, 520, 530],
+                "areasize_mm": [510, 520, 530],
+            },
+            "postprocessing":{
+                "measurement_multiplier":-1,
             }
         }
         tg.update_config(**conf)
