@@ -165,6 +165,8 @@ class DictWidget(QtGui.QWidget):
             self.config.add_handler(key, atomic_widget)
         elif type(value) is float:
             atomic_widget = QDoubleSpinBox()
+            atomic_widget.setDecimals(6)
+            atomic_widget.setMaximum(1000000000)
             self.config.add_handler(key, atomic_widget)
         elif type(value) is str:
             atomic_widget = QLineEdit()

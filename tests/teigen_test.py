@@ -46,8 +46,8 @@ class MyTestCase(unittest.TestCase):
         conf = {
             "areasampling":{
                 "voxelsize_mm": [1., 1., 1.],
-                "areasize_px": [510, 520, 530],
-                "areasize_mm": [510, 520, 530],
+                "areasize_px": [710, 720, 730],
+                "areasize_mm": [710, 720, 730],
             },
             "postprocessing":{
                 "measurement_multiplier":-1,
@@ -57,7 +57,7 @@ class MyTestCase(unittest.TestCase):
         tg.run()
         tg.save_volume()
 
-    def test_teigen_big(self):
+    def test_teigen_small(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {

@@ -202,13 +202,14 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_stats_shown = True
 
 
-        self._noise_figure = plt.figure()
-        self._noise_canvas = FigureCanvas(self._noise_figure)
-        # self.toolbar = NavigationToolbar(self.canvas, self)
-        self.stats_tab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
-        noise = self.teigen.generate_noise()
-        plt.imshow(noise[0, :, :], cmap="gray")
-        plt.colorbar()
+        if self.teigen.config["preprocessing"]["add_noise"]:
+            self._noise_figure = plt.figure()
+            self._noise_canvas = FigureCanvas(self._noise_figure)
+            # self.toolbar = NavigationToolbar(self.canvas, self)
+            self.stats_tab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
+            noise = self.teigen.generate_noise()
+            plt.imshow(noise[0, :, :], cmap="gray")
+            plt.colorbar()
 
     def update_stats(self):
         import tablewidget
