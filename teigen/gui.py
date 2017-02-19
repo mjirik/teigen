@@ -417,23 +417,32 @@ class TeigenWidget(QtGui.QWidget):
 
 
 class Teigen():
-    def __init__(self, logfile='~/tegen.log'):
+    def __init__(self, logfile='~/tegen.log', loglevel=logging.DEBUG):
         self.config_file_manager = ConfigFileManager("teigen")
         self.config_file_manager.init_config_dir()
+        self.loglevel = loglevel
 
         logger = logging.getLogger()
         handler = logging.handlers.RotatingFileHandler(
             op.expanduser(logfile),
-            maxBytes=100000,
+            maxBytes=1000000,
             backupCount=9
         )
-        handler.setLevel(logging.DEBUG)
+        handler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
         formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
+        # streamhandler = logging.StreamHandler()
+        # streamhandler.setFormatter(formatter)
+        # self.memoryhandler = logging.handlers.MemoryHandler(1024*10, logging.DEBUG, streamhandler)
+        self.memoryhandler = logging.handlers.MemoryHandler(1024*100)#, logging.DEBUG, streamhandler)
+        self.memoryhandler.setLevel(self.loglevel)
+        logger.addHandler(self.memoryhandler)
+
         logger.info("Starting Teigen")
+
 
 
         self.logfile=logfile
@@ -618,6 +627,8 @@ class Teigen():
 
     def save_volume(self):
         import io3d.misc
+        import time
+        t0 = time.time()
         # config["filepattern"] = filepattern
         series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
         self.config['filepattern_series_number'] = series_number
@@ -630,8 +641,19 @@ class Teigen():
             os.makedirs(dirname)
 
         io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
+
+
+        handler = logging.FileHandler(fn_base + ".log")
+        handler.setLevel(self.loglevel)
+        self.memoryhandler.setTarget(handler)
+        self.memoryhandler.flush()
+
+
+
         self._numeric_measurement(fn_base)
         self.save_stats(fn_base)
+        t1 = time.time()
+        logger.debug("before volume generate " + str(t1-t0))
         # postprocessing
         if "generate_volume" in dir(self.gen):
             self.data3d = self.gen.generate_volume()
@@ -640,7 +662,14 @@ class Teigen():
             data3d = self.postprocessing(**postprocessing_params)
             self.gen.data3d = data3d
         # self.gen.saveVolumeToFile(self.config["filepattern"])
+        t2 = time.time()
+        logger.debug("before volume save " + str(t2-t0))
         self.gen.saveVolumeToFile(self.filepattern_fill_series())
+        t3 = time.time()
+        logger.info("time before volume generate: " + str(t1-t0))
+        logger.info("time before volume save: " + str(t2-t0))
+        logger.info("time after volume save: " + str(t3-t0))
+        self.memoryhandler.flush()
 
     def postprocessing(
             self,

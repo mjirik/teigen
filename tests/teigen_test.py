@@ -40,7 +40,7 @@ class MyTestCase(unittest.TestCase):
         cw.deleteLater()
         app.deleteLater()
 
-    def test_teigen(self):
+    def test_teigen_big(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {
@@ -48,6 +48,23 @@ class MyTestCase(unittest.TestCase):
                 "voxelsize_mm": [1., 1., 1.],
                 "areasize_px": [510, 520, 530],
                 "areasize_mm": [510, 520, 530],
+            },
+            "postprocessing":{
+                "measurement_multiplier":-1,
+            }
+        }
+        tg.update_config(**conf)
+        tg.run()
+        tg.save_volume()
+
+    def test_teigen_big(self):
+        import teigen.gui
+        tg = teigen.gui.Teigen()
+        conf = {
+            "areasampling":{
+                "voxelsize_mm": [1., 1., 1.],
+                "areasize_px": [110, 120, 130],
+                "areasize_mm": [110, 120, 130],
             },
             "postprocessing":{
                 "measurement_multiplier":-1,

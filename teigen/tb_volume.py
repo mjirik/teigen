@@ -41,7 +41,8 @@ class TBVolume:
         if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
             self.intensity_profile = gtree.intensity_profile
         else:
-            self.intensity_profile = {1:200, 0.6: 100}
+            # self.intensity_profile = {1:200, 0.6: 100}
+            self.intensity_profile = {1:200}
 
         # self.intensity_profile = incollections.OrderedDict(sorted(intensity_profile, reverse=True))
         self._cylinders_params = []
