@@ -430,8 +430,8 @@ class Teigen():
         )
         handler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
-        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
-        handler.setFormatter(formatter)
+        self.formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
+        handler.setFormatter(self.formatter)
         logger.addHandler(handler)
 
         # streamhandler = logging.StreamHandler()
@@ -644,6 +644,7 @@ class Teigen():
 
 
         handler = logging.FileHandler(fn_base + ".log")
+        handler.setFormatter(self.formatter)
         handler.setLevel(self.loglevel)
         self.memoryhandler.setTarget(handler)
         self.memoryhandler.flush()
