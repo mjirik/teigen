@@ -197,12 +197,11 @@ class TeigenWidget(QtGui.QWidget):
             self._wg_show_3d.add_vtk_polydata(self.teigen.polydata)
             self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
-
-
         self.ui_stats_shown = True
 
-
-        if self.teigen.config["preprocessing"]["add_noise"]:
+        if (
+                    self.teigen.config["preprocessing"]["noise_preview"] and
+                    self.teigen.config["preprocessing"]["add_noise"]):
             self._noise_figure = plt.figure()
             self._noise_canvas = FigureCanvas(self._noise_figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
@@ -500,6 +499,7 @@ class Teigen():
         config["generator_id"] = 0
         # self.config = self.configs[0]
         config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
+        # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
         config["areasampling"] = {
             "voxelsize_mm": [1.0, 1.0, 1.0],
             "areasize_mm": [110.0, 100.0, 100.0],
@@ -578,6 +578,10 @@ class Teigen():
 
         self.prepare_stats()
 
+        # prepare path to save
+        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+        self.config['filepattern_series_number'] = series_number
+
         t1 = time.time()
         self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
@@ -625,32 +629,36 @@ class Teigen():
         root, ext = op.splitext(filepattern)
         return root, ext
 
-
-    def save_volume(self):
-        import io3d.misc
-        import time
-        t0 = time.time()
-        # config["filepattern"] = filepattern
-        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
-        self.config['filepattern_series_number'] = series_number
-
+    def _get_fn_base(self):
         fn_base, fn_ext = self.filepattern_split()
 
         fn_base = op.expanduser(fn_base)
+        return fn_base
+
+    def save_parameters(self):
+        fn_base = self._get_fn_base()
+
         dirname = op.dirname(fn_base)
         if not op.exists(dirname):
             os.makedirs(dirname)
 
         io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
 
-
         handler = logging.FileHandler(fn_base + ".log")
         handler.setFormatter(self.formatter)
         handler.setLevel(self.loglevel)
         self.memoryhandler.setTarget(handler)
         self.memoryhandler.flush()
+        self.memoryhandler.flushLevel = self.loglevel
 
-
+    def save_volume(self):
+        # TODO split save_volume and save_parameters
+        self.save_parameters()
+        import io3d.misc
+        import time
+        t0 = time.time()
+        fn_base = self._get_fn_base()
+        # config["filepattern"] = filepattern
 
         self._numeric_measurement(fn_base)
         self.save_stats(fn_base)
@@ -671,13 +679,14 @@ class Teigen():
         logger.info("time before volume generate: " + str(t1-t0))
         logger.info("time before volume save: " + str(t2-t0))
         logger.info("time after volume save: " + str(t3-t0))
-        self.memoryhandler.flush()
+        # self.memoryhandler.flush()
 
     def postprocessing(
             self,
             gaussian_blur=True,
             gaussian_filter_sigma_mm=1.0,
             add_noise=True,
+            noise_preview=False,
             # gaussian_noise_stddev=10.0,
             # gaussian_noise_center=0.0,
             limit_negative_intensities=True,
