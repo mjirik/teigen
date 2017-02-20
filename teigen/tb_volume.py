@@ -27,6 +27,7 @@ from vtk.util import numpy_support
 
 # from datetime import datetime
 # import collections
+UNDERDEBUG = 8
 
 
 class TBVolume:
@@ -64,11 +65,11 @@ class TBVolume:
               self.voxelsize_mm[1], p1m[2] / self.voxelsize_mm[2]]
         p2 = [p2m[0] / self.voxelsize_mm[0], p2m[1] /
               self.voxelsize_mm[1], p2m[2] / self.voxelsize_mm[2]]
-        logger.debug(
+        logger.log(UNDERDEBUG,
             "p1_px: " + str(p1[0]) + " " + str(p1[1]) + " " + str(p1[2]))
-        logger.debug(
+        logger.log(UNDERDEBUG,
             "p2_px: " + str(p2[0]) + " " + str(p2[1]) + " " + str(p2[2]))
-        logger.debug("radius_mm:" + str(rad))
+        logger.log(UNDERDEBUG, "radius_mm:" + str(rad))
 
         # vzdalenosti mezi prvnim a koncovim bodem (pro jednotlive osy)
         pdiff = [abs(p1[0] - p2[0]), abs(p1[1] - p2[1]), abs(p1[2] - p2[2])]
@@ -114,7 +115,7 @@ class TBVolume:
             0, round(min(p1[2], p2[2]) - (rad / min(self.voxelsize_mm)) - 2))
         cut_xr = min(self.shape[2], round(
             max(p1[2], p2[2]) + (rad / min(self.voxelsize_mm)) + 2))
-        logger.debug("cutter_px: z_up-" + str(cut_up) + " z_down-" + str(cut_down) + " y_up-" + str(
+        logger.log(UNDERDEBUG, "cutter_px: z_up-" + str(cut_up) + " z_down-" + str(cut_down) + " y_up-" + str(
             cut_yu) + " y_down-" + str(cut_yd) + " x_left-" + str(cut_xl) + " x_right-" + str(cut_xr))
         cyl_data3d_cut = cyl_data3d[
             int(cut_up):int(cut_down),

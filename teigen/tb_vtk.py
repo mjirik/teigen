@@ -187,7 +187,7 @@ def compatibility_processing(indata):
     outdata = []
     for key in indata:
         ii = indata[key]
-        logger.debug(ii)
+        # logger.debug(ii)
         br = {}
 
         lengthEstimation = None
