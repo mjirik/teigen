@@ -696,7 +696,8 @@ class Teigen():
             lambda_stop=3.0,
             noise_amplitude = 40.0,
             noise_mean = 30.0,
-            measurement_multiplier=-1
+            measurement_multiplier=-1,
+            output_dtype="uint8"
 
     ):
         if gaussian_blur:
