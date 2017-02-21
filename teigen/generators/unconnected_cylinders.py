@@ -18,6 +18,7 @@ import numpy as np
 # from ..geometry3d import plane_fit
 from .. import geometry3d as g3
 import os.path
+import general
 
 
 def __half_plane(self, perp, plane_point, point):
@@ -27,44 +28,9 @@ def __half_plane(self, perp, plane_point, point):
           perp[2] * cdf[2]
     return  out > 0
 
-class GeneralGenerator:
-
-    def __init__(self):
-
-        self.data3d = None
-
-    def generate_volume(self, *args, **kwargs):
-        from ..tree import TreeBuilder
-
-        self.tvgvol = TreeBuilder('vol')
-        self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
-        self.tvgvol.shape = self.areasize_px # [100, 100, 100]
-        self.tvgvol.tree_data = self.tree_data
-        self.tvgvol.finish_progress_callback = self.progress_callback
-        if self.intensity_profile is not None:
-            self.tvgvol.intensity_profile = self.intensity_profile
-        self.data3d = self.tvgvol.buildTree(*args, **kwargs)
-        return self.data3d
 
 
-    def saveVolumeToFile(self, filename="output{:06d}.jpg"):
-        if self.data3d is None:
-            self.generate_volume()
-
-        # self.tvgvol.saveToFile(filename)
-        import io3d
-        import io3d.misc
-        import numpy as np
-        data = {
-            'data3d': self.data3d.astype(np.uint8), #* self.output_intensity,
-            'voxelsize_mm': self.voxelsize_mm,
-            # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
-        }
-        io3d.write(data, filename)
-
-
-
-class UnconnectedCylinderGenerator:
+class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
     def __init__(self,
                  build=True,
@@ -110,7 +76,7 @@ class UnconnectedCylinderGenerator:
         #     voxelsize_mm_x,
         #     voxelsize_mm_y
         # ]
-        GeneralGenerator.__init__(self)
+        general.GeneralGenerator.__init__(self)
         self.build = build
         # self.filename = "output{:05d}.jpg"
         self.areasize_px = np.asarray(areasize_px)

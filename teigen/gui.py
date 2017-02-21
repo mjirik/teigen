@@ -667,6 +667,7 @@ class Teigen():
         # postprocessing
         if "generate_volume" in dir(self.gen):
             self.data3d = self.gen.generate_volume()
+            # self.data3d = self.gen.generate_volume(dtype="uint8")
             self.voxelsize_mm = self.gen.voxelsize_mm
             postprocessing_params = self.config["postprocessing"]
             data3d = self.postprocessing(**postprocessing_params)
