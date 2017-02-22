@@ -13,7 +13,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-class GeneralGenerator:
+class GeneralGenerator(object):
 
     def __init__(self):
 
@@ -22,14 +22,15 @@ class GeneralGenerator:
     def generate_volume(self, *args, **kwargs):
         from ..tree import TreeBuilder
 
-        self.tvgvol = TreeBuilder('vol')
+        self.tvgvol = TreeBuilder('vol', generator_params=kwargs)
         self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
         self.tvgvol.shape = self.areasize_px # [100, 100, 100]
         self.tvgvol.tree_data = self.tree_data
         self.tvgvol.finish_progress_callback = self.progress_callback
         if self.intensity_profile is not None:
             self.tvgvol.intensity_profile = self.intensity_profile
-        self.data3d = self.tvgvol.buildTree(*args, **kwargs)
+        self.data3d = self.tvgvol.buildTree()
+        # self.data3d = self.tvgvol.buildTree(*args, **kwargs)
         return self.data3d
 
 

@@ -18,7 +18,7 @@ import numpy as np
 # from ..geometry3d import plane_fit
 from .. import geometry3d as g3
 import os.path
-import general
+from general import GeneralGenerator
 
 
 def __half_plane(self, perp, plane_point, point):
@@ -28,7 +28,7 @@ def __half_plane(self, perp, plane_point, point):
           perp[2] * cdf[2]
     return  out > 0
 
-class CylinderGenerator(general.GeneralGenerator):
+class CylinderGenerator(GeneralGenerator):
 
     def __init__(self,
                  build=True,
@@ -67,7 +67,8 @@ class CylinderGenerator(general.GeneralGenerator):
         #     voxelsize_mm_x,
         #     voxelsize_mm_y
         # ]
-        general.GeneralGenerator.__init__(self)
+        super(GeneralGenerator, self).__init__()
+        # general.GeneralGenerator.__init__(self)
         self.build = build
         # self.filename = "output{:05d}.jpg"
         self.areasize_px = np.asarray(areasize_px)

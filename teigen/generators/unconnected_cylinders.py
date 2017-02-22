@@ -76,7 +76,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         #     voxelsize_mm_x,
         #     voxelsize_mm_y
         # ]
-        general.GeneralGenerator.__init__(self)
+        super(general.GeneralGenerator, self).__init__()
+        # general.GeneralGenerator.__init__(self)
         self.build = build
         # self.filename = "output{:05d}.jpg"
         self.areasize_px = np.asarray(areasize_px)
