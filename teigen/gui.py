@@ -475,6 +475,7 @@ class Teigen():
         # 3D visualization data, works for some generators
         self.polydata = None
         self.dataframes = {}
+        self.stats_times = {}
 
     def use_default_config(self):
         self.config = self.get_default_config()
@@ -680,6 +681,10 @@ class Teigen():
         logger.info("time before volume generate: " + str(t1-t0))
         logger.info("time before volume save: " + str(t2-t0))
         logger.info("time after volume save: " + str(t3-t0))
+        self.stats_times["numeric_measurement_time_s"] = [t1-t0]
+        self.stats_times["generate_volume_time_s"] = [t2-t1]
+        self.stats_times["save_volume_time_s"] = [t3-t2]
+
         # self.memoryhandler.flush()
 
     def postprocessing(
