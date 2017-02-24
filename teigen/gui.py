@@ -90,6 +90,9 @@ class TeigenWidget(QtGui.QWidget):
         config["required_teigen_version"] = self.teigen.version
         self.config = config
 
+    def _parameters_changed(self):
+        self.teigen.parameters_changed_before_save = True
+
 
     def run(self):
 
@@ -339,6 +342,9 @@ class TeigenWidget(QtGui.QWidget):
         # t.setColumnCount(3)
         t.show()
 
+        p.sigStateChanged.connect(self._parameters_changed)
+        p.param('Batch processing', 'Run batch').sigActivated.connect(self.run_batch)
+
         # how to add button
         # i5  = pg.TreeWidgetItem(["Item 5"])
         # b5 = QtGui.QPushButton('Button')
@@ -357,6 +363,12 @@ class TeigenWidget(QtGui.QWidget):
             # add this in gui
             print "statusbar_text " + kwargs["statusbar_text"]
         ## end of pyqtgraph tree
+
+    def run_batch(self):
+
+        none, area_cfg = dictwidgetpg.from_pyqtgraph_struct(self.area_sampling_params.saveState())
+        lst = area_cfg["Batch processing"].values()
+        self.teigen.run_batch(lst)
 
     def btnRun(self):
 
@@ -480,6 +492,7 @@ class Teigen():
         self.polydata = None
         self.dataframes = {}
         self.stats_times = {}
+        self.parameters_changed_before_save = True
 
     def use_default_config(self):
         self.config = self.get_default_config()
@@ -529,7 +542,7 @@ class Teigen():
         config = copy.deepcopy(config)
         # there can be stored more than our config. F.e. some GUI dict reconstruction information
         self.config = dili.recursive_update(self.config, config)
-        return
+        self.parameters_changed_before_save = True
 
     def run(self):
         import time
@@ -591,6 +604,7 @@ class Teigen():
         self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
         self.need_run = False
+        self.parameters_changed_before_save = False
 
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
         vtk_file = op.expanduser(vtk_file)
@@ -641,6 +655,8 @@ class Teigen():
         return fn_base
 
     def save_parameters(self):
+        if self.parameters_changed_before_save:
+            self.run()
         fn_base = self._get_fn_base()
 
         dirname = op.dirname(fn_base)
@@ -657,6 +673,8 @@ class Teigen():
         self.memoryhandler.flushLevel = self.loglevel
 
     def save_volume(self):
+        if self.parameters_changed_before_save:
+            self.run()
         # TODO split save_volume and save_parameters
         self.save_parameters()
         import io3d.misc
@@ -854,6 +872,18 @@ class Teigen():
     #         # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
     #     }
     #     io3d.write(data, filename)
+    def run_batch(self, config_list):
+        for filename in config_list:
+            if filename is None:
+                continue
+            params = io3d.misc.obj_from_file(filename=filename)
+            default_config = self.get_default_config()
+            self.update_config(**default_config)
+            self.update_config(**params)
+
+            self.run()
+            self.save_volume()
+
 
 class ConfigFileManager():
     def __init__(

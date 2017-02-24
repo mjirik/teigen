@@ -289,7 +289,7 @@ class BatchFileProcessingParameter(pTypes.GroupParameter):
         fname = QtGui.QFileDialog.getOpenFileName(None, 'Open file',
         '')
 
-        self.addChild(dict(name="%f" % ((len(self.childs)) ), type='str', value=str(fname), removable=True, renamable=True))
+        self.addChild(dict(name="%i" % ((len(self.childs)) ), type='str', value=str(fname), removable=True, renamable=True))
 
 def main():
     logger = logging.getLogger()

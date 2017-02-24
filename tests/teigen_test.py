@@ -12,21 +12,23 @@ import io3d
 
 class MyTestCase(unittest.TestCase):
     #
-    # @attr('interactive')
-    # def test_teigen_gui_interactive(self):
-    #     import os.path as op
-    #     params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
-    #     import PyQt4
-    #     from PyQt4.QtGui import QApplication, QFileDialog
-    #     # from teigen.dictwidgetqt import DictWidget
-    #     import teigen
-    #     import teigen.geometry3d
-    #     import teigen.gui
-    #     app = QApplication(sys.argv)
-    #     cw = teigen.gui.TeigenWidget(config=params)
-    #     cw.show()
-    #     app.exec_()
-    #
+    @attr('interactive')
+    def test_teigen_gui_interactive(self):
+        import os.path as op
+        params = None
+        # params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
+
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        # from teigen.dictwidgetqt import DictWidget
+        import teigen
+        import teigen.geometry3d
+        import teigen.gui
+        app = QApplication(sys.argv)
+        cw = teigen.gui.TeigenWidget(config=params)
+        cw.show()
+        app.exec_()
+
     # def test_teigen_gui(self):
     #     import PyQt4
     #     from PyQt4.QtGui import QApplication, QFileDialog
