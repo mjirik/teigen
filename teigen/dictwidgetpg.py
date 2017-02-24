@@ -271,10 +271,12 @@ class ScalableGroup(pTypes.GroupParameter):
         }[typ]
         self.addChild(dict(name="ScalableParam %d" % (len(self.childs)+1), type=typ, value=val, removable=True, renamable=True))
 
-class ScalableFloatGroup(pTypes.GroupParameter):
+
+class BatchFileProcessingParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'group'
         opts['addText'] = "Add"
+        {'name': 'Save State', 'type': 'action'},
         # opts['addList'] = ['str', 'float', 'int']
         pTypes.GroupParameter.__init__(self, **opts)
 
@@ -284,7 +286,10 @@ class ScalableFloatGroup(pTypes.GroupParameter):
         #     'float': 0.0,
         #     'int': 0
         # }[typ]
-        self.addChild(dict(name="%f" % ((len(self.childs)+1) * 0.20), type='float', value=0.0, removable=True, renamable=True))
+        fname = QtGui.QFileDialog.getOpenFileName(None, 'Open file',
+        '')
+
+        self.addChild(dict(name="%f" % ((len(self.childs)) ), type='str', value=str(fname), removable=True, renamable=True))
 
 def main():
     logger = logging.getLogger()

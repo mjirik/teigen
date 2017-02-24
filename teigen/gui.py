@@ -317,6 +317,10 @@ class TeigenWidget(QtGui.QWidget):
         input_params = {
             "Area Sampling":  dictwidgetpg.AreaSamplingParameter(name='Area Sampling', **self.teigen.config["areasampling"]),
             "Postprocessing": postprocessing_params,
+            "Batch processing": dictwidgetpg.BatchFileProcessingParameter(
+                name="Batch processing" , children=[
+                    {'name': 'Run batch', 'type': 'action'},
+                ]),
             # "dur": i5,
             # TODO add more lines here
             # "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
