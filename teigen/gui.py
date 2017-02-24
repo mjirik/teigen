@@ -306,10 +306,15 @@ class TeigenWidget(QtGui.QWidget):
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
+        btn_save = QPushButton("Save parameters", self)
+        btn_save.setToolTip("Save generator parameters")
+        btn_save.clicked.connect(self.teigen.save_parameters)
+        self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
+
         btn_save = QPushButton("Generate and save volumetric data", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_save, 5, 1) # , (gd_max_i / 2), text_col)
 
 
         import pyqtgraph as pg
@@ -324,6 +329,7 @@ class TeigenWidget(QtGui.QWidget):
                 name="Batch processing" , children=[
                     {'name': 'Run batch', 'type': 'action'},
                 ]),
+            # 'name': {'type': 'action'},
             # "dur": i5,
             # TODO add more lines here
             # "Intensity Profile": dictwidgetpyqtgraph.ScalableFloatGroup(
