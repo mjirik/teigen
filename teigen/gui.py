@@ -93,13 +93,15 @@ class TeigenWidget(QtGui.QWidget):
     def _parameters_changed(self):
         self.teigen.parameters_changed_before_save = True
 
+    def collect_config_from_gui_and_push_to_teigen(self):
+        self.collect_config_from_gui()
+        self.teigen.update_config(**self.config)
 
     def run(self):
+        self.collect_config_from_gui_and_push_to_teigen()
 
-        self.collect_config_from_gui()
 
         # self.config = new_cfg
-        self.teigen.update_config(**self.config)
         self.teigen.run()
 
     def _show_stats(self):
@@ -302,7 +304,7 @@ class TeigenWidget(QtGui.QWidget):
 
         btn_save = QPushButton("Save parameters", self)
         btn_save.setToolTip("Save generator parameters")
-        btn_save.clicked.connect(self.teigen.save_parameters)
+        btn_save.clicked.connect(self.save_parameters)
         self.mainLayout.addWidget(btn_save, 2, 1, 1, 1) # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save parameters and add to batch", self)
@@ -382,7 +384,12 @@ class TeigenWidget(QtGui.QWidget):
         lst = area_cfg["Batch processing"].values()
         self.teigen.run_batch(lst)
 
+    def save_parameters(self):
+        self.collect_config_from_gui_and_push_to_teigen()
+        self.teigen.save_parameters()
+
     def save_parameters_and_add_to_batch(self):
+        self.collect_config_from_gui_and_push_to_teigen()
         self.teigen.save_parameters()
         fn_base = self.teigen._get_fn_base()
 
