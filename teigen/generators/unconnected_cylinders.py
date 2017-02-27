@@ -235,6 +235,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         while not generated:
             self.iterations += 1
             if self.is_final_iteration():
+                self.progress_callback(self, 1.0, statusbar_text="Skeleton created")
                 return
             progress = self.iterations / (1. * self.max_iteration)
             # logger.debug("progress " + str(progress))
