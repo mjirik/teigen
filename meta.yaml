@@ -42,6 +42,7 @@ requirements:
     - scipy
     - scikit-image
     - ndnoise
+    - imtools
 #    - pyqt 4.11.*
 
   run:
