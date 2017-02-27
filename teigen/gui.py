@@ -488,7 +488,7 @@ class Teigen():
 
 
         self.logfile=logfile
-        self.version = "0.1.29"
+        self.version = "0.1.30"
         self.data3d = None
         self.voxelsize_mm = None
         self.need_run = True
