@@ -1,10 +1,10 @@
 package:
   name: teigen
-  version: "0.1.27"
+  version: "0.1.28"
 
 source:
 # this is used for build from git hub
-  git_rev: 0.1.27
+  git_rev: 0.1.28
   git_url: https://github.com/mjirik/teigen.git
 
 # this is used for pypi
@@ -55,7 +55,7 @@ requirements:
     - pyqtconfig
     - pandas
     - simpleitk
-    - imtools >=0.1.27
+    - imtools >=0.1.28
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei
