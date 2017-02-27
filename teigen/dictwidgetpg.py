@@ -286,9 +286,10 @@ class BatchFileProcessingParameter(pTypes.GroupParameter):
         #     'float': 0.0,
         #     'int': 0
         # }[typ]
-        fname = QtGui.QFileDialog.getOpenFileName(None, 'Open file',
-        '')
+        fname = QtGui.QFileDialog.getOpenFileName(None, 'Open file', '')
+        self.add_filename(fname=fname)
 
+    def add_filename(self, fname):
         self.addChild(dict(name="%i" % ((len(self.childs)) ), type='str', value=str(fname), removable=True, renamable=True))
 
 def main():

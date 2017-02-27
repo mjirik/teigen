@@ -203,8 +203,8 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_stats_shown = True
 
         if (
-                    self.teigen.config["preprocessing"]["noise_preview"] and
-                    self.teigen.config["preprocessing"]["add_noise"]):
+                    self.teigen.config["postprocessing"]["noise_preview"] and
+                    self.teigen.config["postprocessing"]["add_noise"]):
             self._noise_figure = plt.figure()
             self._noise_canvas = FigureCanvas(self._noise_figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
@@ -270,7 +270,7 @@ class TeigenWidget(QtGui.QWidget):
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
         self.gen_tab_wg = QTabWidget()
-        self.mainLayout.addWidget(self.gen_tab_wg, 0, 1)
+        self.mainLayout.addWidget(self.gen_tab_wg, 0, 1, 1, 2)
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
@@ -293,28 +293,34 @@ class TeigenWidget(QtGui.QWidget):
         self.gen_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
+
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
             self.teigen.config["filepattern"], "output directory")
         self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1) # , (gd_max_i / 2), text_col)
-        btn_accept = QPushButton("Generate skeleton", self)
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        btn_accept = QPushButton("Step 1 - Preview - Generate skeleton", self)
 
+        btn_save = QPushButton("Save parameters", self)
+        btn_save.setToolTip("Save generator parameters")
+        btn_save.clicked.connect(self.teigen.save_parameters)
+        self.mainLayout.addWidget(btn_save, 2, 1, 1, 1) # , (gd_max_i / 2), text_col)
+
+        btn_save = QPushButton("Save parameters and add to batch", self)
+        btn_save.setToolTip("Save generator parameters and then add to batch")
+        btn_save.clicked.connect(self.save_parameters_and_add_to_batch)
+        self.mainLayout.addWidget(btn_save, 2, 2, 1, 1) # , (gd_max_i / 2), text_col)
         btn_accept.clicked.connect(self.btnRun)
-        self.mainLayout.addWidget(btn_accept, 2, 1) # , (gd_max_i / 2), text_col)
+
+        self.mainLayout.addWidget(btn_accept, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         postprocessing_params = self.teigen.config["postprocessing"]
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
-        btn_save = QPushButton("Save parameters", self)
-        btn_save.setToolTip("Save generator parameters")
-        btn_save.clicked.connect(self.teigen.save_parameters)
-        self.mainLayout.addWidget(btn_save, 4, 1) # , (gd_max_i / 2), text_col)
-
-        btn_save = QPushButton("Generate and save volumetric data", self)
+        btn_save = QPushButton("Step 2 - Generate and save volumetric data", self)
         btn_save.setToolTip("Save image slices and meta information")
         btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save, 5, 1) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_save, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
 
         import pyqtgraph as pg
@@ -375,6 +381,13 @@ class TeigenWidget(QtGui.QWidget):
         none, area_cfg = dictwidgetpg.from_pyqtgraph_struct(self.area_sampling_params.saveState())
         lst = area_cfg["Batch processing"].values()
         self.teigen.run_batch(lst)
+
+    def save_parameters_and_add_to_batch(self):
+        self.teigen.save_parameters()
+        fn_base = self.teigen._get_fn_base()
+
+        config_filename = fn_base + "_parameters.yaml"
+        self.area_sampling_params.param("Batch processing").add_filename(config_filename)
 
     def btnRun(self):
 
@@ -602,15 +615,18 @@ class Teigen():
 
         self.prepare_stats()
 
-        # prepare path to save
-        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
-        self.config['filepattern_series_number'] = series_number
 
         t1 = time.time()
         self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
         self.need_run = False
         self.parameters_changed_before_save = False
+
+    def get_config_file_pattern(self):
+        filepattern = self.config["filepattern"]
+        filepattern = io3d.datawriter.filepattern_fill_slice_number_or_position(filepattern, "")
+        base, ext = os.path.splitext(filepattern)
+        return base + "_parameters.yaml"
 
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
         vtk_file = op.expanduser(vtk_file)
@@ -663,6 +679,13 @@ class Teigen():
     def save_parameters(self):
         if self.parameters_changed_before_save:
             self.run()
+        # prepare path to save
+
+        config_filepattern = self.get_config_file_pattern()
+        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
+        # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+        self.config['filepattern_series_number'] = series_number
+
         fn_base = self._get_fn_base()
 
         dirname = op.dirname(fn_base)
