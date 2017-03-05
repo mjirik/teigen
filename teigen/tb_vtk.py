@@ -153,7 +153,6 @@ def gen_tree(tree_data):
         sph2 = get_sphere(lv,
                           br['radius']
                           )
-        print "new"
         if vtk.VTK_MAJOR_VERSION <= 5:
             appendFilter.AddInputConnection(cyl.GetProducerPort())
             appendFilter.AddInputConnection(sph1.GetProducerPort())
