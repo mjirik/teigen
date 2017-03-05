@@ -64,7 +64,8 @@ def get_cylinder(upper, height, radius,
     import vtk
     src = vtk.vtkCylinderSource()
     src.SetCenter((0, height/2, 0))
-    src.SetHeight(height + radius/2.0)
+    # src.SetHeight(height + radius/2.0)
+    src.SetHeight(height)
     src.SetRadius(radius)
     src.SetResolution(resolution)
 
