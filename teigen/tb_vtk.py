@@ -127,9 +127,46 @@ def get_sphere(center, radius):
     source = vtk.vtkSphereSource()
     source.SetCenter(center[0], center[1], center[2])
     source.SetRadius(radius)
+    source.Update()
     return source.GetOutput()
 
 def gen_tree(tree_data):
+    import vtk
+    appendFilter = vtk.vtkAppendPolyData()
+
+    for br in tree_data:
+        logger.debug("generating edge " + str(br["length"]))
+        cyl = get_cylinder(br['upperVertex'],
+                           br['length'],
+                           br['radius'],
+                           br['direction'],
+                           resolution=16)
+        sph1 = get_sphere(br['upperVertex'],
+                           br['radius']
+                           )
+        uv = br['upperVertex']
+        direction = br["direction"]
+        direction = direction / nm.linalg.norm(direction)
+        length = br["length"]
+        lv = uv + direction * length
+        sph2 = get_sphere(lv,
+                          br['radius']
+                          )
+        print "new"
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            appendFilter.AddInputConnection(cyl.GetProducerPort())
+            appendFilter.AddInputConnection(sph1.GetProducerPort())
+            appendFilter.AddInputConnection(sph2.GetProducerPort())
+            # appendFilter.AddInputConnection(input2.GetProducerPort())
+        else:
+            appendFilter.AddInputData(cyl)
+            appendFilter.AddInputData(sph1)
+            appendFilter.AddInputData(sph2)
+            # appendFilter.AddInputData(input2)
+    appendFilter.Update()
+    return appendFilter.GetOutput()
+
+def gen_tree_old(tree_data):
 
     import vtk
     points = vtk.vtkPoints()
