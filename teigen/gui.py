@@ -34,6 +34,10 @@ import numpy as np
 import scipy
 import re
 
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+import matplotlib.pyplot as plt
+
 import dictwidgetqt
 import iowidgetqt
 import dictwidgetpg
@@ -136,15 +140,15 @@ class TeigenWidget(QtGui.QWidget):
 
             self.stats_tab_wg = QTabWidget()
             self.mainLayout.addWidget(self.stats_tab_wg, 0, 3, 5, 2)
+
+        self.actual_subtab_wg = QTabWidget()
+        self.stats_tab_wg.addTab(self.actual_subtab_wg, '' + run_number_alpha)
         if True:
-            from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-            # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-            import matplotlib.pyplot as plt
 
             self.figure = plt.figure()
             self.canvas = FigureCanvas(self.figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
-            self.stats_tab_wg.addTab(self.canvas, 'Graphs ' + run_number_alpha)
+            self.actual_subtab_wg.addTab(self.canvas, 'Graphs ' + run_number_alpha)
 
         # df = self.teigen.gen.getStats()
         df = self.teigen.dataframes["elements"]
@@ -191,7 +195,7 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_describe.raise_()
         # self.mainLayout.addWidget(self._wg_tab_describe, 0, 2, 5, 2)
         # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
-        self.stats_tab_wg.addTab(self._wg_tables, "Summary " + run_number_alpha)
+        self.actual_subtab_wg.addTab(self._wg_tables, "Summary " + run_number_alpha)
         # self.resize(600,700)
 
         if self.teigen.polydata is not None:
@@ -200,7 +204,7 @@ class TeigenWidget(QtGui.QWidget):
 
             # self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
             self._wg_show_3d.add_vtk_polydata(self.teigen.polydata)
-            self.stats_tab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
+            self.actual_subtab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
         self.ui_stats_shown = True
 
@@ -210,12 +214,16 @@ class TeigenWidget(QtGui.QWidget):
             self._noise_figure = plt.figure()
             self._noise_canvas = FigureCanvas(self._noise_figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
-            self.stats_tab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
+            self.actual_subtab_wg.addTab(self._noise_canvas, 'Noise ' + run_number_alpha)
             noise = self.teigen.generate_noise()
             plt.imshow(noise[0, :, :], cmap="gray")
             plt.colorbar()
 
     def update_stats(self):
+        """
+        Function is used after volume generation and save.
+        :return:
+        """
         import tablewidget
         self._wg_tab_overall.deleteLater()
         self._wg_tab_overall = None
@@ -229,6 +237,34 @@ class TeigenWidget(QtGui.QWidget):
         #     self._wg_tab_describe = None
         #     self._wg_tab_merne.deleteLater()
         #     self._wg_tab_merne = None
+
+        # Show surface
+        measurement_multiplier = self.teigen.config["postprocessing"]["measurement_multiplier"]
+        surface_measurement = self.teigen.config["postprocessing"]["surface_measurement"]
+        show_surface = self.teigen.config["appearance"]["show_surface"]
+        if surface_measurement and measurement_multiplier > 0 and show_surface:
+            fig = plt.figure()
+            self._surface_figure = fig
+            self._surface_canvas = FigureCanvas(self._surface_figure)
+            # self.toolbar = NavigationToolbar(self.canvas, self)
+            self.actual_subtab_wg.addTab(self._surface_canvas, 'Exact surface')
+
+            # import matplotlib.pyplot as plt
+            from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+            vertices = self.teigen._surface_vertices
+            faces = self.teigen._surface_faces
+            # fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111, projection='3d')
+
+            # Fancy indexing: `verts[faces]` to generate a collection of triangles
+            mesh = Poly3DCollection(vertices[faces])
+            mesh.set_edgecolor('k')
+            ax.add_collection3d(mesh)
+            sh = self.teigen._numeric_surface_measurement_shape
+            ax.set_xlim(0, sh[0])  # a = 6 (times two for 2nd ellipsoid)
+            ax.set_ylim(0, sh[1])  # b = 10
+            ax.set_zlim(0, sh[2])  # c = 16
+            # plt.show()
 
     def complicated_to_yaml(self, cfg):
         import yaml
@@ -337,6 +373,7 @@ class TeigenWidget(QtGui.QWidget):
                 name="Batch processing" , children=[
                     {'name': 'Run batch', 'type': 'action'},
                 ]),
+            "Appearance": self.teigen.config["appearance"]
             # 'name': {'type': 'action'},
             # "dur": i5,
             # TODO add more lines here
@@ -554,6 +591,9 @@ class Teigen():
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
         # self.config["areasize_px"] = [100, 100, 100]
+        config["appearance"] = {
+            "show_surface": True
+        }
         return config
 
     def update_config(self, **config):
@@ -760,6 +800,7 @@ class Teigen():
             lambda_stop=3.0,
             noise_amplitude = 40.0,
             noise_mean = 30.0,
+            surface_measurement=False,
             measurement_multiplier=-1,
             output_dtype="uint8"
 
@@ -822,8 +863,10 @@ class Teigen():
         vxsz = np.asarray(vxsz).astype(np.float) / self.config["postprocessing"]["measurement_multiplier"]
         shape = self.config["areasampling"]["areasize_px"]
         measurement_multiplier = self.config["postprocessing"]["measurement_multiplier"]
-        if measurement_multiplier > 0:
+        surface_measurement = self.config["postprocessing"]["surface_measurement"]
+        if measurement_multiplier > 0 and surface_measurement:
             shape = np.asarray(shape) * measurement_multiplier
+            self._numeric_surface_measurement_shape = shape
 
             shape = shape.astype(np.int)
             tvgvol = TreeBuilder("vol")
@@ -833,7 +876,10 @@ class Teigen():
 
             data3d = tvgvol.buildTree()
             import measurement
-            surface = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm)
+            surface, vertices, faces = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm, return_vertices_and_faces=True)
+            self._surface_vertices = vertices
+            self._surface_faces = faces
+
             volume = np.sum(data3d > 0) * np.prod(vxsz)
 
             self.dataframes["overall"]["surf. num. [mm^2]"] = [surface]

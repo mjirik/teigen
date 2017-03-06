@@ -9,25 +9,14 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import skimage.measure
 
-def surface_measurement(volume, voxelsize, level=1.0, **kwargs):
+def surface_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=False, **kwargs):
     vertices, faces = skimage.measure.marching_cubes(volume, level=level, spacing=voxelsize)
     surface_area = skimage.measure.mesh_surface_area(verts=vertices, faces=faces)
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Fancy indexing: `verts[faces]` to generate a collection of triangles
-    mesh = Poly3DCollection(vertices[faces])
-    mesh.set_edgecolor('k')
-    ax.add_collection3d(mesh)
-    sh = volume.shape
-    ax.set_xlim(0, sh[0])  # a = 6 (times two for 2nd ellipsoid)
-    ax.set_ylim(0, sh[1])  # b = 10
-    ax.set_zlim(0, sh[2])  # c = 16
-    plt.show()
-    return surface_area
+    if return_vertices_and_faces:
+        return surface_area, vertices, faces
+    else:
+        return surface_area
 
 
 def main():
