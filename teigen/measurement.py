@@ -18,6 +18,9 @@ def surface_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=
     else:
         return surface_area
 
+def volume_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=False, **kwargs):
+    volume = np.sum(volume > level) * np.prod(voxelsize)
+    return volume
 
 def main():
     logger = logging.getLogger()

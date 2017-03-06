@@ -92,6 +92,7 @@ class TeigenWidget(QtGui.QWidget):
         # config["postprocessing"] = self.posprocessing_wg.config_as_dict()
         config["postprocessing"] = area_cfg["Postprocessing"]
         config["required_teigen_version"] = self.teigen.version
+        config["appearance"] = area_cfg["Appearance"]
         self.config = config
 
     def _parameters_changed(self):

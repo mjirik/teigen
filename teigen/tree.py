@@ -93,6 +93,23 @@ class TreeBuilder:
             self.tree_label = tkeys[0]
         self.tree_data = self.rawdata['Graph'][self.tree_label]
 
+    def add_segment_to_tree(self, pointA, pointB, radius, id=None):
+        """
+        Before generation this can be used to add new segment
+        :return:
+        """
+        if self.tree_data is None:
+            self.tree_data = {}
+
+        if id is None:
+            id = len(self.tree_data)
+
+        self.tree_data[id] = {
+            'nodeA_ZYX_mm': pointA,
+            'nodeB_ZYX_mm': pointB,
+            'radius_mm': radius
+        }
+
     def buildTree(self):
         """
         | Funkce na vygenerování objemu stromu ze zadaných dat.

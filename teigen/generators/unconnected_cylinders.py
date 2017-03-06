@@ -208,11 +208,11 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # surf = 2 * np.pi * radius * (radius + length)
 
         # if it is tube (pill)
-        surf = (2 * np.pi * radius * length) + 4 * np.pi*radius**2
+        surf = g3.pill_surface(radius, length)
         # cylinder
         # volume =  np.pi * radius**2 * length
         # tube
-        volume =  (np.pi * radius**2 * length) + ((4. / 3.) * np.pi * radius**3)
+        volume = g3.pill_volume(radius, length)
         vector = pt1 - pt2
 
         self.geometry_data["length"].append(length)

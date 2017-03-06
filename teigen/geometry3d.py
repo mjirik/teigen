@@ -15,6 +15,64 @@ def translate(point, vector, length=None):
     return (np.asarray(point) + vector).tolist()
 
 
+def pill_surface(radius, length=None, pt1=None, pt2=None):
+    if length is None:
+        pt1 = np.asarray(pt1)
+        pt2 = np.asarray(pt2)
+        length = np.linalg.norm(pt1 - pt2)
+    surf = (2 * np.pi * radius * length) + (4 * np.pi * (radius**2))
+    return surf
+
+def pill_volume(radius, length=None, pt1=None, pt2=None):
+    if length is None:
+        pt1 = np.asarray(pt1)
+        pt2 = np.asarray(pt2)
+        length = np.linalg.norm(pt1 - pt2)
+    volume =  (np.pi * radius**2 * length) + ((4. / 3.) * np.pi * radius**3)
+    return volume
+
+
+def show_pill_radiuses(pt1, pt2, radius, data3d, show_color=False):
+    """
+    Show pill projection and circles in endpoints. Usefull for debugging
+
+    :param pt1:
+    :param pt2:
+    :param radius:
+    :param data3d:
+    :param show_color:
+    :return:
+    """
+    import matplotlib.pyplot as plt
+
+    data2da = np.sum(data3d > 0, axis=2)
+    data2db = np.sum(data3d > 0, axis=1)
+
+    if show_color:
+        data2da[data2da > 0] += np.max(data2da)
+        data2db[data2db > 0] += np.max(data2db)
+    else:
+        data2da = data2da > 0
+        data2db = data2db > 0
+
+    plt.subplot(121)
+    plt.imshow(data2da, interpolation="none")
+    # plt.colorbar()
+    circle1 = plt.Circle((pt1[1], pt1[0]), radius, color='g', fill=False)
+    circle2 = plt.Circle((pt2[1], pt2[0]), radius, color='g', fill=False)
+    ax = plt.gca()
+    ax.add_artist(circle1)
+    ax.add_artist(circle2)
+
+
+    plt.subplot(122)
+    plt.imshow(data2db, interpolation="none")
+    # plt.colorbar()
+    circle1 = plt.Circle((pt1[2], pt1[0]), radius, color='g', fill=False)
+    circle2 = plt.Circle((pt2[2], pt2[0]), radius, color='g', fill=False)
+    ax = plt.gca()
+    ax.add_artist(circle1)
+    ax.add_artist(circle2)
 
 def closest_node_2d(node, nodes, return_more=False):
     """
