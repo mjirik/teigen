@@ -157,12 +157,18 @@ def gen_tree(tree_data):
             appendFilter.AddInputConnection(cyl.GetProducerPort())
             appendFilter.AddInputConnection(sph1.GetProducerPort())
             appendFilter.AddInputConnection(sph2.GetProducerPort())
-            # appendFilter.AddInputConnection(input2.GetProducerPort())
         else:
+            # booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
+            # booleanOperation.SetOperationToUnion()
+            # booleanOperation.SetInputData(0, cyl)
+            # booleanOperation.SetInputData(1, sph1)
+            # booleanOperation.SetInputData(2, sph2)
+            # booleanOperation.Update()
+            # appendFilter.AddInputData(booleanOperation.GetOutput())
+
             appendFilter.AddInputData(cyl)
             appendFilter.AddInputData(sph1)
             appendFilter.AddInputData(sph2)
-            # appendFilter.AddInputData(input2)
     appendFilter.Update()
     return appendFilter.GetOutput()
 
