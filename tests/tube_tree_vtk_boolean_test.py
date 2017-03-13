@@ -181,7 +181,9 @@ class VtkBooleanTestCase(unittest.TestCase):
         input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5],
                                             height=height,
                                             radius=radius,
-                                            direction=[0.0,.0,.0])
+                                            direction=[0.0,.0,.0],
+                                            resolution=30
+                                            )
         object1Tri = vtk.vtkTriangleFilter()
         object1Tri.SetInputData(input1)
         object1Tri.Update()
