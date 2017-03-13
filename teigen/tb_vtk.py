@@ -137,12 +137,12 @@ def gen_tree(tree_data):
 
     for br in tree_data:
         logger.debug("generating edge " + str(br["length"]))
-        cyl = get_cylinder(br['upperVertex'],
+        cylinder = get_cylinder(br['upperVertex'],
                            br['length'],
                            br['radius'],
                            br['direction'],
                            resolution=16)
-        sph1 = get_sphere(br['upperVertex'],
+        sphere1 = get_sphere(br['upperVertex'],
                            br['radius']
                            )
         uv = br['upperVertex']
@@ -150,25 +150,42 @@ def gen_tree(tree_data):
         direction = direction / nm.linalg.norm(direction)
         length = br["length"]
         lv = uv + direction * length
-        sph2 = get_sphere(lv,
+        sphere2 = get_sphere(lv,
                           br['radius']
                           )
         if vtk.VTK_MAJOR_VERSION <= 5:
-            appendFilter.AddInputConnection(cyl.GetProducerPort())
-            appendFilter.AddInputConnection(sph1.GetProducerPort())
-            appendFilter.AddInputConnection(sph2.GetProducerPort())
+            appendFilter.AddInputConnection(cylinder.GetProducerPort())
+            appendFilter.AddInputConnection(sphere1.GetProducerPort())
+            appendFilter.AddInputConnection(sphere2.GetProducerPort())
         else:
-            # booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
-            # booleanOperation.SetOperationToUnion()
-            # booleanOperation.SetInputData(0, cyl)
-            # booleanOperation.SetInputData(1, sph1)
-            # booleanOperation.SetInputData(2, sph2)
-            # booleanOperation.Update()
-            # appendFilter.AddInputData(booleanOperation.GetOutput())
+            cylinderTri = vtk.vtkTriangleFilter()
+            cylinderTri.SetInputData(cylinder)
+            cylinderTri.Update()
+            sphere1Tri = vtk.vtkTriangleFilter()
+            sphere1Tri.SetInputData(sphere1)
+            sphere1Tri.Update()
+            sphere2Tri = vtk.vtkTriangleFilter()
+            sphere2Tri.SetInputData(sphere2)
+            sphere2Tri.Update()
 
-            appendFilter.AddInputData(cyl)
-            appendFilter.AddInputData(sph1)
-            appendFilter.AddInputData(sph2)
+            booleanOperation1 = vtk.vtkBooleanOperationPolyDataFilter()
+            booleanOperation1.SetOperationToUnion()
+            booleanOperation2 = vtk.vtkBooleanOperationPolyDataFilter()
+            booleanOperation2.SetOperationToUnion()
+            # booleanOperation.SetInputData(0, cyl)
+            booleanOperation1.SetInputData(0, cylinderTri.GetOutput())
+            booleanOperation1.SetInputData(1, sphere1Tri.GetOutput())
+            booleanOperation1.Update()
+            booleanOperation2.SetInputData(0, booleanOperation1.GetOutput())
+            booleanOperation2.SetInputData(1, sphere2Tri.GetOutput())
+            # booleanOperation.SetInputData(2, sph2)
+            booleanOperation2.Update()
+
+            appendFilter.AddInputData(booleanOperation2.GetOutput())
+
+            # appendFilter.AddInputData(cyl)
+            # appendFilter.AddInputData(sphere1)
+            # appendFilter.AddInputData(sphere2)
     appendFilter.Update()
     return appendFilter.GetOutput()
 
