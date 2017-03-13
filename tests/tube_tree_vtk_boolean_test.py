@@ -176,13 +176,13 @@ class VtkBooleanTestCase(unittest.TestCase):
 
     def test_vtk_surface_and_volume(self):
         import teigen.geometry3d as g3
-        height = 0.8
-        radius = 0.6
+        height = 1.0
+        radius = 1.0
         input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5],
                                             height=height,
                                             radius=radius,
                                             direction=[0.0,.0,.0],
-                                            resolution=30
+                                            resolution=50
                                             )
         object1Tri = vtk.vtkTriangleFilter()
         object1Tri.SetInputData(input1)
@@ -193,8 +193,15 @@ class VtkBooleanTestCase(unittest.TestCase):
         vol = mass.GetVolume()
 
         surf_analytic = g3.cylinder_surface(radius, height)
-        print surf, surf_analytic
-        print vol
+        vol_analytic = g3.cylinder_volume(radius, height)
+        err_surf = np.abs(surf_analytic - surf) / surf_analytic
+        err_vol = np.abs(vol_analytic - vol) / vol_analytic
+        # print surf, surf_analytic, err_surf
+        # print vol, vol_analytic, err_vol
+
+        max_error = 0.01
+        self.assertLess(err_surf, max_error)
+        self.assertLess(err_vol, max_error)
 
 if __name__ == '__main__':
     unittest.main()

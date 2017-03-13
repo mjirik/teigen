@@ -19,8 +19,16 @@ def cylinder_surface(radius, length=None, pt1=None, pt2=None):
         pt1 = np.asarray(pt1)
         pt2 = np.asarray(pt2)
         length = np.linalg.norm(pt1 - pt2)
-    surf = (2 * np.pi * radius * length) + (4 * np.pi * radius)
+    surf = 2 * np.pi * radius * (radius + length)
     return surf
+
+def cylinder_volume(radius, length=None, pt1=None, pt2=None):
+    if length is None:
+        pt1 = np.asarray(pt1)
+        pt2 = np.asarray(pt2)
+        length = np.linalg.norm(pt1 - pt2)
+    vol = np.pi * (radius**2) * length
+    return vol
 
 def pill_surface(radius, length=None, pt1=None, pt2=None):
     if length is None:
