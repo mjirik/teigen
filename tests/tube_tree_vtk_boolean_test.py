@@ -174,6 +174,25 @@ class VtkBooleanTestCase(unittest.TestCase):
         renWinInteractor.Start()
         # self.assertEqual(True, False)
 
+    def test_vtk_surface_and_volume(self):
+        import teigen.geometry3d as g3
+        height = 0.8
+        radius = 0.6
+        input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5],
+                                            height=height,
+                                            radius=radius,
+                                            direction=[0.0,.0,.0])
+        object1Tri = vtk.vtkTriangleFilter()
+        object1Tri.SetInputData(input1)
+        object1Tri.Update()
+        mass = vtk.vtkMassProperties()
+        mass.SetInputData(object1Tri.GetOutput())
+        surf = mass.GetSurfaceArea()
+        vol = mass.GetVolume()
+
+        surf_analytic = g3.cylinder_surface(radius, height)
+        print surf, surf_analytic
+        print vol
 
 if __name__ == '__main__':
     unittest.main()

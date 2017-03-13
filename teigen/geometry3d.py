@@ -14,6 +14,13 @@ def translate(point, vector, length=None):
         vector = length * vector / np.linalg.norm(vector)
     return (np.asarray(point) + vector).tolist()
 
+def cylinder_surface(radius, length=None, pt1=None, pt2=None):
+    if length is None:
+        pt1 = np.asarray(pt1)
+        pt2 = np.asarray(pt2)
+        length = np.linalg.norm(pt1 - pt2)
+    surf = (2 * np.pi * radius * length) + (4 * np.pi * radius)
+    return surf
 
 def pill_surface(radius, length=None, pt1=None, pt2=None):
     if length is None:
