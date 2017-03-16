@@ -681,8 +681,8 @@ class Teigen():
         from tree import TreeBuilder
 
         if "tree_data" in dir(self.gen):
-
-            tvg = TreeBuilder('vtk')
+            resolution=self.config["postprocessing"]["measurement_resolution"]
+            tvg = TreeBuilder('vtk', generator_params={"cylinder_resolution":resolution, "sphere_resolution":resolution})
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
@@ -803,6 +803,7 @@ class Teigen():
             noise_mean = 30.0,
             surface_measurement=False,
             measurement_multiplier=-1,
+            measurement_resolution=50,
             output_dtype="uint8"
 
     ):
@@ -932,6 +933,15 @@ class Teigen():
         dfoverallf["area volume [mm^3]"] = [self.gen.area_volume]
         dfoverallf["count []"] = [count]
 
+
+        import vtk
+        mass = vtk.vtkMassProperties()
+        # mass.SetInputData(object1Tri.GetOutput())
+        mass.SetInputData(self.polydata)
+        surf = mass.GetSurfaceArea()
+        vol = mass.GetVolume()
+        dfoverallf["numeric volume [mm^2]"]=[vol]
+        dfoverallf["numeric surface [mm^2]"]=[surf]
         self.dataframes["overall"] = dfoverallf
 
     def save_stats(self, fn_base):

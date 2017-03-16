@@ -18,7 +18,7 @@ class TBVTK:
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
-    def __init__(self, gtree):
+    def __init__(self, gtree, cylinder_resolution=50, sphere_resolution=50):
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
@@ -26,6 +26,8 @@ class TBVTK:
         self.tree_data = gtree.tree_data
 
         self.tree_data_old = compatibility_processing(self.tree_data)
+        self.cylinder_resolution = cylinder_resolution
+        self.sphere_resolution = sphere_resolution
 
     def add_cylinder(self, p1m, p2m, rad, id):
         """
@@ -34,7 +36,7 @@ class TBVTK:
         pass
 
     def finish(self):
-        self.polyData = gen_tree(self.tree_data_old)
+        self.polyData = gen_tree(self.tree_data_old, self.cylinder_resolution, self.sphere_resolution)
 
     def get_output(self):
         return self.polyData
@@ -122,16 +124,18 @@ def get_cylinder(upper, height, radius,
 
     return tr2.GetOutput()
 
-def get_sphere(center, radius):
+def get_sphere(center, radius, resolution=10):
     # create source
     import vtk
     source = vtk.vtkSphereSource()
+    source.SetPhiResolution(resolution)
+    source.SetThetaResolution(resolution)
     source.SetCenter(center[0], center[1], center[2])
     source.SetRadius(radius)
     source.Update()
     return source.GetOutput()
 
-def gen_tree(tree_data):
+def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     import vtk
     appendFilter = vtk.vtkAppendPolyData()
 
@@ -141,18 +145,15 @@ def gen_tree(tree_data):
                            br['length'],
                            br['radius'],
                            br['direction'],
-                           resolution=16)
-        sphere1 = get_sphere(br['upperVertex'],
-                           br['radius']
-                           )
+                           resolution=cylinder_resolution)
+        sphere1 = get_sphere(br['upperVertex'], br['radius'], resolution=sphere_resolution )
         uv = br['upperVertex']
         direction = br["direction"]
         direction = direction / nm.linalg.norm(direction)
         length = br["length"]
         lv = uv + direction * length
-        sphere2 = get_sphere(lv,
-                          br['radius']
-                          )
+        sphere2 = get_sphere(lv, br['radius'], resolution=sphere_resolution )
+
         if vtk.VTK_MAJOR_VERSION <= 5:
             appendFilter.AddInputConnection(cylinder.GetProducerPort())
             appendFilter.AddInputConnection(sphere1.GetProducerPort())
