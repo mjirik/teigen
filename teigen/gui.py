@@ -305,7 +305,38 @@ class TeigenWidget(QtGui.QWidget):
         self.statusBar.addWidget(self.ui_stop_button)
         self.progressBar.show()
 
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
+            self.teigen.config["filepattern"], "output directory")
+        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
+        self._ui_btn_save = QPushButton("Save parameters", self)
+        self._ui_btn_save.setToolTip("Save generator parameters")
+        self._ui_btn_save.clicked.connect(self.save_parameters)
+        self.mainLayout.addWidget(self._ui_btn_save, 2, 1, 1, 1)
+
+        self._ui_btn_save_and_add_to_batch = QPushButton("Save parameters and add to batch", self)
+        self._ui_btn_save_and_add_to_batch.setToolTip("Save generator parameters and then add to batch")
+        self._ui_btn_save_and_add_to_batch.clicked.connect(self.save_parameters_and_add_to_batch)
+        self.mainLayout.addWidget(self._ui_btn_save_and_add_to_batch, 2, 2, 1, 1) # , (gd_max_i / 2), text_col)
+
+        self._ui_btn_step1 = QPushButton("Step 1 - Preview - Generate skeleton", self)
+        self._ui_btn_step1.clicked.connect(self.btnRun)
+        self.mainLayout.addWidget(self._ui_btn_step1, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
+
+        # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
+        # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
+
+        self._ui_btn_step2 = QPushButton("Step 2 - Generate and save volumetric data", self)
+        self._ui_btn_step2.setToolTip("Save image slices and meta information")
+        self._ui_btn_step2.clicked.connect(self.btnSave)
+        self.mainLayout.addWidget(self._ui_btn_step2, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
+
+        self._ui_config_init()
+
+    def _ui_config_init(self):
+
+        postprocessing_params = self.teigen.config["postprocessing"]
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
         self.gen_tab_wg = QTabWidget()
@@ -331,35 +362,6 @@ class TeigenWidget(QtGui.QWidget):
             self.gen_tab_wg.addTab(wg, generator_name)
         self.gen_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
-
-
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
-            self.teigen.config["filepattern"], "output directory")
-        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
-        btn_accept = QPushButton("Step 1 - Preview - Generate skeleton", self)
-
-        btn_save = QPushButton("Save parameters", self)
-        btn_save.setToolTip("Save generator parameters")
-        btn_save.clicked.connect(self.save_parameters)
-        self.mainLayout.addWidget(btn_save, 2, 1, 1, 1) # , (gd_max_i / 2), text_col)
-
-        btn_save = QPushButton("Save parameters and add to batch", self)
-        btn_save.setToolTip("Save generator parameters and then add to batch")
-        btn_save.clicked.connect(self.save_parameters_and_add_to_batch)
-        self.mainLayout.addWidget(btn_save, 2, 2, 1, 1) # , (gd_max_i / 2), text_col)
-        btn_accept.clicked.connect(self.btnRun)
-
-        self.mainLayout.addWidget(btn_accept, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
-
-        postprocessing_params = self.teigen.config["postprocessing"]
-        # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
-        # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
-
-        btn_save = QPushButton("Step 2 - Generate and save volumetric data", self)
-        btn_save.setToolTip("Save image slices and meta information")
-        btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
 
         import pyqtgraph as pg
@@ -406,8 +408,8 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.area_sampling_wg = t
         self.area_sampling_params = p
-
         self.teigen.progress_callback = self._progressbar_update
+
 
     def _progressbar_update(self, obj, level, *args, **kwargs):
         self.progressBar.setValue(int(10000*level))
