@@ -21,7 +21,8 @@ import logging.handlers
 import PyQt4
 from PyQt4.QtGui import QGridLayout, QLabel,\
     QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar
+    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar,\
+    QFileDialog
 
 from PyQt4 import QtGui
 import sys
@@ -70,7 +71,7 @@ class TeigenWidget(QtGui.QWidget):
 
     def collect_config_from_gui(self):
         print "generator args"
-        id = self.gen_tab_wg.currentIndex()
+        id = self._ui_generators_tab_wg.currentIndex()
         config = collections.OrderedDict()
         config["generators"] = collections.OrderedDict()
         for i, wg in enumerate(self._ui_generator_widgets):
@@ -305,11 +306,6 @@ class TeigenWidget(QtGui.QWidget):
         self.statusBar.addWidget(self.ui_stop_button)
         self.progressBar.show()
 
-        self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
-            self.teigen.config["filepattern"], "output directory")
-        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
-
         self._ui_btn_save = QPushButton("Save parameters", self)
         self._ui_btn_save.setToolTip("Save generator parameters")
         self._ui_btn_save.clicked.connect(self.save_parameters)
@@ -332,15 +328,27 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_step2.clicked.connect(self.btnSave)
         self.mainLayout.addWidget(self._ui_btn_step2, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
+        self._ui_btn_load_config = QPushButton("Load params", self)
+        self._ui_btn_load_config.setToolTip("Load params from file with file dialog")
+        self._ui_btn_load_config.clicked.connect(self.btn_load_config)
+        self.mainLayout.addWidget(self._ui_btn_load_config, 5, 1, 1, 2) # , (gd_max_i / 2), text_col)
+
         self._ui_config_init()
 
+
     def _ui_config_init(self):
+
+        self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
+            self.teigen.config["filepattern"], "output directory")
+        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
+
 
         postprocessing_params = self.teigen.config["postprocessing"]
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
-        self.gen_tab_wg = QTabWidget()
-        self.mainLayout.addWidget(self.gen_tab_wg, 0, 1, 1, 2)
+        self._ui_generators_tab_wg = QTabWidget()
+        self.mainLayout.addWidget(self._ui_generators_tab_wg, 0, 1, 1, 2)
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
@@ -359,8 +367,8 @@ class TeigenWidget(QtGui.QWidget):
                 ncols=1,
             )
             self._ui_generator_widgets.append(wg)
-            self.gen_tab_wg.addTab(wg, generator_name)
-        self.gen_tab_wg.setCurrentIndex(teigen_config["generator_id"])
+            self._ui_generators_tab_wg.addTab(wg, generator_name)
+        self._ui_generators_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
 
@@ -406,10 +414,47 @@ class TeigenWidget(QtGui.QWidget):
         # t.addTopLevelItem(i5)
 
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
-        self.area_sampling_wg = t
+        self.config_wg = t
         self.area_sampling_params = p
         self.teigen.progress_callback = self._progressbar_update
 
+    def delete_wg(self, wg):
+        self.mainLayout.removeWidget(wg)
+        wg.deleteLater()
+        wg = None
+
+    def _ui_config_deinit(self):
+
+        self.delete_wg(self.ui_output_dir_widget)
+        self.delete_wg(self.config_wg)
+        self.delete_wg(self._ui_generators_tab_wg)
+        self.delete_wg(self._ui_btn_step1)
+        self.delete_wg(self._ui_btn_step2)
+        self.delete_wg(self._ui_btn_save)
+        self.delete_wg(self._ui_btn_save_and_add_to_batch)
+
+    def btn_load_config(self):
+        self.load_config()
+
+    def load_config(self, filename=None):
+        """
+        load config from file, if filename is none, file dialog is created
+        :param filename:
+        :return:
+        """
+        if filename is None:
+            fn = op.dirname(self.teigen.get_fn_base())
+            filename = QFileDialog.getOpenFileName(self, 'Open config file',
+                fn,"Config files (*.yaml)")
+            if filename is not None:
+                filename = str(filename)
+
+        if filename is not None:
+            params = io3d.misc.obj_from_file(filename)
+            self.teigen.update_config(**params)
+
+            self._ui_config_deinit()
+            self._ui_config_init()
 
     def _progressbar_update(self, obj, level, *args, **kwargs):
         self.progressBar.setValue(int(10000*level))
@@ -431,7 +476,7 @@ class TeigenWidget(QtGui.QWidget):
     def save_parameters_and_add_to_batch(self):
         self.collect_config_from_gui_and_push_to_teigen()
         self.teigen.save_parameters()
-        fn_base = self.teigen._get_fn_base()
+        fn_base = self.teigen.get_fn_base()
 
         config_filename = fn_base + "_parameters.yaml"
         self.area_sampling_params.param("Batch processing").add_filename(config_filename)
@@ -589,7 +634,7 @@ class Teigen():
             "areasize_mm": [110.0, 100.0, 100.0],
             "areasize_px": [110, 100, 100]
         }
-        config["filepattern"] = "~/teigen_data/{seriesn:03d}/slice{:06d}.jpg"
+        config["filepattern"] = "~/teigen_data/{seriesn:03d}/data{:06d}.jpg"
         # config['filepattern_series_number'] = series_number
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
@@ -720,7 +765,7 @@ class Teigen():
         root, ext = op.splitext(filepattern)
         return root, ext
 
-    def _get_fn_base(self):
+    def get_fn_base(self):
         fn_base, fn_ext = self.filepattern_split()
 
         fn_base = op.expanduser(fn_base)
@@ -736,7 +781,7 @@ class Teigen():
         # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
         self.config['filepattern_series_number'] = series_number
 
-        fn_base = self._get_fn_base()
+        fn_base = self.get_fn_base()
 
         dirname = op.dirname(fn_base)
         if not op.exists(dirname):
@@ -759,7 +804,7 @@ class Teigen():
         import io3d.misc
         import time
         t0 = time.time()
-        fn_base = self._get_fn_base()
+        fn_base = self.get_fn_base()
         # config["filepattern"] = filepattern
 
         self._numeric_measurement(fn_base)
