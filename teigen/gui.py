@@ -306,18 +306,28 @@ class TeigenWidget(QtGui.QWidget):
         self.statusBar.addWidget(self.ui_stop_button)
         self.progressBar.show()
 
+        self.configBarLayout = QGridLayout(self)
+
+        self._ui_btn_load_config = QPushButton("Load params", self)
+        self._ui_btn_load_config.setToolTip("Load params from file with file dialog")
+        self._ui_btn_load_config.clicked.connect(self.btn_load_config)
+        self.configBarLayout.addWidget(self._ui_btn_load_config, 1, 3, 1, 1) # , (gd_max_i / 2), text_col)
+
         self._ui_btn_save = QPushButton("Save parameters", self)
         self._ui_btn_save.setToolTip("Save generator parameters")
-        self._ui_btn_save.clicked.connect(self.save_parameters)
-        self.mainLayout.addWidget(self._ui_btn_save, 2, 1, 1, 1)
+        self._ui_btn_save.clicked.connect(self.btn_save_parameters)
+        self.configBarLayout.addWidget(self._ui_btn_save, 1, 1, 1, 1)
+
 
         self._ui_btn_save_and_add_to_batch = QPushButton("Save parameters and add to batch", self)
         self._ui_btn_save_and_add_to_batch.setToolTip("Save generator parameters and then add to batch")
-        self._ui_btn_save_and_add_to_batch.clicked.connect(self.save_parameters_and_add_to_batch)
-        self.mainLayout.addWidget(self._ui_btn_save_and_add_to_batch, 2, 2, 1, 1) # , (gd_max_i / 2), text_col)
+        self._ui_btn_save_and_add_to_batch.clicked.connect(self.btn_save_parameters_and_add_to_batch)
+        self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1) # , (gd_max_i / 2), text_col)
+
+        self.mainLayout.addLayout(self.configBarLayout, 2, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         self._ui_btn_step1 = QPushButton("Step 1 - Preview - Generate skeleton", self)
-        self._ui_btn_step1.clicked.connect(self.btnRun)
+        self._ui_btn_step1.clicked.connect(self.btnRunStep1)
         self.mainLayout.addWidget(self._ui_btn_step1, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
@@ -325,13 +335,9 @@ class TeigenWidget(QtGui.QWidget):
 
         self._ui_btn_step2 = QPushButton("Step 2 - Generate and save volumetric data", self)
         self._ui_btn_step2.setToolTip("Save image slices and meta information")
-        self._ui_btn_step2.clicked.connect(self.btnSave)
+        self._ui_btn_step2.clicked.connect(self.btnRunStep2)
         self.mainLayout.addWidget(self._ui_btn_step2, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
-        self._ui_btn_load_config = QPushButton("Load params", self)
-        self._ui_btn_load_config.setToolTip("Load params from file with file dialog")
-        self._ui_btn_load_config.clicked.connect(self.btn_load_config)
-        self.mainLayout.addWidget(self._ui_btn_load_config, 5, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         self._ui_config_init()
 
@@ -469,21 +475,33 @@ class TeigenWidget(QtGui.QWidget):
         lst = area_cfg["Batch processing"].values()
         self.teigen.run_batch(lst)
 
-    def save_parameters(self):
-        self.collect_config_from_gui_and_push_to_teigen()
-        self.teigen.save_parameters()
+    def btn_save_parameters(self):
+        self.save_parameters()
 
-    def save_parameters_and_add_to_batch(self):
+    def save_parameters(self, filename=None):
+        if filename is None:
+            # fn = op.dirname(self.teigen.get_fn_base())
+            fn = op.dirname(self.teigen.get_fn_base())
+            fn = fn + "_parameters.yaml"
+            filename = QFileDialog.getSaveFileName(self, 'Save config file',
+                                                   fn,"Config files (*.yaml)")
+            if filename is not None:
+                filename = str(filename)
         self.collect_config_from_gui_and_push_to_teigen()
-        self.teigen.save_parameters()
-        fn_base = self.teigen.get_fn_base()
+        self.teigen.save_parameters(filename=filename)
+        return filename
 
-        config_filename = fn_base + "_parameters.yaml"
+    def btn_save_parameters_and_add_to_batch(self):
+        self.save_parameters_and_add_to_batch()
+
+    def save_parameters_and_add_to_batch(self, filename=None):
+        self.collect_config_from_gui_and_push_to_teigen()
+        config_filename = self.teigen.save_parameters(filename=filename)
         self.area_sampling_params.param("Batch processing").add_filename(config_filename)
 
-    def btnRun(self):
+    def btnRunStep1(self):
 
-        logger.debug("btnAccept")
+        logger.debug("btnRunStage1")
         # logger.debug(str(self.config))
         self.run()
         self._show_stats()
@@ -492,7 +510,7 @@ class TeigenWidget(QtGui.QWidget):
     def btnStop(self):
         pass
 
-    def btnSave(self):
+    def btnRunStep2(self):
         # filename = "file{:05d}.jpg"
         # filename = "file%05d.jpg"
         # filename = QtGui.QFileDialog.getSaveFileName(
@@ -747,7 +765,12 @@ class Teigen():
         """
         import io3d.datawriter
         filepattern = self.config["filepattern"]
+        if "filepattern_series_number" not in self.config.keys():
+            sn = io3d.datawriter.get_unoccupied_series_number(filepattern)
+            self.config["filepattern_series_number"] = sn
+
         filepattern_series_number = self.config["filepattern_series_number"]
+
 
         # filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
         # filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
@@ -771,24 +794,31 @@ class Teigen():
         fn_base = op.expanduser(fn_base)
         return fn_base
 
-    def save_parameters(self):
-        if self.parameters_changed_before_save:
-            self.run()
+    def save_parameters(self, filename=None):
+        # if self.parameters_changed_before_save:
+        #     self.run()
         # prepare path to save
 
-        config_filepattern = self.get_config_file_pattern()
-        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
-        # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
-        self.config['filepattern_series_number'] = series_number
 
+        fn_base = None
+        if filename is None:
+            config_filepattern = self.get_config_file_pattern()
+            series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
+            # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+            self.config['filepattern_series_number'] = series_number
+
+            fn_base = self.get_fn_base()
+
+            dirname = op.dirname(fn_base)
+            if not op.exists(dirname):
+                os.makedirs(dirname)
+            filename = fn_base + "_parameters.yaml"
+
+
+        io3d.misc.obj_to_file(self.config, filename=filename)
+
+    def save_log(self):
         fn_base = self.get_fn_base()
-
-        dirname = op.dirname(fn_base)
-        if not op.exists(dirname):
-            os.makedirs(dirname)
-
-        io3d.misc.obj_to_file(self.config, filename=fn_base + "_parameters.yaml")
-
         handler = logging.FileHandler(fn_base + ".log")
         handler.setFormatter(self.formatter)
         handler.setLevel(self.loglevel)
@@ -801,6 +831,7 @@ class Teigen():
             self.run()
         # TODO split save_volume and save_parameters
         self.save_parameters()
+        self.save_log()
         import io3d.misc
         import time
         t0 = time.time()
