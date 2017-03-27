@@ -3,13 +3,13 @@
 #include <idp.iss>
 
 #define MyAppName "Teigen"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "University of West Bohemia, NTIS"
 #define MyAppURL "http://mjirik.github.io/teigen/"
 
 [Files]
 ; Source: "installer.bat"; DestDir: "{tmp}"
-; Source: "applications\LISA.ico"; DestDir: "{app}"
+Source: "graphics\teigen256.ico"; DestDir: "{app}"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -37,7 +37,7 @@ UsePreviousSetupType=False
 UsePreviousTasks=False
 UsePreviousLanguage=False
 ExtraDiskSpaceRequired=43
-SetupIconFile=..\lisa\applications\LISA.ico
+SetupIconFile=.\graphics\teigen256.ico
 UsePreviousAppDir=False
 PrivilegesRequired=none
 
@@ -46,8 +46,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
 
 [Run]
-;Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1 /InstallationType=AllUsers /D={%PUBLIC}\Minicoconda2"; Flags: waituntilterminated runasoriginaluser
-Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1"; Flags: waituntilterminated; Check: not IsCondaInstalled
+;Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1 /InstallationType=AllUsers /S /D=%UserProfile%\Miniconda3 /D={%PUBLIC}\Minicoconda2"; Flags: waituntilterminated runasoriginaluser
+Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/InstallationType=JustMe /AddToPath=1 /RegisterPython=1 "; Flags: waituntilterminated; Check: not IsCondaInstalled
 Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\VCForPython27.msi"""; Flags: waituntilterminated; Check: not IsVCForPythonInstalled
 Filename: "{cmd}"; Parameters: "/C ""{tmp}\installer.bat & pause"""; WorkingDir: "{tmp}"; Flags: waituntilterminated
 ;Filename: "{cmd}"; Parameters: "/C ""conda install --yes -c SimpleITK -c mjirik lisa"""; WorkingDir: "{%HOMEPATH}\Miniconda2\Scripts"; Flags: runasoriginaluser
@@ -60,7 +60,7 @@ Filename: "{cmd}"; Parameters: "/C ""{tmp}\installer.bat & pause"""; WorkingDir:
 [Code]
 function IsCondaInstalled: boolean;
 begin
-  result := not (FileExists('c:\Miniconda2\Scripts\conda.exe') or FileExists('{%HOMEPATH}\Miniconda2\Scripts\conda.exe') or FileExists('c:\Anaconda2\Scripts\conda.exe') or FileExists('c:\Miniconda\Scripts\conda.exe') or FileExists('c:\Anaconda\Scripts\conda.exe') or FileExists('{%HOMEPATH}\Miniconda2\Scripts\conda.exe') or FileExists('{%HOMEPATH}\Miniconda\Scripts\conda.exe') or FileExists('{%HOMEPATH}\Anaconda2\Scripts\conda.exe') or FileExists('{%HOMEPATH}\Anaconda\Scripts\conda.exe'));
+  result := (FileExists('c:\Miniconda2\Scripts\conda.exe') or FileExists(ExpandConstant('{%HOMEPATH}\Miniconda2\Scripts\conda.exe')) or FileExists('c:\Anaconda2\Scripts\conda.exe') or FileExists('c:\Miniconda\Scripts\conda.exe') or FileExists('c:\Anaconda\Scripts\conda.exe') or FileExists(ExpandConstant('{%HOMEPATH}\Miniconda2\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\Miniconda\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\Anaconda2\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\Anaconda\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\AppData\Local\Continuum\Anaconda\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\AppData\Local\Continuum\Miniconda\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\AppData\Local\Continuum\Anaconda2\Scripts\conda.exe')) or FileExists(ExpandConstant('{%HOMEPATH}\AppData\Local\Continuum\Miniconda2\Scripts\conda.exe')));
   Log(Format('IsCondaInstalled: %d', [result])) 
 end;
 
@@ -77,7 +77,7 @@ begin
   if not IsCondaInstalled then
   begin
     Log('Conda will be downloaded')
-    idpAddFileSize('https://repo.continuum.io/miniconda/Miniconda-latest-Windows-x86_64.exe', ExpandConstant('{tmp}\Miniconda-latest-Windows-x86_64.exe'), 22743040);
+    idpAddFileSize('https://repo.continuum.io/miniconda/Miniconda2-latest-Windows-x86_64.exe', ExpandConstant('{tmp}\Miniconda-latest-Windows-x86_64.exe'), 47345664);
   end;
   if not IsVCForPythonInstalled then
   begin
@@ -87,5 +87,5 @@ begin
 end;
 
 [Icons]
-Name: "{group}\Teigen"; Filename: "{cmd}"; WorkingDir: "{userdocs}"; Flags: runminimized; IconFilename: "{app}\LISA.ico"; IconIndex: 0; Parameters: "/C ""call activate teigen & python -m teigen"""
-Name: "{commondesktop}\Teigen"; Filename: "{cmd}"; WorkingDir: "{commondocs}"; Flags: runminimized; IconFilename: "{app}\LISA.ico"; IconIndex: 0; Parameters: "/C ""call activate teigen & python -m teigen"""
+Name: "{group}\Teigen"; Filename: "{cmd}"; WorkingDir: "{userdocs}"; Flags: runminimized; IconFilename: "{app}\teigen256.ico"; IconIndex: 0; Parameters: "/C ""call activate teigen & python -m teigen"""
+Name: "{commondesktop}\Teigen"; Filename: "{cmd}"; WorkingDir: "{commondocs}"; Flags: runminimized; IconFilename: "{app}\teigen256.ico"; IconIndex: 0; Parameters: "/C ""call activate teigen & python -m teigen"""
