@@ -137,7 +137,8 @@ def get_sphere(center, radius, resolution=10):
 
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     import vtk
-    appendFilter = vtk.vtkAppendPolyData()
+    # appendFilter = vtk.vtkAppendPolyData()
+    appendedData = None
 
     for br in tree_data:
         logger.debug("generating edge " + str(br["length"]))
@@ -182,13 +183,21 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
             # booleanOperation.SetInputData(2, sph2)
             booleanOperation2.Update()
 
-            appendFilter.AddInputData(booleanOperation2.GetOutput())
+            # this is simple version
+            # appendFilter.AddInputData(booleanOperation2.GetOutput())
+            if appendedData is None:
+                appendedData = booleanOperation2.GetOutput()
+            else:
+                booleanOperation3 = vtk.vtkBooleanOperationPolyDataFilter()
+                booleanOperation3.SetOperationToUnion()
+                booleanOperation3.SetInputData(0, appendedData)
+                booleanOperation3.SetInputData(1, booleanOperation2.GetOutput())
+                booleanOperation3.Update()
+                appendedData = booleanOperation3.GetOutput()
 
-            # appendFilter.AddInputData(cyl)
-            # appendFilter.AddInputData(sphere1)
-            # appendFilter.AddInputData(sphere2)
-    appendFilter.Update()
-    return appendFilter.GetOutput()
+    # appendFilter.Update()
+    # appendedData = appendFilter.GetOutput()
+    return appendedData
 
 def gen_tree_old(tree_data):
 

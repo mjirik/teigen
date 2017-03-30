@@ -110,6 +110,11 @@ class TeigenWidget(QtGui.QWidget):
         # self.config = new_cfg
         self.teigen.run()
 
+    def _ui_show_potential_output_path(self):
+        fn = self.teigen.filepattern_fill_potential_series()
+        self._ui_output_path.setText(fn)
+        logger.debug("output path refreshed " + fn)
+
     def _show_stats(self):
         to_rename = {
             "length": "length [mm]",
@@ -221,6 +226,8 @@ class TeigenWidget(QtGui.QWidget):
             plt.imshow(noise[0, :, :], cmap="gray")
             plt.colorbar()
 
+        self._ui_show_potential_output_path()
+
     def update_stats(self):
         """
         Function is used after volume generation and save.
@@ -235,6 +242,10 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_overall = tablewidget.TableWidget(self, dataframe=dfoverall)
         self._wg_tab_overall.setMaximumHeight(80)
         self._wg_tables.layout().addWidget(self._wg_tab_overall)
+
+        output_path = QLabel()
+        output_path.setText(self.teigen.filepattern_fill_series())
+        self._wg_tables.layout().addWidget(output_path)
         #     self._wg_tab_describe.deleteLater()
         #     self._wg_tab_describe = None
         #     self._wg_tab_merne.deleteLater()
@@ -324,11 +335,16 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_save_and_add_to_batch.clicked.connect(self.btn_save_parameters_and_add_to_batch)
         self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1) # , (gd_max_i / 2), text_col)
 
-        self.mainLayout.addLayout(self.configBarLayout, 2, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self._ui_output_path = QLabel(self)
+        self._ui_output_path.setText("")
+        self.mainLayout.addWidget(self._ui_output_path, 2, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self._ui_show_potential_output_path()
+
+        self.mainLayout.addLayout(self.configBarLayout, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         self._ui_btn_step1 = QPushButton("Step 1 - Preview - Generate skeleton", self)
         self._ui_btn_step1.clicked.connect(self.btnRunStep1)
-        self.mainLayout.addWidget(self._ui_btn_step1, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self._ui_btn_step1, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
@@ -336,7 +352,7 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_step2 = QPushButton("Step 2 - Generate and save volumetric data", self)
         self._ui_btn_step2.setToolTip("Save image slices and meta information")
         self._ui_btn_step2.clicked.connect(self.btnRunStep2)
-        self.mainLayout.addWidget(self._ui_btn_step2, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2) # , (gd_max_i / 2), text_col)
 
 
         self._ui_config_init()
@@ -722,9 +738,12 @@ class Teigen():
         self.gen.progress_callback = self.progress_callback
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
+        logger.debug("1D structure generator started")
         self.gen.run()
 
+        logger.debug("1D structure is generated")
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
+        logger.debug("vtk generated")
 
         self.prepare_stats()
 
@@ -758,6 +777,16 @@ class Teigen():
             tvg.saveToFile(vtk_file)
             return tvg.generator.polyData
 
+    def filepattern_fill_potential_series(self):
+        import io3d.datawriter
+        # filepattern = self.config["filepattern"]
+        filepattern = self.get_config_file_pattern()
+        sn = io3d.datawriter.get_unoccupied_series_number(filepattern)
+        filepattern = re.sub(r"({\s*})", r"", filepattern)
+
+        filepattern = io3d.datawriter.filepattern_fill_series_number(filepattern, sn)
+        return filepattern
+
     def filepattern_fill_series(self):
         """
         Return base and ext of file. The slice_number and slice_position is ignored.
@@ -765,6 +794,7 @@ class Teigen():
         """
         import io3d.datawriter
         filepattern = self.config["filepattern"]
+        # self.refresh_unoccupied_series_number()
         if "filepattern_series_number" not in self.config.keys():
             sn = io3d.datawriter.get_unoccupied_series_number(filepattern)
             self.config["filepattern_series_number"] = sn
@@ -794,6 +824,12 @@ class Teigen():
         fn_base = op.expanduser(fn_base)
         return fn_base
 
+    def refresh_unoccupied_series_number(self):
+        config_filepattern = self.get_config_file_pattern()
+        series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
+        # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+        self.config['filepattern_series_number'] = series_number
+
     def save_parameters(self, filename=None):
         # if self.parameters_changed_before_save:
         #     self.run()
@@ -802,10 +838,11 @@ class Teigen():
 
         fn_base = None
         if filename is None:
-            config_filepattern = self.get_config_file_pattern()
-            series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
-            # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
-            self.config['filepattern_series_number'] = series_number
+            self.refresh_unoccupied_series_number()
+            # config_filepattern = self.get_config_file_pattern()
+            # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
+            # # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
+            # self.config['filepattern_series_number'] = series_number
 
             fn_base = self.get_fn_base()
 

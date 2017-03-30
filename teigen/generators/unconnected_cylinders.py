@@ -58,7 +58,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
-                 orientation_anisotropic = False,
+                 orientation_anisotropic = True,
                  orientation_main=[1.0, 1.0, 0.0],
                  orientation_variance_rad=0.1,
                  volume_fraction=0.1,
@@ -266,11 +266,11 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                     center = np.mean(npts, axis=0)
 
             if self.orientation_anisotropic:
-                direction_vector = g3.random_direction_vector()
-            else:
                 direction_vector = np.asarray(self.orientation_main)
                 direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
                 direction_vector = direction_vector / np.linalg.norm(direction_vector)
+            else:
+                direction_vector = g3.random_direction_vector()
             # direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
             # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
