@@ -919,7 +919,9 @@ class Teigen():
             surface_measurement=False,
             measurement_multiplier=-1,
             measurement_resolution=50,
-            output_dtype="uint8"
+            output_dtype="uint8",
+            negative=False,
+
 
     ):
         if gaussian_blur:
@@ -937,9 +939,13 @@ class Teigen():
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
             self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
 
+        if negative:
+            self.data3d = 255 - self.data3d
+
         if limit_negative_intensities:
             self.data3d[self.data3d < 0] = 0
         self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
+        # negative = self.config["postprocessing"]["negative"] = measurement_multiplier
 
         return self.data3d
 
