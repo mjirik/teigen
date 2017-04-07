@@ -448,6 +448,25 @@ def closest_distance_between_lines(a0,a1,b0,b1,clampAll=False,clampA0=False,clam
 
     return pA,pB,np.linalg.norm(pA-pB)
 
+# def rotate3d
+
+def polar2z(r,theta):
+    return r * np.exp( 1j * theta )
+
+def z2polar(z):
+    return ( np.abs(z), np.angle(z) )
+
+def polar2cart3d(spherical):
+    pass
+
+def cart2polar3d(cartesian):
+    """
+    :param spherical: [radius, theta, phi]
+    :return:
+    """
+    radius = np.linalg.norm(cartesian)
+    theta = np.cos
+
 def random_direction_vector(return_angles=False):
     """
     Get random direction vector
