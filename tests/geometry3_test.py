@@ -238,5 +238,18 @@ class GeometryTestCase(unittest.TestCase):
 
         self.assertEqual(collision1, True)
 
+    def test_3d_rotation(self):
+        pass
+
+    def test_polar(self):
+        ptA = [[1, 2, 3]]
+        dist, angle = g3.z2polar(ptA)
+        print dist
+        print angle
+        ptA2 = g3.polar2z(dist, angle)
+
+        print ptA2
+
+
 if __name__ == '__main__':
     unittest.main()
