@@ -45,6 +45,7 @@ class TBVTK:
 
         import vtk
         logger.debug("vtk version " + str(vtk.VTK_BUILD_VERSION))
+        # import ipdb; ipdb.set_trace()
         writer = vtk.vtkPolyDataWriter()
         writer.SetFileName(outputfile)
         try:

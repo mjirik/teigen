@@ -739,11 +739,16 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         logger.debug("1D structure generator started")
+        print "1D structure generator started"
+        import ipdb; ipdb.set_trace()
         self.gen.run()
 
+        print "1D structure is generated"
+        import ipdb; ipdb.set_trace()
         logger.debug("1D structure is generated")
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
         logger.debug("vtk generated")
+        import ipdb; ipdb.set_trace()
 
         self.prepare_stats()
 
