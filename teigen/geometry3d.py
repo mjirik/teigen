@@ -493,6 +493,9 @@ def random_direction_vector(return_angles=False):
         return vector, theta, phi
     return vector
 
+# def random_vector_along_direction(vector, sigma_rad):
+#
+
 def bbox_collision(bbox1, bbox2):
     """
     detects collision betwen two boundingboxes.
