@@ -13,6 +13,8 @@
 import logging
 logger = logging.getLogger(__name__)
 
+import numpy as np
+
 class GeneralGenerator(object):
 
     def __init__(self):
@@ -49,3 +51,14 @@ class GeneralGenerator(object):
         }
         io3d.write(data, filename)
 
+
+def random_normal(mean, scale, min=.0, **kwargs):
+    if scale > 0:
+        out = np.random.normal(mean, scale, **kwargs)
+    else:
+        out = mean
+    if out < min:
+        out = min
+
+    print out
+    return out

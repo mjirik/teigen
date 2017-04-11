@@ -170,6 +170,7 @@ class TreeBuilder:
             progress += progress_step
         logger.debug("cylinders generated")
 
+        # import ipdb; ipdb.set_trace()
         if "finish" in dir(self.generator):
             # generator could have finish() function
             self.generator.finish_progress_callback = self.finish_progress_callback
@@ -179,6 +180,7 @@ class TreeBuilder:
             import traceback
             # logger.debug(traceback.format_exc())
             logger.debug("no finish() function in tree constructor")
+        # import ipdb; ipdb.set_trace()
 
         output = self.generator.get_output()
 

@@ -100,7 +100,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
 
-        self.length_generator = np.random.normal
+        self.length_generator = general.random_normal
         self.length_generator_args = [length_distribution_mean, length_distribution_standard_deviation]
 
         self.requeseted_volume_fraction = volume_fraction

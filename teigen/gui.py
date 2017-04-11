@@ -743,8 +743,6 @@ class Teigen():
         #import ipdb; ipdb.set_trace()
         self.gen.run()
 
-        #print "1D structure is generated"
-        #import ipdb; ipdb.set_trace()
         logger.debug("1D structure is generated")
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
         #logger.debug("vtk generated")
