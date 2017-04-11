@@ -496,6 +496,73 @@ def random_direction_vector(return_angles=False):
 # def random_vector_along_direction(vector, sigma_rad):
 #
 
+# -------- anisotropic - begin
+def cart2spher(vectors, axis_order=[0, 1, 2]):
+    """
+    Convert the cartesians to sphericals
+
+    @param vectors:  vectors [[x0, ...], [y0, ...], [z0, ...]].
+    @return:        spherical coordinates [[radius0,....], [theta0, ...], [phi0, ...]].
+    """
+
+    # print axis_order
+    vectors = np.asarray(vectors)
+    if vectors.shape[0] is not 3:
+        raise ValueError('Expected vector shape is [3, N]') #, 'foo', 'bar', 'baz')
+    # radius distance
+    radius = np.linalg.norm(vectors, axis=0)
+    normalized = vectors / radius
+
+    # polar angle
+    theta = np.arccos(normalized[axis_order[2]])
+    # azimuth
+    phi = np.arctan2(normalized[axis_order[1]], normalized[axis_order[0]])
+    return np.asarray([radius, theta, phi])
+
+def random_vector_along_axis(sigma=1.0, size=1, axis_order=[0, 1, 2]):
+    """
+    Produces random vector along selected axis
+    """
+    beta = np.random.normal(scale=sigma, size=size)
+    # alpha - dokola
+    alpha = 2 * np.pi * np.random.rand(size)
+    # alpha = [0.] * size
+    beta = 0.5 * np.pi - np.asarray(beta)
+    z = [np.sin(beta), -np.cos(beta) * np.sin(alpha), np.cos(beta)*np.cos(alpha)]
+
+    z_ordered = [z[axis_order[0]], z[axis_order[1]], z[axis_order[2]]]
+    return np.asarray(z_ordered)
+
+
+def rotate_vector(vectors, alpha, beta):
+    # TODO there is a bug here - see alpha=0.5*pi, beta=0.5*pi
+    sa = np.sin(alpha)
+    sb = np.sin(beta)
+    ca = np.cos(alpha)
+    cb = np.cos(beta)
+    R1 = [[1, 0, 0], [0, ca, -sa], [0, sa, ca]]
+    R2 = [[cb, 0, sb], [0, 1, 0], [-sb, 0, cb]]
+
+    ptsr = np.matmul(np.matmul(R1, R2), vectors)
+
+    return ptsr
+
+def random_vector_along_direction(direction, sigma, size=1, axis_order1=[0, 1, 2], axis_order2=[0, 1, 2]):
+    """
+    Generates unit vectors along selected direction
+
+
+    """
+    dir_sph = cart2spher(direction, axis_order=axis_order1)
+    print dir_sph
+    vecs = random_vector_along_axis(sigma=sigma, size=size, axis_order=axis_order2)
+    vecs_r = rotate_vector(vecs, dir_sph[1], dir_sph[2])
+
+    return vecs_r
+
+# --------- anisotropic -- end
+
+
 def bbox_collision(bbox1, bbox2):
     """
     detects collision betwen two boundingboxes.

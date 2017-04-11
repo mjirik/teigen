@@ -267,8 +267,12 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
             if self.orientation_anisotropic:
                 direction_vector = np.asarray(self.orientation_main)
-                direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
-                direction_vector = direction_vector / np.linalg.norm(direction_vector)
+                # past solution
+                # direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
+                # direction_vector = direction_vector / np.linalg.norm(direction_vector)
+                direction_vector = g3.random_vector_along_direction(direction_vector, self.orientation_variance_rad, size=1)
+                direction_vector = direction_vector.squeeze()
+
             else:
                 direction_vector = g3.random_direction_vector()
             # direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
