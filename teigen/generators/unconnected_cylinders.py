@@ -168,8 +168,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             n = len(self.geometry_data["volume"])
             if n >= self.element_number:
                 return True
-        object_volume = np.sum(self.geometry_data["volume"])
-        actual_volume_fraction = object_volume / self.area_volume
+        self.actual_object_volume = np.sum(self.geometry_data["volume"])
+        actual_volume_fraction = self.actual_object_volume / self.area_volume
 
         logger.debug("iteration: " + str(self.iterations) + " / " + str(self.max_iteration))
         logger.debug("actual_volume_fraction: " + str(actual_volume_fraction))
@@ -182,6 +182,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
     def init_stats(self):
         self.iterations = 0
+        self.actual_object_volume = 0
+        self.requeseted_volume = self.requeseted_volume_fraction * self.area_volume
         self.geometry_data = {
             "length":[],
             "radius":[],
@@ -250,8 +252,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                 continue
             if radius < self.radius_minimum:
                 continue
-            pt1 = self.collision_model.get_random_point(radius=radius)
-            pt2 = self.collision_model.get_random_point(radius=radius)
+            # pt1 = self.collision_model.get_random_point(radius=radius)
+            # pt2 = self.collision_model.get_random_point(radius=radius)
             # pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             # pt2 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             # pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
@@ -278,6 +280,12 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             # direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
             # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
+
+            volume = g3.pill_volume(radius, length)
+            if ((self.actual_object_volume + volume ) / self.area_volume) > self.requeseted_volume_fraction:
+                radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
+                # pokud je navrhovaný objem přílišný
+
             pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
             pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
 
@@ -294,6 +302,24 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         if generated:
             self.add_cylinder_to_stats(pt1, pt2, radius=radius)
         return
+
+    def pill_parameter_suggestion_for_last_object(self, first_radius, first_length):
+        length = first_length
+        radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
+
+        for alpha in range(1, 0, -0.1):
+            length = alpha * first_length
+            radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
+
+            if radius >= self.radius_minimum:
+                break
+
+
+        if radius < self.radius_minimum:
+            radius = self.radius_minimum
+
+        return radius, length
+
 
     def getStats(self):
         # self.assertTrue(False)

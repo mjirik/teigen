@@ -43,9 +43,33 @@ def pill_volume(radius, length=None, pt1=None, pt2=None):
         pt1 = np.asarray(pt1)
         pt2 = np.asarray(pt2)
         length = np.linalg.norm(pt1 - pt2)
-    volume =  (np.pi * radius**2 * length) + ((4. / 3.) * np.pi * radius**3)
+    volume =  cylinder_volume(radius, length) + sphere_volume(radius)
     return volume
 
+def sphere_volume(radius):
+    return ((4. / 3.) * np.pi * radius**3)
+
+def cylinder_volume(radius, length):
+    return (np.pi * radius**2 * length)
+
+    return ((4. / 3.) * np.pi * radius**3)
+
+def pill_radius_from_volume(volume, length):
+    """
+    Estimates pill radius based on volume
+    :param volume:
+    :param length:
+    :return:
+    """
+    a3 = 4./3.*np.pi
+    a2 = np.pi*length
+    a1 = 0
+    a0 = -volume
+
+    r = np.polynomial.polynomial.polyroots([a0, a1, a2, a3])
+
+    radius = np.real(r[r > 0][0])
+    return radius
 
 def show_pill_radiuses(pt1, pt2, radius, data3d, show_color=False):
     """

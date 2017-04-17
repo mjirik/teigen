@@ -153,13 +153,13 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
                            resolution=cylinder_resolution)
         sphere1 = get_sphere(br['upperVertex'], br['radius'], resolution=sphere_resolution )
         uv = br['upperVertex']
-        # length = br["length"]
+        length = br["length"]
         direction = br["direction"]
-        length = nm.linalg.norm(direction)
+        # length = nm.linalg.norm(direction)
         # print "obj ", uv, length
         if length > 0:
 
-            direction = direction / length
+            direction = direction / nm.linalg.norm(direction)
 
             lv = uv + direction * length
             sphere2 = get_sphere(lv, br['radius'], resolution=sphere_resolution )
