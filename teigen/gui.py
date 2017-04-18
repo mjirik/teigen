@@ -534,13 +534,18 @@ class TeigenWidget(QtGui.QWidget):
 
     def btnSaveInOneRow(self):
         # fn = op.dirname(self.teigen.get_fn_base())
-        fn = op.dirname(self.teigen.get_fn_base())
-        fn = fn + "_output_rows.csv"
-        filename = QFileDialog.getSaveFileName(self, 'Save config file',
-                                               fn,"(*.csv)")
+        fn_base, fn_ext = self.teigen.filepattern_split()
+        fn = op.dirname(fn_base)
+        superior_dir , filen  = op.split(fn)
+        fn = op.join(superior_dir, "output_rows.csv")
+        filename = QFileDialog.getSaveFileName(self,
+                                               'Save config file',
+                                               fn,
+                                               "(*.csv)",
+                                               options=QtGui.QFileDialog.DontConfirmOverwrite
+                                               )
         if filename is not None:
             filename = str(filename)
-
             self.teigen.save_stats_to_row(filename)
 
     def btnRunStep2(self):
@@ -571,11 +576,12 @@ class TeigenWidget(QtGui.QWidget):
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
         self.figure.savefig(fn_base + "_" + "graph.svg")
+        self.figure.savefig(fn_base + "_" + "graph.eps")
 
 
-        #from PyQt4.QtGui import QPixmap
-        #p = QPixmap.grabWidget( self._wg_show_3d)
-        #p.save(fn_base + "_snapshot", 'png')
+        from PyQt4.QtGui import QPixmap
+        p = QPixmap.grabWidget( self._wg_show_3d.vtkWidget)
+        p.save(fn_base + "_snapshot.png", 'png')
 
         # self.teigen.gen.saveVolumeToFile(filename)
         self.update_stats()
@@ -944,7 +950,7 @@ class Teigen():
             noise_mean = 30.0,
             surface_measurement=False,
             measurement_multiplier=-1,
-            measurement_resolution=50,
+            measurement_resolution=20,
             output_dtype="uint8",
             negative=False,
 
@@ -1121,6 +1127,7 @@ class Teigen():
 
         dfout = pd.concat([dfo, dfd], axis=1)
         if op.exists(filename):
+
             dfin = pd.read_csv(filename)
             dfout = pd.concat([dfin, dfout], axis=0)
 
