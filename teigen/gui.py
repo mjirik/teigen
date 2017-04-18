@@ -655,6 +655,7 @@ class Teigen():
         self.dataframes = {}
         self.stats_times = {}
         self.parameters_changed_before_save = True
+        self.fig_3d_render_snapshot = None
 
     def use_default_config(self):
         self.config = self.get_default_config()
@@ -1096,7 +1097,8 @@ class Teigen():
         try:
             writer = pd.ExcelWriter(fn_base + "_output.xlsx", engine="xlsxwriter")
 
-            for dfname in self.dataframes:
+            for dfname in ["overall", "density"]:
+                logger.debug("adding xls list " + dfname)
                 df = self.dataframes[dfname]
                 # to excel
                 df.to_excel(writer, dfname)
@@ -1118,8 +1120,8 @@ class Teigen():
             dfout = pd.concat([dfin, dfout], axis=0)
 
         dfout.to_csv(filename)
-        import ipdb; ipdb.set_trace()
-        pass
+        # import ipdb; ipdb.set_trace()
+        # pass
 
 
     def _area_sampling_general_export(self, area_sampling_params):

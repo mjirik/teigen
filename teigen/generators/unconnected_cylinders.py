@@ -63,7 +63,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  orientation_variance_rad=0.1,
                  volume_fraction=0.1,
                  maximum_1000_iteration_number=10,
-                 random_generator_seed=0
+                 random_generator_seed=0,
+                 last_element_can_be_smaller=False
                  ):
         """
         gtree is information about input data structure.
@@ -105,6 +106,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         self.requeseted_volume_fraction = volume_fraction
         self.max_iteration = 1000 * maximum_1000_iteration_number
+        self.last_element_can_be_smaller = last_element_can_be_smaller
         # import ipdb; ipdb.set_trace()
         # input of geometry and topology
         # self.V = []
@@ -284,20 +286,28 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             volume = g3.pill_volume(radius, length)
 
             planned_volume_is_too_much = ((self.actual_object_volume + volume ) / self.area_volume) > self.requeseted_volume_fraction
-            # if planned_volume_is_too_much:
-            #     radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
-            #     print " final radius and length ", radius, length
-            #     # pokud je navrhovaný objem přílišný
-
-            pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
-            pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
-
-            try_shorter_i = 0
-            collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
-            while (collision is True and try_shorter_i < try_shorter_iteration_number):
-                try_shorter_i += 1
-                pt1, pt2 = g3.get_points_closer(pt1, pt2, relative_length=0.75)
+            if planned_volume_is_too_much and self.last_element_can_be_smaller:
+                # just in case of last element and if is this feature enabled
+                radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
+                # print " final radius and length ", radius, length
+                # pokud je navrhovaný objem přílišný
+                pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
+                pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
                 collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
+                print "rad len, p1, p2 ",  radius, length, pt1, pt2
+
+            else:
+                # normal run
+
+                pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
+                pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
+
+                try_shorter_i = 0
+                collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
+                while (collision is True and try_shorter_i < try_shorter_iteration_number):
+                    try_shorter_i += 1
+                    pt1, pt2 = g3.get_points_closer(pt1, pt2, relative_length=0.75)
+                    collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
 
             if not collision:
                 generated = True
