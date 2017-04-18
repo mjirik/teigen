@@ -270,7 +270,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                     center = np.mean(npts, axis=0)
 
             if self.orientation_anisotropic:
-                direction_vector = np.asarray(self.orientation_main)
+                direction_vector = np.asarray(self.orientation_main).reshape(3,1)
                 # past solution
                 # direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
                 # direction_vector = direction_vector / np.linalg.norm(direction_vector)
