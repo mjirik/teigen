@@ -544,9 +544,11 @@ class TeigenWidget(QtGui.QWidget):
                                                "(*.csv)",
                                                options=QtGui.QFileDialog.DontConfirmOverwrite
                                                )
+        text, ok = QtGui.QInputDialog.getText(self, 'Note Dialog',
+            'Note:')
         if filename is not None:
             filename = str(filename)
-            self.teigen.save_stats_to_row(filename)
+            self.teigen.save_stats_to_row(filename, note=text)
 
     def btnRunStep2(self):
         # filename = "file{:05d}.jpg"
@@ -1120,9 +1122,10 @@ class Teigen():
             s = traceback.format_exc()
             logger.warning(s)
 
-    def save_stats_to_row(self, filename):
+    def save_stats_to_row(self, filename, note=""):
         import pandas as pd
         dfo = self.dataframes["overall"]
+        dfo["note"]=[note]
         dfd = self.dataframes["density"]
 
         dfout = pd.concat([dfo, dfd], axis=1)
