@@ -192,11 +192,16 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_merne.setMaximumHeight(80)
         self._wg_tab_overall.setMaximumHeight(80)
 
+        self._wg_btn_tab_save = QPushButton("Save in one row", self)
+        self._wg_btn_tab_save.setToolTip("Save all data in one row")
+        self._wg_btn_tab_save.clicked.connect(self.btnSaveInOneRow)
+
         self._wg_tables = QtGui.QWidget()
         self._wg_tables.setLayout(QGridLayout())
         self._wg_tables.layout().addWidget(self._wg_tab_describe)
         self._wg_tables.layout().addWidget(self._wg_tab_merne)
         self._wg_tables.layout().addWidget(self._wg_tab_overall)
+        self._wg_tables.layout().addWidget(self._wg_btn_tab_save)
 
         self._wg_tab_describe.show()
         self._wg_tab_describe.raise_()
@@ -204,6 +209,7 @@ class TeigenWidget(QtGui.QWidget):
         # self.stats_tab_wg.addTab(self._wg_tab_describe, "Stats table")
         self.actual_subtab_wg.addTab(self._wg_tables, "Summary " + run_number_alpha)
         # self.resize(600,700)
+
 
         if self.teigen.polydata is not None:
             import imtools.show_segmentation_qt
@@ -525,6 +531,17 @@ class TeigenWidget(QtGui.QWidget):
 
     def btnStop(self):
         pass
+
+    def btnSaveInOneRow(self):
+        # fn = op.dirname(self.teigen.get_fn_base())
+        fn = op.dirname(self.teigen.get_fn_base())
+        fn = fn + "_output_rows.csv"
+        filename = QFileDialog.getSaveFileName(self, 'Save config file',
+                                               fn,"(*.csv)")
+        if filename is not None:
+            filename = str(filename)
+
+            self.teigen.save_stats_to_row(filename)
 
     def btnRunStep2(self):
         # filename = "file{:05d}.jpg"
@@ -1069,8 +1086,40 @@ class Teigen():
         self.dataframes["overall"] = dfoverallf
 
     def save_stats(self, fn_base):
+        import pandas as pd
+
         for dfname in self.dataframes:
-            self.dataframes[dfname].to_csv(fn_base + "_" + dfname + ".csv")
+            df = self.dataframes[dfname]
+            # to csv
+            df.to_csv(fn_base + "_" + dfname + ".csv")
+
+        try:
+            writer = pd.ExcelWriter(fn_base + "_output.xlsx", engine="xlsxwriter")
+
+            for dfname in self.dataframes:
+                df = self.dataframes[dfname]
+                # to excel
+                df.to_excel(writer, dfname)
+            writer.save()
+        except:
+            import traceback
+            traceback.print_exc()
+            s = traceback.format_exc()
+            logger.warning(s)
+
+    def save_stats_to_row(self, filename):
+        import pandas as pd
+        dfo = self.dataframes["overall"]
+        dfd = self.dataframes["density"]
+
+        dfout = pd.concat([dfo, dfd], axis=1)
+        if op.exists(filename):
+            dfin = pd.read_csv(filename)
+            dfout = pd.concat([dfin, dfout], axis=0)
+
+        dfout.to_csv(filename)
+        import ipdb; ipdb.set_trace()
+        pass
 
 
     def _area_sampling_general_export(self, area_sampling_params):

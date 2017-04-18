@@ -69,6 +69,7 @@ def pill_radius_from_volume(volume, length):
     r = np.polynomial.polynomial.polyroots([a0, a1, a2, a3])
 
     radius = np.real(r[r > 0][0])
+    print "geometry3d.pills_radius_from_volume ", radius
     return radius
 
 def show_pill_radiuses(pt1, pt2, radius, data3d, show_color=False):

@@ -282,9 +282,12 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             length = self.length_generator(*self.length_generator_args)
 
             volume = g3.pill_volume(radius, length)
-            if ((self.actual_object_volume + volume ) / self.area_volume) > self.requeseted_volume_fraction:
-                radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
-                # pokud je navrhovaný objem přílišný
+
+            planned_volume_is_too_much = ((self.actual_object_volume + volume ) / self.area_volume) > self.requeseted_volume_fraction
+            # if planned_volume_is_too_much:
+            #     radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
+            #     print " final radius and length ", radius, length
+            #     # pokud je navrhovaný objem přílišný
 
             pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
             pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
@@ -307,12 +310,12 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         length = first_length
         radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
 
-        for alpha in range(1, 0, -0.1):
-            length = alpha * first_length
-            radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
-
-            if radius >= self.radius_minimum:
-                break
+        # for alpha in np.linspace(1., 0., 10):
+        #     length = alpha * first_length
+        #     radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
+        #
+        #     if radius >= self.radius_minimum:
+        #         break
 
 
         if radius < self.radius_minimum:
