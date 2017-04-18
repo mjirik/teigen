@@ -532,7 +532,7 @@ def cart2spher(vectors, axis_order=[0, 1, 2]):
 
     # print axis_order
     vectors = np.asarray(vectors)
-    if vectors.shape[0] is not 3:
+    if vectors.shape[0] != 3:
         import ipdb; ipdb.set_trace()
         raise ValueError('Expected vector shape is [3, N], actual shape is ' + str(vectors.shape)) #, 'foo', 'bar', 'baz')
     # radius distance
