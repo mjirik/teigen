@@ -572,6 +572,11 @@ class TeigenWidget(QtGui.QWidget):
         self.figure.savefig(fn_base + "_" + "graph.png")
         self.figure.savefig(fn_base + "_" + "graph.svg")
 
+
+        #from PyQt4.QtGui import QPixmap
+        #p = QPixmap.grabWidget( self._wg_show_3d)
+        #p.save(fn_base + "_snapshot", 'png')
+
         # self.teigen.gen.saveVolumeToFile(filename)
         self.update_stats()
 
