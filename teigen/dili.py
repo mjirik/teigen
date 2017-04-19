@@ -86,3 +86,38 @@ def recursive_update(d, u):
         else:
             d[k] = u[k]
     return d
+
+from collections import Mapping
+from itertools import chain
+from operator import add
+
+_FLAG_FIRST = object()
+
+def flattenDict(d, join=add, lift=lambda x:x):
+    """
+
+
+    Based on ninjagecko code on stackoveflow
+    http://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys
+
+    :param d: dict to flatten
+    :param join: join operation. To join keys with '_' use join=lambda a,b:a+'_'+b
+    :param lift:  to have all hierarchy keys in lise use lift=lambda x:(x,))
+    :return:
+
+    For all keys from above hierarchy in list use:
+    dict( flattenDict(testData, lift=lambda x:(x,)) )
+
+    For all keys from abve hierarchy separated by '_' use:
+    dict( flattenDict(testData, join=lambda a,b:a+'_'+b) )
+    """
+    results = []
+    def visit(subdict, results, partialKey):
+        for k,v in subdict.items():
+            newKey = lift(k) if partialKey==_FLAG_FIRST else join(partialKey,lift(k))
+            if isinstance(v,Mapping):
+                visit(v, results, newKey)
+            else:
+                results.append((newKey,v))
+    visit(d, results, _FLAG_FIRST)
+    return results

@@ -219,6 +219,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         volume = g3.pill_volume(radius, length)
         vector = pt1 - pt2
 
+        # TODO rename - add units
         self.geometry_data["length"].append(length)
         self.geometry_data["surface"].append(surf)
         self.geometry_data["radius"].append(radius)

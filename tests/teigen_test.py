@@ -42,6 +42,29 @@ class MyTestCase(unittest.TestCase):
     #     cw.deleteLater()
     #     app.deleteLater()
 
+    def test_teigen_without_save(self):
+        import teigen.gui
+        tg = teigen.gui.Teigen()
+        conf = {
+            "areasampling":{
+                "voxelsize_mm": [1., 1., 1.],
+                "areasize_px": [110, 120, 130],
+                "areasize_mm": [110, 120, 130],
+            },
+            "postprocessing":{
+                "measurement_multiplier": -1,
+                "add_noise": False
+            },
+            "generators": {
+                "Unconnected cylinders":{
+                    "element_number": 10
+                }
+            }
+        }
+        tg.update_config(**conf)
+        tg.run()
+
+
     def test_teigen_big(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
@@ -57,7 +80,7 @@ class MyTestCase(unittest.TestCase):
             },
             "generators": {
                 "Unconnected cylinders":{
-                    "element number": 10
+                    "element_number": 10
                 }
             }
         }
@@ -81,6 +104,5 @@ class MyTestCase(unittest.TestCase):
     #     tg.update_config(**conf)
     #     tg.run()
     #     tg.save_volume()
-
 if __name__ == '__main__':
     unittest.main()

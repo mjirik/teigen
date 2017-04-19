@@ -34,6 +34,7 @@ import collections
 import numpy as np
 import scipy
 import re
+import datetime
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
@@ -94,6 +95,7 @@ class TeigenWidget(QtGui.QWidget):
         config["postprocessing"] = area_cfg["Postprocessing"]
         config["required_teigen_version"] = self.teigen.version
         config["appearance"] = area_cfg["Appearance"]
+        config["output"] = area_cfg["Output"]
         self.config = config
 
     def _parameters_changed(self):
@@ -412,7 +414,8 @@ class TeigenWidget(QtGui.QWidget):
                 name="Batch processing" , children=[
                     {'name': 'Run batch', 'type': 'action'},
                 ]),
-            "Appearance": self.teigen.config["appearance"]
+            "Appearance": self.teigen.config["appearance"],
+            "Output": self.teigen.config["output"]
             # 'name': {'type': 'action'},
             # "dur": i5,
             # TODO add more lines here
@@ -707,6 +710,9 @@ class Teigen():
         config["appearance"] = {
             "show_surface": True
         }
+        config["output"] = {
+            "one_row_filename": "~/teigen_data/output_rows.csv"
+        }
         return config
 
     def update_config(self, **config):
@@ -780,6 +786,10 @@ class Teigen():
         #import ipdb; ipdb.set_trace()
 
         self.prepare_stats()
+        one_row_filename = self.config["output"]["one_row_filename"]
+        if one_row_filename != "":
+            self.save_stats_to_row(one_row_filename)
+
 
 
         t1 = time.time()
@@ -1089,13 +1099,14 @@ class Teigen():
         dfoverallf["count []"] = [count]
 
 
+        # surface and volume measurement
         import vtk
         mass = vtk.vtkMassProperties()
         # mass.SetInputData(object1Tri.GetOutput())
         mass.SetInputData(self.polydata)
         surf = mass.GetSurfaceArea()
         vol = mass.GetVolume()
-        dfoverallf["numeric volume [mm^2]"]=[vol]
+        dfoverallf["numeric volume [mm^3]"]=[vol]
         dfoverallf["numeric surface [mm^2]"]=[surf]
         self.dataframes["overall"] = dfoverallf
 
@@ -1124,17 +1135,34 @@ class Teigen():
 
     def save_stats_to_row(self, filename, note=""):
         import pandas as pd
+        filename = op.expanduser(filename)
+        tm = datetime.datetime.now().isoformat()
+        note_df = pd.DataFrame({"datetime": [tm], "note": [note]})
         dfo = self.dataframes["overall"]
-        dfo["note"]=[note]
         dfd = self.dataframes["density"]
 
-        dfout = pd.concat([dfo, dfd], axis=1)
+
+
+        config = self.config
+        config_fl = dili.flattenDict(config, join=lambda a,b:a+' '+b)
+        config_fl = dict(config_fl)
+
+        # values must be a list for dataframe
+        new_values = []
+        for val in config_fl.values():
+            new_values.append([val])
+
+        config_fl_li = dict(zip(config_fl.keys(), new_values))
+        config_df = pd.DataFrame(config_fl_li)
+        # import ipdb; ipdb.set_trace()
+        dfout = pd.concat([note_df, dfo, dfd, config_df], axis=1)
+
         if op.exists(filename):
 
             dfin = pd.read_csv(filename)
             dfout = pd.concat([dfin, dfout], axis=0)
 
-        dfout.to_csv(filename)
+        dfout.to_csv(filename, index=False)
         # import ipdb; ipdb.set_trace()
         # pass
 
