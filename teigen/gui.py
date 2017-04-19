@@ -51,6 +51,8 @@ import io3d.misc
 import dili
 
 from pyqtconfig import ConfigManager
+CKEY_APPEARANCE = "appearance"
+CKEY_OUTPUT = "output"
 
 
 class TeigenWidget(QtGui.QWidget):
@@ -94,8 +96,8 @@ class TeigenWidget(QtGui.QWidget):
         # config["postprocessing"] = self.posprocessing_wg.config_as_dict()
         config["postprocessing"] = area_cfg["Postprocessing"]
         config["required_teigen_version"] = self.teigen.version
-        config["appearance"] = area_cfg["Appearance"]
-        config["output"] = area_cfg["Output"]
+        config[CKEY_APPEARANCE] = area_cfg["Appearance"]
+        config[CKEY_OUTPUT] = area_cfg["Output"]
         self.config = config
 
     def _parameters_changed(self):
@@ -194,6 +196,7 @@ class TeigenWidget(QtGui.QWidget):
         self._wg_tab_merne.setMaximumHeight(80)
         self._wg_tab_overall.setMaximumHeight(80)
 
+        # TODO move to main column window
         self._wg_btn_tab_save = QPushButton("Save in one row", self)
         self._wg_btn_tab_save.setToolTip("Save all data in one row")
         self._wg_btn_tab_save.clicked.connect(self.btnSaveInOneRow)
@@ -224,7 +227,7 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_stats_shown = True
 
         if (
-                    self.teigen.config["postprocessing"]["noise_preview"] and
+                    self.teigen.config[CKEY_APPEARANCE]["noise_preview"] and
                     self.teigen.config["postprocessing"]["add_noise"]):
             self._noise_figure = plt.figure()
             self._noise_canvas = FigureCanvas(self._noise_figure)
@@ -260,9 +263,9 @@ class TeigenWidget(QtGui.QWidget):
         #     self._wg_tab_merne = None
 
         # Show surface
-        measurement_multiplier = self.teigen.config["postprocessing"]["measurement_multiplier"]
-        surface_measurement = self.teigen.config["postprocessing"]["surface_measurement"]
-        show_surface = self.teigen.config["appearance"]["show_surface"]
+        measurement_multiplier = self.teigen.config[CKEY_OUTPUT]["aposteriori_surface_measurement_multiplier"]
+        surface_measurement = self.teigen.config[CKEY_OUTPUT]["aposteriori_surface_measurement"]
+        show_surface = self.teigen.config[CKEY_APPEARANCE]["show_aposteriori_surface"]
         if surface_measurement and measurement_multiplier > 0 and show_surface:
             fig = plt.figure()
             self._surface_figure = fig
@@ -272,8 +275,8 @@ class TeigenWidget(QtGui.QWidget):
 
             # import matplotlib.pyplot as plt
             from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-            vertices = self.teigen._surface_vertices
-            faces = self.teigen._surface_faces
+            vertices = self.teigen._aposteriori_surface_vertices
+            faces = self.teigen._aposteriori_surface_faces
             # fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(111, projection='3d')
 
@@ -707,8 +710,12 @@ class Teigen():
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
         # self.config["areasize_px"] = [100, 100, 100]
-        config["appearance"] = {
-            "show_surface": True
+        config[CKEY_APPEARANCE] = {
+            "show_aposteriori_surface": True,
+            "aposteriori_measurement": False,
+            "aposteriori_measurement_multiplier": -1,
+            "skip_volume_generation": False,
+            "noise_preview": False,
         }
         config["output"] = {
             "one_row_filename": "~/teigen_data/output_rows.csv"
@@ -924,7 +931,8 @@ class Teigen():
         t1 = time.time()
         logger.debug("before volume generate " + str(t1-t0))
         # postprocessing
-        if "generate_volume" in dir(self.gen):
+        skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
+        if (not skip_vg) and ("generate_volume" in dir(self.gen)):
             # self.data3d = self.gen.generate_volume()
             self.data3d = self.gen.generate_volume(dtype="uint8")
             self.voxelsize_mm = self.gen.voxelsize_mm
@@ -950,18 +958,17 @@ class Teigen():
             gaussian_blur=True,
             gaussian_filter_sigma_mm=1.0,
             add_noise=True,
-            noise_preview=False,
             # gaussian_noise_stddev=10.0,
             # gaussian_noise_center=0.0,
             limit_negative_intensities=True,
-            noise_random_generator_seed=0,
-            exponent=0.0001,
-            lambda_start=0.1,
-            lambda_stop=3.0,
+            noise_rng_seed=0,
+            noise_exponent=0.0001,
+            noise_lambda_start=0.1,
+            noise_lambda_stop=3.0,
             noise_amplitude = 40.0,
             noise_mean = 30.0,
-            surface_measurement=False,
-            measurement_multiplier=-1,
+#            surface_measurement=False,
+#            measurement_multiplier=-1,
             measurement_resolution=20,
             output_dtype="uint8",
             negative=False,
@@ -988,7 +995,7 @@ class Teigen():
 
         if limit_negative_intensities:
             self.data3d[self.data3d < 0] = 0
-        self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
+        # self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
         # negative = self.config["postprocessing"]["negative"] = measurement_multiplier
 
         return self.data3d
@@ -1001,10 +1008,10 @@ class Teigen():
         noise = ndnoise.noises(
             shape=self.gen.areasize_px,
             sample_spacing=self.gen.voxelsize_mm,
-            exponent=pparams["exponent"],
-            random_generator_seed=pparams["noise_random_generator_seed"],
-            lambda_start=pparams["lambda_start"],
-            lambda_stop=pparams["lambda_stop"],
+            exponent=pparams["noise_exponent"],
+            random_generator_seed=pparams["noise_rng_seed"],
+            lambda_start=pparams["noise_lambda_start"],
+            lambda_stop=pparams["noise_lambda_stop"],
 
         ).astype(np.float16)
         mx = np.max(noise)
@@ -1027,10 +1034,10 @@ class Teigen():
         # import numpy as np
         from tree import TreeBuilder
         vxsz = self.config["areasampling"]["voxelsize_mm"]
-        vxsz = np.asarray(vxsz).astype(np.float) / self.config["postprocessing"]["measurement_multiplier"]
+        vxsz = np.asarray(vxsz).astype(np.float) / self.config[CKEY_APPEARANCE]["aposteriori_measurement_multiplier"]
         shape = self.config["areasampling"]["areasize_px"]
-        measurement_multiplier = self.config["postprocessing"]["measurement_multiplier"]
-        surface_measurement = self.config["postprocessing"]["surface_measurement"]
+        measurement_multiplier = self.config[CKEY_APPEARANCE]["aposteriori_measurement_multiplier"]
+        surface_measurement = self.config[CKEY_APPEARANCE]["aposteriori_measurement"]
         if measurement_multiplier > 0 and surface_measurement:
             shape = np.asarray(shape) * measurement_multiplier
             self._numeric_surface_measurement_shape = shape
@@ -1044,13 +1051,13 @@ class Teigen():
             data3d = tvgvol.buildTree()
             import measurement
             surface, vertices, faces = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm, return_vertices_and_faces=True)
-            self._surface_vertices = vertices
-            self._surface_faces = faces
+            self._aposteriori_surface_vertices = vertices
+            self._aposteriori_surface_faces = faces
 
             volume = np.sum(data3d > 0) * np.prod(vxsz)
 
-            self.dataframes["overall"]["surf. num. [mm^2]"] = [surface]
-            self.dataframes["overall"]["vol. num. [mm^3]"] = [volume]
+            self.dataframes["overall"]["aposteriori numeric surface [mm^2]"] = [surface]
+            self.dataframes["overall"]["aposteriori numeric volume [mm^3]"] = [volume]
 
             filename = fn_base + "_raw_{:06d}.jpg"
             import io3d.misc
