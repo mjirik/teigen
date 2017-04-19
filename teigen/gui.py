@@ -263,15 +263,16 @@ class TeigenWidget(QtGui.QWidget):
         #     self._wg_tab_merne = None
 
         # Show surface
-        measurement_multiplier = self.teigen.config[CKEY_OUTPUT]["aposteriori_surface_measurement_multiplier"]
-        surface_measurement = self.teigen.config[CKEY_OUTPUT]["aposteriori_surface_measurement"]
+        measurement_multiplier = self.teigen.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
+        surface_measurement = self.teigen.config[CKEY_OUTPUT]["aposteriori_measurement"]
         show_surface = self.teigen.config[CKEY_APPEARANCE]["show_aposteriori_surface"]
         if surface_measurement and measurement_multiplier > 0 and show_surface:
             fig = plt.figure()
             self._surface_figure = fig
             self._surface_canvas = FigureCanvas(self._surface_figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
-            self.actual_subtab_wg.addTab(self._surface_canvas, 'Exact surface')
+            run_number_alpha = chr(ord("A") + self.run_number)
+            self.actual_subtab_wg.addTab(self._surface_canvas, 'Aposteriori Surface ' + run_number_alpha)
 
             # import matplotlib.pyplot as plt
             from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -282,7 +283,7 @@ class TeigenWidget(QtGui.QWidget):
 
             # Fancy indexing: `verts[faces]` to generate a collection of triangles
             mesh = Poly3DCollection(vertices[faces])
-            mesh.set_edgecolor('k')
+            mesh.set_edgecolor('r')
             ax.add_collection3d(mesh)
             sh = self.teigen._numeric_surface_measurement_shape
             ax.set_xlim(0, sh[0])  # a = 6 (times two for 2nd ellipsoid)
@@ -712,13 +713,13 @@ class Teigen():
         # self.config["areasize_px"] = [100, 100, 100]
         config[CKEY_APPEARANCE] = {
             "show_aposteriori_surface": True,
-            "aposteriori_measurement": False,
-            "aposteriori_measurement_multiplier": -1,
             "skip_volume_generation": False,
             "noise_preview": False,
         }
         config["output"] = {
-            "one_row_filename": "~/teigen_data/output_rows.csv"
+            "one_row_filename": "~/teigen_data/output_rows.csv",
+            "aposteriori_measurement": False,
+            "aposteriori_measurement_multiplier": 1.0,
         }
         return config
 
@@ -1033,11 +1034,12 @@ class Teigen():
     def _numeric_measurement(self, fn_base):
         # import numpy as np
         from tree import TreeBuilder
+        measurement_multiplier = self.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
+        surface_measurement = self.config[CKEY_OUTPUT]["aposteriori_measurement"]
+
         vxsz = self.config["areasampling"]["voxelsize_mm"]
-        vxsz = np.asarray(vxsz).astype(np.float) / self.config[CKEY_APPEARANCE]["aposteriori_measurement_multiplier"]
+        vxsz = np.asarray(vxsz).astype(np.float) / measurement_multiplier
         shape = self.config["areasampling"]["areasize_px"]
-        measurement_multiplier = self.config[CKEY_APPEARANCE]["aposteriori_measurement_multiplier"]
-        surface_measurement = self.config[CKEY_APPEARANCE]["aposteriori_measurement"]
         if measurement_multiplier > 0 and surface_measurement:
             shape = np.asarray(shape) * measurement_multiplier
             self._numeric_surface_measurement_shape = shape
