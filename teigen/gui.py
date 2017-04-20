@@ -43,7 +43,7 @@ import io3d.misc
 
 from pyqtconfig import ConfigManager
 
-from main import CKEY_OUTPUT, CKEY_APPEARANCE
+from tgmain import CKEY_OUTPUT, CKEY_APPEARANCE, Teigen
 
 class TeigenWidget(QtGui.QWidget):
     def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log", config=None):
