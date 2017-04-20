@@ -25,7 +25,7 @@ class GeometryTestCase(unittest.TestCase):
 
     def test_collision_model_collision(self):
         cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
-        distance = 25
+        distance = 15
         pt1 = [20, 20, 20]
         pt2 = [20, 20, 60]
         pt3 = [20, 20 + distance, 20]
@@ -66,7 +66,6 @@ class GeometryTestCase(unittest.TestCase):
         r2 = 10
         collision1 = cm.add_cylinder_if_no_collision(pt1, pt2, radius=r1)
         nodes, indexes, distances = cm.n_closest_points([25, 35, 41], 3)
-        self.assertEqual(False, True)
 
     def test_bbox_collision(self):
         bb1 = [[10, 20], [10, 20], [10, 20]]
@@ -124,7 +123,7 @@ class GeometryTestCase(unittest.TestCase):
 
         pa, pb, dist = g3.closest_distance_between_lines(a0, a1, b0, b1)
 
-        self.assertAlmostEquals(dist, 0)
+        self.assertAlmostEquals(dist, 1.0)
 
 
     def test_point_in_plane(self):
@@ -138,7 +137,7 @@ class GeometryTestCase(unittest.TestCase):
             [1, 15, 13],
             [-1, -1, 1],
             [-8, -1, 1]
-            ]).T
+            ])
 
         retval_expected = [
             0,
@@ -148,7 +147,7 @@ class GeometryTestCase(unittest.TestCase):
             -1,
             -1,
         ]
-        retval = g3.point_and_plane(pl_pt, pl_vect, pts)
+        retval = g3.point_and_plane_pose(pl_pt, pl_vect, pts)
         retval = np.sign(retval)
         err = np.sum((retval - retval_expected)**2)
 

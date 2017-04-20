@@ -662,9 +662,11 @@ gitggggglkjlkjaasdfasdf
     if bboxB is None:
             bboxB = get_bbox([pointB1, pointB2], margin=radiusB)
 
-def point_and_plane(plane_point, plane_orientation, points=None, xyz=None):
+def point_and_plane_pose(plane_point, plane_orientation, points=None, xyz=None):
     """
     return 0 if point is in plane
+    There are two ways of putting points in - points and xyz
+
     :param plane_point:
     :param plane_orientation:
     :param points: [[x1, y1, z1], [x2, y2, z2], ... ]
@@ -681,8 +683,12 @@ def point_and_plane(plane_point, plane_orientation, points=None, xyz=None):
 
     if xyz is not None:
         xyz = np.asarray(xyz)
+        if points.shape[0] != 3:
+            logger.error("Wrong points shape. [3, N] expected, " + str(points.shape) + " given.")
     elif points is not None:
         points = np.asarray(points)
+        if points.shape[1] != 3:
+            logger.error("Wrong points shape. [N, 3] expected, " + str(points.shape) + " given.")
         xyz = points.T
     else:
         logger.error("points or xyz must be declared")
@@ -726,7 +732,7 @@ class TubeObject(GeometricObject):
     def _separable_by_one_bbox_and_base(self, bbox, base_point, other_point):
         vector = np.asarray(other_point) - np.asarray(base_point)
         points = get_bbox_corners(bbox)
-        position = point_and_plane(base_point, vector, points)
+        position = point_and_plane_pose(base_point, vector, points)
         return np.all(position < 0)
 
     def _separable_by_dist(self, obj):
@@ -783,7 +789,7 @@ class CylinderObject(GeometricObject):
     def _separable_by_one_bbox_and_base(self, bbox, base_point, other_point):
         vector = np.asarray(other_point) - np.asarray(base_point)
         points = get_bbox_corners(bbox)
-        position = point_and_plane(base_point, vector, points)
+        position = point_and_plane_pose(base_point, vector, points)
         return np.all(position < 0)
 
     def _separable_by_dist(self, obj):
