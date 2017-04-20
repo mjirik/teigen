@@ -2,7 +2,7 @@ vtk
 io3d >=1.1.18
 numpy
 scikit-image
-pyqt 4.11.*
+pyqt =4.11.*
 pyqtconfig
 pandas
 simpleitk
