@@ -42,6 +42,7 @@ class MyTestCase(unittest.TestCase):
     #     cw.deleteLater()
     #     app.deleteLater()
 
+    @attr('interactive')
     def test_teigen_without_save(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
@@ -65,6 +66,7 @@ class MyTestCase(unittest.TestCase):
         tg.run()
 
 
+    @attr('interactive')
     def test_teigen_big(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
