@@ -24,7 +24,7 @@ from PyQt4.QtGui import QGridLayout, QLabel,\
     QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar,\
     QFileDialog
 
-from main import main
+from tgmain import main
 
 from PyQt4 import QtGui
 import os.path as op

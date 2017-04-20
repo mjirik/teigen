@@ -1,3 +1,3 @@
 import sys
-import gui
-gui.main()
+import tgmain
+tgmain.main()
