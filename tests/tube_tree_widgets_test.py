@@ -78,6 +78,7 @@ class TubeTreeTest(unittest.TestCase):
 
     # tenhle by měl fungovat i neinteraktivně
     # @attr('interactive')
+    @unittest.skip('some VTK problem with CylinderWidget.run()')
     def test_qt_cylinderwidget_run(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
@@ -104,6 +105,8 @@ class TubeTreeTest(unittest.TestCase):
         cw.show()
         app.exec_()
 
+
+    # @unittest.skip('some VTK problem')
     def test_qt_set_dir_widget(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog

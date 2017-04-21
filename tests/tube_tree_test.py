@@ -34,6 +34,15 @@ except:
 import teigen.tree
 from teigen.tree import TreeBuilder
 
+# There is some problem with VTK. Code seams to be fine but it fails
+#  Generic Warning: In /tmp/vtk20150408-2435-1y7p97u/VTK-6.2.0/Common/Core/vtkObjectBase.cxx, line 93
+#  Trying to delete object with non-zero reference count.
+#  ERROR: In /tmp/vtk20150408-2435-1y7p97u/VTK-6.2.0/Common/Core/vtkObject.cxx, line 156
+#  vtkObject (0x11a26e760): Trying to delete object with non-zero reference count.
+
+
+VTK_MALLOC_PROBLEM = True
+
 #
 
 class TubeTreeTest(unittest.TestCase):
@@ -54,14 +63,15 @@ class TubeTreeTest(unittest.TestCase):
         if self.interactiveTests:
             tvg.show()
 
-    @unittest.skip("useless test")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_nothing(self):
         print "skelet3d_installed" , skelet3d_installed
         # import ipdb; ipdb.set_trace()
         self.assertTrue(False)
 
 
-    @unittest.skip("test debug")
+    # @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_vessel_tree_vtk(self):
         tvg = TreeBuilder('vtk')
         yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
@@ -72,7 +82,7 @@ class TubeTreeTest(unittest.TestCase):
         # tvg.show()
         # tvg.saveToFile("tree_output.vtk")
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     @unittest.skipIf(not ("skelet3d" in sys.modules), "skelet3d is not installed")
     @unittest.skipIf(not skelet3d_installed, "skelet3d is not installed")
     def test_vessel_tree_vtk_from_skeleton(self):
@@ -104,7 +114,7 @@ class TubeTreeTest(unittest.TestCase):
         os.path.exists(fn_out)
 
     # TODO finish this test
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_vessel_tree_vol(self):
         import teigen.tb_volume
         tvg = TreeBuilder(teigen.tb_volume.TBVolume)
@@ -118,6 +128,7 @@ class TubeTreeTest(unittest.TestCase):
         #     tvg.show()
 
     @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_import_new_vt_format(self):
 
         tvg = TreeBuilder()
@@ -127,7 +138,7 @@ class TubeTreeTest(unittest.TestCase):
         tvg.shape = [150, 150, 150]
         data3d = tvg.buildTree()
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_cylinders_generator(self):
         from teigen.generators.cylinders import CylinderGenerator
 
@@ -135,7 +146,7 @@ class TubeTreeTest(unittest.TestCase):
         cg.run()
 
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_get_line_nodes(self):
         import teigen.geometry3d as g3
         nodes = g3.get_points_in_line_segment([10, 13, 22], [1, 13, 22], 3)
@@ -145,7 +156,7 @@ class TubeTreeTest(unittest.TestCase):
         self.assertAlmostEqual(nodes[2][0], expected_x[2])
         self.assertAlmostEqual(nodes[3][0], expected_x[3])
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_tree_generator(self):
         import numpy as np
         tree_data = {
@@ -218,7 +229,7 @@ class TubeTreeTest(unittest.TestCase):
         # self.assertTrue(False)
 
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_io3d(self):
         import io3d
         data3d = np.zeros([10,10,10])
@@ -232,7 +243,7 @@ class TubeTreeTest(unittest.TestCase):
         }
         io3d.write(datap, "file1.pklz")
 
-    @unittest.skip("test debug")
+    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_skimage_io_imsave(self):
         import skimage.io
         data3d = np.zeros([10,10,10])
