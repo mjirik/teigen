@@ -127,7 +127,6 @@ class TubeTreeTest(unittest.TestCase):
         # if self.interactiveTests:
         #     tvg.show()
 
-    @unittest.skip("test debug")
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_import_new_vt_format(self):
 
@@ -147,22 +146,45 @@ class TubeTreeTest(unittest.TestCase):
 
 
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
-    def test_get_line_nodes(self):
-        import teigen.geometry3d as g3
-        nodes = g3.get_points_in_line_segment([10, 13, 22], [1, 13, 22], 3)
-        expected_x = [10, 7, 4, 1]
+    def test_vtk_tree(self):
+        import numpy as np
+        tree_data = {
 
-        self.assertAlmostEqual(nodes[1][0], expected_x[1])
-        self.assertAlmostEqual(nodes[2][0], expected_x[2])
-        self.assertAlmostEqual(nodes[3][0], expected_x[3])
+        }
+        element_number = 1
+        area_size = 100
+        radius = 5
+        np.random.seed(0)
+        pts1 = np.random.random([element_number, 3]) * (area_size - 4 * radius) + 2 * radius
+        pts2 = np.random.random([element_number, 3]) * (area_size - 4 * radius) + 2 * radius
+        for i in range(element_number):
+            edge = {
+                # "nodeA_ZYX_mm": vor3.vertices[simplex],
+                # "nodeB_ZYX_mm": vor3.vertices[simplex],
+                "nodeA_ZYX_mm": pts1[i],
+                "nodeB_ZYX_mm": pts2[i],
+                "radius_mm": radius
+            }
+            tree_data[i] = edge
 
+        tvg = TreeBuilder('vtk')
+        yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
+        # tvg.importFromYaml(yaml_path)
+        tvg.voxelsize_mm = [1, 1, 1]
+        tvg.shape = [area_size, area_size, area_size]
+        tvg.tree_data = tree_data
+        output = tvg.buildTree() # noqa
+        # tvg.show()
+        tvg.saveToFile("test_tree_output.vtk")
+
+    # @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_tree_generator(self):
         import numpy as np
         tree_data = {
 
         }
-        element_number = 10
+        element_number = 6
         np.random.seed(0)
         pts = np.random.random([element_number, 3]) * 100
 
@@ -229,7 +251,7 @@ class TubeTreeTest(unittest.TestCase):
         # self.assertTrue(False)
 
 
-    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
+    # @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_io3d(self):
         import io3d
         data3d = np.zeros([10,10,10])
@@ -243,7 +265,7 @@ class TubeTreeTest(unittest.TestCase):
         }
         io3d.write(datap, "file1.pklz")
 
-    @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
+    # @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_skimage_io_imsave(self):
         import skimage.io
         data3d = np.zeros([10,10,10])

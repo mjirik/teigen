@@ -56,6 +56,6 @@ install:
 #    - 'sudo ldconfig -v'
     # - conda list -e
 # command to run tests
-script: nosetests --with-coverage --cover-package=teigen
+script: nosetests -v --with-coverage --cover-package=teigen
 after_success:
     - coveralls

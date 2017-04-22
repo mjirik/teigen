@@ -105,6 +105,15 @@ class GeometryTestCase(unittest.TestCase):
 
         # self.assertAlmostEquals(dist, 0
 
+    def test_get_line_nodes(self):
+        import teigen.geometry3d as g3
+        nodes = g3.get_points_in_line_segment([10, 13, 22], [1, 13, 22], 3)
+        expected_x = [10, 7, 4, 1]
+
+        self.assertAlmostEqual(nodes[1][0], expected_x[1])
+        self.assertAlmostEqual(nodes[2][0], expected_x[2])
+        self.assertAlmostEqual(nodes[3][0], expected_x[3])
+
     def test_dist_between_lines_problematic_case(self):
         # TODO
         a0 = [15.66021867, 18.12350593, 14.89322993]

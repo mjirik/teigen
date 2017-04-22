@@ -142,10 +142,24 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
     appendedData = None
+    if vtk.VTK_MAJOR_VERSION > 5:
+        cylinderTri = vtk.vtkTriangleFilter()
+        sphere1Tri = vtk.vtkTriangleFilter()
+        sphere2Tri = vtk.vtkTriangleFilter()
+        booleanOperation1 = vtk.vtkBooleanOperationPolyDataFilter()
+        booleanOperation2 = vtk.vtkBooleanOperationPolyDataFilter()
+        booleanOperation3 = vtk.vtkBooleanOperationPolyDataFilter()
+        booleanOperation1.SetOperationToUnion()
+        booleanOperation2.SetOperationToUnion()
+        booleanOperation3.SetOperationToUnion()
 
+    import ipdb; ipdb.set_trace()
     for br in tree_data:
+        import ipdb; ipdb.set_trace()
 
-        logger.debug("generating edge " + str(br["length"]))
+        dbg_msg = "generating edge " + str(br["length"])
+        logger.debug(dbg_msg)
+        print(dbg_msg)
         cylinder = get_cylinder(br['upperVertex'],
                            br['length'],
                            br['radius'],
@@ -169,21 +183,14 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
             appendFilter.AddInputConnection(sphere1.GetProducerPort())
             appendFilter.AddInputConnection(sphere2.GetProducerPort())
         else:
-            sphere1Tri = vtk.vtkTriangleFilter()
             sphere1Tri.SetInputData(sphere1)
             sphere1Tri.Update()
             if length > 0:
-                cylinderTri = vtk.vtkTriangleFilter()
                 cylinderTri.SetInputData(cylinder)
                 cylinderTri.Update()
-                sphere2Tri = vtk.vtkTriangleFilter()
                 sphere2Tri.SetInputData(sphere2)
                 sphere2Tri.Update()
 
-                booleanOperation1 = vtk.vtkBooleanOperationPolyDataFilter()
-                booleanOperation1.SetOperationToUnion()
-                booleanOperation2 = vtk.vtkBooleanOperationPolyDataFilter()
-                booleanOperation2.SetOperationToUnion()
                 # booleanOperation.SetInputData(0, cyl)
                 booleanOperation1.SetInputData(0, cylinderTri.GetOutput())
                 booleanOperation1.SetInputData(1, sphere1Tri.GetOutput())
@@ -197,12 +204,10 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
 
             # this is simple version
             # appendFilter.AddInputData(booleanOperation2.GetOutput())
-            # print "object connected, starting addind to general space"
+            print "object connected, starting addind to general space ", + str(br["length"])
             if appendedData is None:
                 appendedData = booleanOperation2.GetOutput()
             else:
-                booleanOperation3 = vtk.vtkBooleanOperationPolyDataFilter()
-                booleanOperation3.SetOperationToUnion()
                 booleanOperation3.SetInputData(0, appendedData)
                 booleanOperation3.SetInputData(1, booleanOperation2.GetOutput())
                 booleanOperation3.Update()
@@ -211,8 +216,18 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
             # import ipdb; ipdb.set_trace()
     # import ipdb; ipdb.set_trace()
 
+    if vtk.VTK_MAJOR_VERSION > 5:
+        del(cylinderTri)
+        del(sphere1Tri)
+        del(sphere2Tri)
+        del(booleanOperation1)
+        del(booleanOperation2)
+        del(booleanOperation3)
+    print ("konec gen_tree()")
+    logger.debug("konec gen_tree()")
     # appendFilter.Update()
     # appendedData = appendFilter.GetOutput()
+    import ipdb; ipdb.set_trace()
     return appendedData
 
 def gen_tree_old(tree_data):
