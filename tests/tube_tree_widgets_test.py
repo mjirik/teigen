@@ -107,6 +107,7 @@ class TubeTreeTest(unittest.TestCase):
 
 
     # @unittest.skip('some VTK problem')
+    @attr('interactive')
     def test_qt_set_dir_widget(self):
         import PyQt4
         from PyQt4.QtGui import QApplication, QFileDialog
