@@ -29,7 +29,7 @@ import collections
 import generators.cylinders
 import generators.gensei_wrapper
 import generators.unconnected_cylinders
-import dili
+from imtools import dili
 import io3d.datawriter
 import io3d.misc
 import dictwidgetqt
