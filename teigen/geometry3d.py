@@ -704,7 +704,7 @@ def point_and_plane_pose(plane_point, plane_orientation, points=None, xyz=None):
     :return:
     """
     vector = plane_orientation
-    vector /= np.linalg.norm(vector)
+    vector = vector / np.linalg.norm(vector)
     a = vector[0]
     b = vector[1]
     c = vector[2]

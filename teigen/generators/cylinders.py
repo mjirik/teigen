@@ -116,7 +116,7 @@ class CylinderGenerator(GeneralGenerator):
                             pt1,
                             pt2,
                             radius,
-                            COLLISION_RADIUS=1.5  # higher then sqrt(2)
+                            collision_radius=1.5  # higher then sqrt(2)
                             ):
         # TODO use geometry3.check_collision_along_line
         collision, new_nodes, nodes_radiuses = g3.cylinder_collision(
@@ -253,10 +253,10 @@ class CylinderGenerator(GeneralGenerator):
             # tvg.show()
             tvg.saveToFile("tree_output.vtk")
 
-        self.getStats()
+        self.get_stats()
         self.data3d = None
 
-    def getStats(self):
+    def get_stats(self):
         # self.assertTrue(False)
         print "Surface: ", self.surface
         import pandas as pd
@@ -266,17 +266,17 @@ class CylinderGenerator(GeneralGenerator):
         print desc
         return df
 
-    def _make_cylinder_shorter(self, nodeA, nodeB, radius):  # , radius, cylinder_id):
-        vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
+    def _make_cylinder_shorter(self, node_a, node_b, radius):  # , radius, cylinder_id):
+        vector = (np.asarray(node_a) - np.asarray(node_b)).tolist()
         if np.linalg.norm(vector) < 2 * radius:
             return None, None
 
         # mov circles to center of cylinder by size of radius because of joint
-        nodeA = g3.translate(nodeA, vector,
-                             -radius)  # * self.endDistMultiplicator)
-        nodeB = g3.translate(nodeB, vector,
-                             radius)  # * self.endDistMultiplicator)
-        return nodeA, nodeB
+        node_a = g3.translate(node_a, vector,
+                              -radius)  # * self.endDistMultiplicator)
+        node_b = g3.translate(node_b, vector,
+                              radius)  # * self.endDistMultiplicator)
+        return node_a, node_b
 
     def _is_in_area(self, node, radius=None):
         """
@@ -290,11 +290,11 @@ class CylinderGenerator(GeneralGenerator):
             radius = self.radius_maximum
         return g3.is_in_area(node, self.areasize_px, radius=radius)
 
-    def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
+    def add_cylinder(self, node_a, node_b, radius, cylinder_id):
 
         try:
-            idA = tuple(nodeA)  # self.gtree.tree_data[cylinder_id]['nodeIdA']
-            idB = tuple(nodeB)  # self.gtree.tree_data[cylinder_id]['nodeIdB']
+            idA = tuple(node_a)  # self.gtree.tree_data[cylinder_id]['nodeIdA']
+            idB = tuple(node_b)  # self.gtree.tree_data[cylinder_id]['nodeIdB']
         except:
             idA = 0
             idB = 0
@@ -303,18 +303,18 @@ class CylinderGenerator(GeneralGenerator):
         # vect = nodeA - nodeB
         # self.__draw_circle(nodeB, vect, radius)
 
-        vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
+        vector = (np.asarray(node_a) - np.asarray(node_b)).tolist()
 
         # mov circles to center of cylinder by size of radius because of joint
-        nodeA = g3.translate(nodeA, vector,
-                             -radius * self.endDistMultiplicator)
-        nodeB = g3.translate(nodeB, vector,
-                             radius * self.endDistMultiplicator)
+        node_a = g3.translate(node_a, vector,
+                              -radius * self.endDistMultiplicator)
+        node_b = g3.translate(node_b, vector,
+                              radius * self.endDistMultiplicator)
 
-        if all(nodeA == nodeB):
+        if all(node_a == node_b):
             logger.error("End points are on same place")
 
-        ptsA, ptsB = g3.cylinder_circles(nodeA, nodeB, radius,
+        ptsA, ptsB = g3.cylinder_circles(node_a, node_b, radius,
                                          element_number=30)
         CVlistA = self.__construct_cylinder_end(ptsA, idA)
         CVlistB = self.__construct_cylinder_end(ptsB, idB)

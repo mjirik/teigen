@@ -54,7 +54,7 @@ class CylindersWidget(QtGui.QWidget):
         self.gen.run()
 
     def _show_stats(self):
-        df = self.gen.getStats()
+        df = self.gen.get_stats()
         from .. import tablewidget
 
         dfmerne = df[["length", "volume", "surface"]].sum() / self.gen.area_volume

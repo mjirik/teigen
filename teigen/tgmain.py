@@ -509,7 +509,7 @@ class Teigen():
             # "radius": "radius [mm^-2]"
         }
 
-        df = self.gen.getStats()
+        df = self.gen.get_stats()
         self.dataframes["elements"] = df
 
         dfdescribe = df.describe()
