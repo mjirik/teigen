@@ -16,22 +16,22 @@ logger = logging.getLogger(__name__)
 import argparse
 
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel,\
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
+from PyQt4.QtGui import QLabel,\
+    QPushButton, QApplication, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
+    QDoubleSpinBox
 
 from PyQt4 import QtGui
 import sys
-import os.path
 import copy
 import numpy as np
 
 from pyqtconfig import ConfigManager
 
-from dili import get_default_args, subdict
 
 class DictWidget(QtGui.QWidget):
-    def __init__(self, config_in, ncols=2, captions={}, hide_keys=[], horizontal=False, show_captions=True, accept_button=False, config_manager=None):
+    def __init__(self, config_in, ncols=2, captions=None, hide_keys=None,
+                 horizontal=False, show_captions=True, accept_button=False,
+                 config_manager=None):
         """
 
         :param config_in:  dictionary
@@ -39,6 +39,10 @@ class DictWidget(QtGui.QWidget):
         :param captions:
         """
         super(DictWidget, self).__init__()
+        if captions is None:
+            captions = {}
+        if hide_keys is None:
+            hide_keys = []
         self.config_in = config_in
         self.ncols = ncols
         self.captions = captions
@@ -50,13 +54,16 @@ class DictWidget(QtGui.QWidget):
         # hide also temp keys for lists and ndarrays
         # due to load default params
         self._get_tmp_composed_keys(config_in)
-        rr = self.hide_keys.extend(self._tmp_composed_keys_list)
+        self.hide_keys.extend(self._tmp_composed_keys_list)
 
         if config_manager is None:
             self.config = ConfigManager()
             self.config.set_defaults(config_in)
         else:
             self.config = config_manager
+        self.mainLayout = QGridLayout(self)
+        self.widgets = {}
+        self.grid_i = 0
         self.init_ui()
 
     def _get_tmp_composed_keys(self, cfg):
@@ -84,29 +91,11 @@ class DictWidget(QtGui.QWidget):
                     toappend[key_i] = val
         cfg.update(toappend)
 
-    def complicated_to_yaml(self, cfg):
-        import yaml
-        # convert values to json
-        isconverted = {}
-        for key, value in cfg.iteritems():
-            if type(value) in (str, int, float, bool):
-
-                isconverted[key] = False
-                if type(value) is str:
-                    pass
-
-            else:
-                isconverted[key] = True
-                cfg[key] = yaml.dump(value, default_flow_style=True)
-        return cfg
-
-
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
         self.widgets = {}
-        grid = self.mainLayout
         self.grid_i = 0
-
+        grid = self.mainLayout
 
         for key, value in self.config_in.iteritems():
 
@@ -122,9 +111,6 @@ class DictWidget(QtGui.QWidget):
                 if type(value) in (list, np.ndarray):
                     array = np.asarray(value)
                     atomic_widget = self._create_sub_grid_from_ndarray(key, array)
-                    # dc = dict(zip(range(len(vl)), list(vl.astype(str))))
-                    # atomic_widget = DictWidget(config_in=dc, show_captions=False, horizontal=True, config_manager=self.config)
-                    # atomic_widget.show()
                     row, col = self.__calculate_new_grid_position()
                     grid.addWidget(QLabel(caption), row, col + 1)
                     grid.addLayout(atomic_widget, row, col + 2)
@@ -143,7 +129,7 @@ class DictWidget(QtGui.QWidget):
 
         if self.accept_button:
             btn_accept = QPushButton("Accept", self)
-            btn_accept.clicked.connect(self.btnAccept)
+            btn_accept.clicked.connect(self.btn_accept)
             text_col = (self.ncols * 2) + 3
             grid.addWidget(btn_accept, (self.grid_i / 2), text_col)
 
@@ -191,22 +177,19 @@ class DictWidget(QtGui.QWidget):
 
         return hgrid
 
-
-    def __calculate_new_grid_position(self): #, atomic_widget, caption, grid):
+    def __calculate_new_grid_position(self):
         row = self.grid_i / self.ncols
         col = (self.grid_i % self.ncols) * 2
         self.grid_i += 1
         if self.horizontal:
-             return col, row
+            return col, row
         return row, col
 
-
-    def btnAccept(self):
+    def btn_accept(self):
         print self.config_as_dict()
 
     def on_config_update(self):
         pass
-
 
     def config_as_dict(self):
         def _primitive_type(value):
@@ -244,6 +227,29 @@ class DictWidget(QtGui.QWidget):
         #         dictionary
 
         return dictionary
+
+
+def complicated_to_yaml(cfg):
+    """
+    write complex dict structure to yaml
+    :param cfg:
+    :return:
+    """
+    import yaml
+    # convert values to json
+    isconverted = {}
+    for key, value in cfg.iteritems():
+        if type(value) in (str, int, float, bool):
+
+            isconverted[key] = False
+            if type(value) is str:
+                pass
+
+        else:
+            isconverted[key] = True
+            cfg[key] = yaml.dump(value, default_flow_style=True)
+    return cfg
+
 
 class ComposedDictMetadata(tuple):
     pass
