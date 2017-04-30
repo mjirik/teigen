@@ -188,7 +188,7 @@ class TeigenWidget(QtGui.QWidget):
         # TODO move to main column window
         self._wg_btn_tab_save = QPushButton("Save in one row", self)
         self._wg_btn_tab_save.setToolTip("Save all data in one row")
-        self._wg_btn_tab_save.clicked.connect(self.btnSaveInOneRow)
+        self._wg_btn_tab_save.clicked.connect(self.btn_save_in_one_row)
 
         self._wg_tables = QtGui.QWidget()
         self._wg_tables.setLayout(QGridLayout())
@@ -524,7 +524,7 @@ class TeigenWidget(QtGui.QWidget):
     def btnStop(self):
         pass
 
-    def btnSaveInOneRow(self):
+    def btn_save_in_one_row(self):
         # fn = op.dirname(self.teigen.get_fn_base())
         fn_base, fn_ext = self.teigen.filepattern_split()
         fn = op.dirname(fn_base)

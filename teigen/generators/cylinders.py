@@ -127,7 +127,7 @@ class CylinderGenerator(GeneralGenerator):
             other_points_radiuses=self._cylinder_nodes_radiuses,
             areasize_mm=self.areasize_px,
             # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
-            COLLISION_ALOWED=self.OVERLAPS_ALOWED,
+            collision_alowed=self.OVERLAPS_ALOWED,
         )
 
         if not collision:

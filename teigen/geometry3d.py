@@ -204,8 +204,8 @@ def get_spheres_bounding_cylinder(pt1, pt2, radius):  # , relative_step=0.5):
     return pts, radiuses
 
 
-def get_points_closer(nodeA, nodeB, delta=None, relative_length=None):  # , radius, cylinder_id):
-    vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
+def get_points_closer(node_a, node_b, delta=None, relative_length=None):  # , radius, cylinder_id):
+    vector = (np.asarray(node_a) - np.asarray(node_b)).tolist()
     length = np.linalg.norm(vector)
 
     if relative_length is not None:
@@ -217,31 +217,31 @@ def get_points_closer(nodeA, nodeB, delta=None, relative_length=None):  # , radi
         return None, None
 
     # mov circles to center of cylinder by size of radius because of joint
-    nodeA = translate(nodeA, vector,
-                      -delta)  # * self.endDistMultiplicator)
-    nodeB = translate(nodeB, vector,
-                      delta)  # * self.endDistMultiplicator)
-    nodeA = np.asarray(nodeA)
-    nodeB = np.asarray(nodeB)
-    return nodeA, nodeB
+    node_a = translate(node_a, vector,
+                       -delta)  # * self.endDistMultiplicator)
+    node_b = translate(node_b, vector,
+                       delta)  # * self.endDistMultiplicator)
+    node_a = np.asarray(node_a)
+    node_b = np.asarray(node_b)
+    return node_a, node_b
 
 
-def get_points_in_line_segment(nodeA, nodeB, step, limit_step_number=None):  # , radius, cylinder_id):
-    nodeA = np.asarray(nodeA)
-    nodeB = np.asarray(nodeB)
+def get_points_in_line_segment(node_a, node_b, step, limit_step_number=None):  # , radius, cylinder_id):
+    node_a = np.asarray(node_a)
+    node_b = np.asarray(node_b)
     nodes = []
-    nodes.append(nodeA)
-    vector = (nodeA - nodeB).tolist()
+    nodes.append(node_a)
+    vector = (node_a - node_b).tolist()
     dist = np.linalg.norm(vector)
     if limit_step_number is not None:
         if dist / step > limit_step_number:
             step = dist * 1. / limit_step_number
     while dist > step:
-        nodeA = translate(nodeA, vector, -step)
-        nodes.append(nodeA)
-        vector = (nodeA - nodeB).tolist()
+        node_a = translate(node_a, vector, -step)
+        nodes.append(node_a)
+        vector = (node_a - node_b).tolist()
         dist = np.linalg.norm(vector)
-    nodes.append(nodeB)
+    nodes.append(node_b)
 
     if limit_step_number is not None:
         return nodes, step
@@ -292,16 +292,16 @@ def perpendicular_vector(v):
     return np.cross(v, [1, 0, 0])
 
 
-def cylinder_circles(nodeA, nodeB, radius, element_number=10):
+def cylinder_circles(node_a, node_b, radius, element_number=10):
     """
     Return list of two circles with defined parameters.
     """
 
-    vector = (np.array(nodeA) - np.array(nodeB)).tolist()
-    ptsA = circle(nodeA, vector, radius, element_number)
-    ptsB = circle(nodeB, vector, radius, element_number)
+    vector = (np.array(node_a) - np.array(node_b)).tolist()
+    pts_a = circle(node_a, vector, radius, element_number)
+    pts_b = circle(node_b, vector, radius, element_number)
 
-    return ptsA, ptsB
+    return pts_a, pts_b
 
 
 def plane_fit(points):
@@ -357,12 +357,12 @@ def cylinder_collision(
         other_points_radiuses=None,
         areasize_mm=None,
         # DIST_MAX_RADIUS_MULTIPLICATOR=1.414214, # higher than sqrt(2)
-        COLLISION_ALOWED=False
+        collision_alowed=False
 ):
     if pt1_mm is not None and is_cylinder_in_area(pt1_mm, pt2_mm, radius_mm, areasize_mm):
         # line_nodes = get_points_in_line_segment(pt1_mm, pt2_mm, step)
         line_nodes, nodes_radiuses = get_spheres_bounding_cylinder(pt1_mm, pt2_mm, radius=radius_mm)
-        if COLLISION_ALOWED:
+        if collision_alowed:
             return False, line_nodes, nodes_radiuses
 
         if len(other_points) == 0:
@@ -377,8 +377,8 @@ def cylinder_collision(
     return True, [], []
 
 
-def closest_distance_between_lines(a0, a1, b0, b1, clampAll=False, clampA0=False, clampA1=False, clampB0=False,
-                                   clampB1=False):
+def closest_distance_between_lines(a0, a1, b0, b1, clamp_all=False, clamp_a0=False, clamp_a1=False, clamp_b0=False,
+                                   clamp_b1=False):
     ''' Given two lines defined by numpy.array pairs (a0,a1,b0,b1)
         Return the closest points on each segment and their distance,
 
@@ -388,11 +388,11 @@ def closest_distance_between_lines(a0, a1, b0, b1, clampAll=False, clampA0=False
     '''
 
     # If clampAll=True, set all clamps to True
-    if clampAll:
-        clampA0 = True
-        clampA1 = True
-        clampB0 = True
-        clampB1 = True
+    if clamp_all:
+        clamp_a0 = True
+        clamp_a1 = True
+        clamp_b0 = True
+        clamp_b1 = True
 
     a0 = np.asarray(a0)
     a1 = np.asarray(a1)
@@ -426,12 +426,12 @@ def closest_distance_between_lines(a0, a1, b0, b1, clampAll=False, clampA0=False
         d0 = np.dot(_A, (b0 - a0))
 
         # Overlap only possible with clamping
-        if clampA0 or clampA1 or clampB0 or clampB1:
+        if clamp_a0 or clamp_a1 or clamp_b0 or clamp_b1:
             d1 = np.dot(_A, (b1 - a0))
 
             # Is segment B before A?
             if d0 <= 0 >= d1:
-                if clampA0 and clampB1:
+                if clamp_a0 and clamp_b1:
                     if np.absolute(d0) < np.absolute(d1):
                         return a0, b0, np.linalg.norm(a0 - b0)
                     return a0, b1, np.linalg.norm(a0 - b1)
@@ -439,7 +439,7 @@ def closest_distance_between_lines(a0, a1, b0, b1, clampAll=False, clampA0=False
 
             # Is segment B after A?
             elif d0 >= magA <= d1:
-                if clampA1 and clampB0:
+                if clamp_a1 and clamp_b0:
                     if np.absolute(d0) < np.absolute(d1):
                         return a1, b0, np.linalg.norm(a1 - b0)
                     return a1, b1, np.linalg.norm(a1 - b1)
@@ -459,32 +459,32 @@ def closest_distance_between_lines(a0, a1, b0, b1, clampAll=False, clampA0=False
     pB = b0 + (_B * t1)  # Projected closest point on segment B
 
     # Clamp projections
-    if clampA0 or clampA1 or clampB0 or clampB1:
-        if clampA0 and t0 < 0:
+    if clamp_a0 or clamp_a1 or clamp_b0 or clamp_b1:
+        if clamp_a0 and t0 < 0:
             pA = a0
-        elif clampA1 and t0 > magA:
+        elif clamp_a1 and t0 > magA:
             pA = a1
 
-        if clampB0 and t1 < 0:
+        if clamp_b0 and t1 < 0:
             pB = b0
-        elif clampB1 and t1 > magB:
+        elif clamp_b1 and t1 > magB:
             pB = b1
 
         # Clamp projection A
-        if (clampA0 and t0 < 0) or (clampA1 and t0 > magA):
+        if (clamp_a0 and t0 < 0) or (clamp_a1 and t0 > magA):
             dot = np.dot(_B, (pA - b0))
-            if clampB0 and dot < 0:
+            if clamp_b0 and dot < 0:
                 dot = 0
-            elif clampB1 and dot > magB:
+            elif clamp_b1 and dot > magB:
                 dot = magB
             pB = b0 + (_B * dot)
 
         # Clamp projection B
-        if (clampB0 and t1 < 0) or (clampB1 and t1 > magB):
+        if (clamp_b0 and t1 < 0) or (clamp_b1 and t1 > magB):
             dot = np.dot(_A, (pB - a0))
-            if clampA0 and dot < 0:
+            if clamp_a0 and dot < 0:
                 dot = 0
-            elif clampA1 and dot > magA:
+            elif clamp_a1 and dot > magA:
                 dot = magA
             pA = a0 + (_A * dot)
 
@@ -671,25 +671,25 @@ def get_bbox_corners(bbox):
     return pts
 
 
-def cylinder_collision_detection(pointA1, pointA2, radiusA, pointB1, pointB2, radiusB, bboxA=None, bboxB=None):
+def cylinder_collision_detection(point_a1, point_a2, radius_a, point_b1, point_b2, radius_b, bbox_a=None, bbox_b=None):
     """
     Detects the possibility of cylinder intersection.
 gitggggglkjlkjaasdfasdf
-    :param pointA1:
-    :param pointA2:
-    :param radiusA:
-    :param pointB1:
-    :param pointB2:
-    :param radiusB:
-    :param bboxA:
-    :param bboxB:
+    :param point_a1:
+    :param point_a2:
+    :param radius_a:
+    :param point_b1:
+    :param point_b2:
+    :param radius_b:
+    :param bbox_a:
+    :param bbox_b:
     :return:
     """
 
-    if bboxA is None:
-        bboxA = get_bbox([pointA1, pointA2], margin=radiusA)
-    if bboxB is None:
-        bboxB = get_bbox([pointB1, pointB2], margin=radiusB)
+    if bbox_a is None:
+        bbox_a = get_bbox([point_a1, point_a2], margin=radius_a)
+    if bbox_b is None:
+        bbox_b = get_bbox([point_b1, point_b2], margin=radius_b)
 
 
 def point_and_plane_pose(plane_point, plane_orientation, points=None, xyz=None):
@@ -975,7 +975,7 @@ class CollisionModelSpheres(CollisionModel):
             other_points_radiuses=self._cylinder_nodes_radiuses,
             areasize_mm=self.areasize,
             # DIST_MAX_RADIUS_MULTIPLICATOR=self.DIST_MAX_RADIUS_MULTIPLICATOR,
-            COLLISION_ALOWED=self.collision_alowed,
+            collision_alowed=self.collision_alowed,
         )
 
         if not collision:

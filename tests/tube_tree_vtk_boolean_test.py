@@ -23,8 +23,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         # sphereSource1.Update()
         # input1 = sphereSource1.GetOutput()
         input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5], 0.9, 0.7, [0.0, .0, .0])
-        sphere1Tri = vtk.vtkTriangleFilter()
-        sphere1Tri.SetInputData(input1)
+        sphere1tri = vtk.vtkTriangleFilter()
+        sphere1tri.SetInputData(input1)
 
         # sphereSource2 = vtk.vtkSphereSource()
         # sphereSource2 = vtk.vtkCylinderSource()
@@ -37,15 +37,15 @@ class VtkBooleanTestCase(unittest.TestCase):
         sphere2Tri = vtk.vtkTriangleFilter()
         sphere2Tri.SetInputData(input2)
 
-        input1Mapper = vtk.vtkPolyDataMapper()
+        input1mapper = vtk.vtkPolyDataMapper()
         if vtk.VTK_MAJOR_VERSION <= 5:
-            input1Mapper.SetInputConnection(input1.GetProducerPort())
+            input1mapper.SetInputConnection(input1.GetProducerPort())
         else:
-            input1Mapper.SetInputData(input1)
+            input1mapper.SetInputData(input1)
 
-        input1Mapper.ScalarVisibilityOff()
+        input1mapper.ScalarVisibilityOff()
         input1Actor = vtk.vtkActor()
-        input1Actor.SetMapper(input1Mapper)
+        input1Actor.SetMapper(input1mapper)
         input1Actor.GetProperty().SetColor(1, 0, 0)
         input1Actor.SetPosition(input1.GetBounds()[1] - input1.GetBounds()[0], 0, 0)
         input2Mapper = vtk.vtkPolyDataMapper()
@@ -66,21 +66,21 @@ class VtkBooleanTestCase(unittest.TestCase):
         booleanOperation.SetOperationToDifference()
 
         if vtk.VTK_MAJOR_VERSION <= 5:
-            booleanOperation.SetInputConnection(0, sphere1Tri.GetOutputPort())
+            booleanOperation.SetInputConnection(0, sphere1tri.GetOutputPort())
             booleanOperation.SetInputConnection(1, sphere2Tri.GetOutputPort())
         else:
-            sphere1Tri.Update()
+            sphere1tri.Update()
             sphere2Tri.Update()
-            booleanOperation.SetInputData(0, sphere1Tri.GetOutput())
+            booleanOperation.SetInputData(0, sphere1tri.GetOutput())
             booleanOperation.SetInputData(1, sphere2Tri.GetOutput())
         booleanOperation.Update()
 
-        booleanOperationMapper = vtk.vtkPolyDataMapper()
-        booleanOperationMapper.SetInputConnection(booleanOperation.GetOutputPort())
-        booleanOperationMapper.ScalarVisibilityOff()
+        boolean_peration_mapper = vtk.vtkPolyDataMapper()
+        boolean_peration_mapper.SetInputConnection(booleanOperation.GetOutputPort())
+        boolean_peration_mapper.ScalarVisibilityOff()
 
         booleanOperationActor = vtk.vtkActor()
-        booleanOperationActor.SetMapper(booleanOperationMapper)
+        booleanOperationActor.SetMapper(boolean_peration_mapper)
 
         renderer = vtk.vtkRenderer()
         renderer.AddViewProp(input1Actor)
@@ -90,11 +90,11 @@ class VtkBooleanTestCase(unittest.TestCase):
         renderWindow = vtk.vtkRenderWindow()
         renderWindow.AddRenderer(renderer)
 
-        renWinInteractor = vtk.vtkRenderWindowInteractor()
-        renWinInteractor.SetRenderWindow(renderWindow)
+        ren_win_interactor = vtk.vtkRenderWindowInteractor()
+        ren_win_interactor.SetRenderWindow(renderWindow)
 
         renderWindow.Render()
-        renWinInteractor.Start()
+        ren_win_interactor.Start()
         # self.assertEqual(True, False)
 
     @attr('interactive')

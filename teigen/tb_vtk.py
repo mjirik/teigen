@@ -146,20 +146,19 @@ def get_sphere(center, radius, resolution=10):
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
-    appendedData = None
+    appended_data = None
     if vtk.VTK_MAJOR_VERSION > 5:
         cylinderTri = vtk.vtkTriangleFilter()
         sphere1Tri = vtk.vtkTriangleFilter()
         sphere2Tri = vtk.vtkTriangleFilter()
-        booleanOperation1 = vtk.vtkBooleanOperationPolyDataFilter()
-        booleanOperation2 = vtk.vtkBooleanOperationPolyDataFilter()
-        booleanOperation3 = vtk.vtkBooleanOperationPolyDataFilter()
-        booleanOperation1.SetOperationToUnion()
-        booleanOperation2.SetOperationToUnion()
-        booleanOperation3.SetOperationToUnion()
+        boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation1.SetOperationToUnion()
+        boolean_operation2.SetOperationToUnion()
+        boolean_operation3.SetOperationToUnion()
 
-    import ipdb;
-    ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     for br in tree_data:
         import ipdb;
         ipdb.set_trace()
@@ -198,26 +197,26 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
                 sphere2Tri.Update()
 
                 # booleanOperation.SetInputData(0, cyl)
-                booleanOperation1.SetInputData(0, cylinderTri.GetOutput())
-                booleanOperation1.SetInputData(1, sphere1Tri.GetOutput())
-                booleanOperation1.Update()
-                booleanOperation2.SetInputData(0, booleanOperation1.GetOutput())
-                booleanOperation2.SetInputData(1, sphere2Tri.GetOutput())
+                boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+                boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+                boolean_operation1.Update()
+                boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
+                boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
                 # booleanOperation.SetInputData(2, sph2)
-                booleanOperation2.Update()
+                boolean_operation2.Update()
             else:
-                booleanOperation2 = sphere1Tri
+                boolean_operation2 = sphere1Tri
 
             # this is simple version
-            # appendFilter.AddInputData(booleanOperation2.GetOutput())
+            # appendFilter.AddInputData(boolean_operation2.GetOutput())
             print "object connected, starting addind to general space ", + str(br["length"])
-            if appendedData is None:
-                appendedData = booleanOperation2.GetOutput()
+            if appended_data is None:
+                appended_data = boolean_operation2.GetOutput()
             else:
-                booleanOperation3.SetInputData(0, appendedData)
-                booleanOperation3.SetInputData(1, booleanOperation2.GetOutput())
-                booleanOperation3.Update()
-                appendedData = booleanOperation3.GetOutput()
+                boolean_operation3.SetInputData(0, appended_data)
+                boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
+                boolean_operation3.Update()
+                appended_data = boolean_operation3.GetOutput()
 
                 # import ipdb; ipdb.set_trace()
     # import ipdb; ipdb.set_trace()
@@ -226,16 +225,16 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
         del (cylinderTri)
         del (sphere1Tri)
         del (sphere2Tri)
-        del (booleanOperation1)
-        del (booleanOperation2)
-        del (booleanOperation3)
+        del (boolean_operation1)
+        del (boolean_operation2)
+        del (boolean_operation3)
     print ("konec gen_tree()")
     logger.debug("konec gen_tree()")
     # appendFilter.Update()
-    # appendedData = appendFilter.GetOutput()
+    # appended_data = appendFilter.GetOutput()
     import ipdb;
     ipdb.set_trace()
-    return appendedData
+    return appended_data
 
 
 def gen_tree_old(tree_data):

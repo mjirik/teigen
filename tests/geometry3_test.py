@@ -100,7 +100,7 @@ class GeometryTestCase(unittest.TestCase):
         b1 = [8, -3, -5]
 
         pa1, pb1, dist1 = g3.closest_distance_between_lines(a0, a1, b0, b1)
-        pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clampAll=True)
+        pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clamp_all=True)
 
         # self.assertAlmostEquals(dist, 0
 
@@ -121,7 +121,7 @@ class GeometryTestCase(unittest.TestCase):
         b1 = [16.05191401, 13.6576145, 3.21363215]
 
         pa1, pb1, dist1 = g3.closest_distance_between_lines(a0, a1, b0, b1)
-        pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clampAll=True)
+        pa2, pb2, dist2 = g3.closest_distance_between_lines(a0, a1, b0, b1, clamp_all=True)
 
     def test_dist_between_paralel_lines(self):
         a0 = [0, 0, 0]
