@@ -19,7 +19,7 @@ class GuiTest(unittest.TestCase):
             [["bool", True],
              ["int", 5],
              ['str', 'strdrr'],
-             ['vs',[1.0, 2.5, 7]]]
+             ['vs', [1.0, 2.5, 7]]]
         )
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpg
@@ -27,12 +27,11 @@ class GuiTest(unittest.TestCase):
         print params
         self.assertDictEqual(
             params["children"][0],
-            {'type': 'bool', 'name':'bool', 'value': True, "reconstruction_type": "bool"}
+            {'type': 'bool', 'name': 'bool', 'value': True, "reconstruction_type": "bool"}
         )
 
-
     def test_pyqtgraph_from_manual_dict(self):
-        params =  [
+        params = [
             {'type': 'int', 'name': 'int', 'value': 5},
             {'type': 'group', 'name': 'vs', 'children': [
                 {'type': 'int', 'name': "2", 'value': 7}
@@ -47,10 +46,10 @@ class GuiTest(unittest.TestCase):
     def test_pyqtgraph(self):
         cfg = collections.OrderedDict({
             "bool": True,
-            "int":5,
+            "int": 5,
             "expected_float": 2,
             'str': 'strdrr',
-            'vs':[1.0, 2.5, 7]
+            'vs': [1.0, 2.5, 7]
             # 'Area Sampling' : dictwidgetpyqtgraph.AreaSamplingParameter(name='Area Sampling')
         })
         captions = {"int": "toto je int"}
@@ -110,7 +109,6 @@ class GuiTest(unittest.TestCase):
         app.exec_()
 
         # self.assertTrue(False)
-
 
     def test_fill_series_number(self):
         # from teigen.gui import filepattern_fill_series_number

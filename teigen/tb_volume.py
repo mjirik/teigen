@@ -6,13 +6,14 @@ Generator of histology report
 
 """
 import logging
+
 logger = logging.getLogger(__name__)
 
 import sys
 import os.path
+
 path_to_script = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(path_to_script, "../extern/dicom2fem/src"))
-
 
 import argparse
 import numpy as np
@@ -35,6 +36,7 @@ class TBVolume:
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
+
     def __init__(self, gtree, dtype=np.int):
         self.shape = gtree.shape
         self.data3d = np.zeros(gtree.shape, dtype=dtype)
@@ -43,7 +45,7 @@ class TBVolume:
             self.intensity_profile = gtree.intensity_profile
         else:
             # self.intensity_profile = {1:200, 0.6: 100}
-            self.intensity_profile = {1:200}
+            self.intensity_profile = {1: 200}
 
         # self.intensity_profile = incollections.OrderedDict(sorted(intensity_profile, reverse=True))
         self._cylinders_params = []
@@ -66,9 +68,9 @@ class TBVolume:
         p2 = [p2m[0] / self.voxelsize_mm[0], p2m[1] /
               self.voxelsize_mm[1], p2m[2] / self.voxelsize_mm[2]]
         logger.log(UNDERDEBUG,
-            "p1_px: " + str(p1[0]) + " " + str(p1[1]) + " " + str(p1[2]))
+                   "p1_px: " + str(p1[0]) + " " + str(p1[1]) + " " + str(p1[2]))
         logger.log(UNDERDEBUG,
-            "p2_px: " + str(p2[0]) + " " + str(p2[1]) + " " + str(p2[2]))
+                   "p2_px: " + str(p2[0]) + " " + str(p2[1]) + " " + str(p2[2]))
         logger.log(UNDERDEBUG, "radius_mm:" + str(rad))
 
         # vzdalenosti mezi prvnim a koncovim bodem (pro jednotlive osy)
@@ -76,7 +78,7 @@ class TBVolume:
 
         # generovani hodnot pro osu segmentu
         num_points = max(pdiff) * \
-            2  # na jeden "pixel nejdelsi osy" je 2 bodu primky (shannon)
+                     2  # na jeden "pixel nejdelsi osy" je 2 bodu primky (shannon)
         zvalues = np.linspace(p1[0], p2[0], num_points)
         yvalues = np.linspace(p1[1], p2[1], num_points)
         xvalues = np.linspace(p1[2], p2[2], num_points)
@@ -118,9 +120,9 @@ class TBVolume:
         logger.log(UNDERDEBUG, "cutter_px: z_up-" + str(cut_up) + " z_down-" + str(cut_down) + " y_up-" + str(
             cut_yu) + " y_down-" + str(cut_yd) + " x_left-" + str(cut_xl) + " x_right-" + str(cut_xr))
         cyl_data3d_cut = cyl_data3d[
-            int(cut_up):int(cut_down),
-            int(cut_yu):int(cut_yd),
-            int(cut_xl):int(cut_xr)]
+                         int(cut_up):int(cut_down),
+                         int(cut_yu):int(cut_yd),
+                         int(cut_xl):int(cut_xr)]
 
         # calculating distances
         # spotrebovava naprostou vetsinu casu (pro 200^3  je to kolem 1.2
@@ -146,7 +148,7 @@ class TBVolume:
         :param self.finish_progress_callback(self, progress): function with iprogress parameter from 0.0 to 1.0
         :return:
         """
-        progress_step = 1.0/(len(self.intensity_profile) * len(self._cylinders_params))
+        progress_step = 1.0 / (len(self.intensity_profile) * len(self._cylinders_params))
         progress = 0.0
 
         for radk in sorted(self.intensity_profile, reverse=True):
@@ -159,7 +161,7 @@ class TBVolume:
                     self.finish_progress_callback(self, progress)
                     progress += progress_step
 
-            self.data3d[self.data3d==self._temp_intensity] = radk_intensity
+            self.data3d[self.data3d == self._temp_intensity] = radk_intensity
 
         if self.finish_progress_callback is not None:
             self.finish_progress_callback(self, 1.0)
@@ -169,7 +171,7 @@ class TBVolume:
         import io3d.misc
         import numpy as np
         data = {
-            'data3d': self.data3d.astype(np.uint8), #* self.output_intensity,
+            'data3d': self.data3d.astype(np.uint8),  # * self.output_intensity,
             'voxelsize_mm': self.voxelsize_mm,
             # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
         }
@@ -188,12 +190,10 @@ class TBVolume:
 
         io3d.write(data, outputfile)
         # io3d.misc.obj_to_file(data, outputfile, filetype=filetype)
-        #dw = datawriter.DataWriter()
-        #dw.Write3DData(self.data3d, outputfile, filetype)
+        # dw = datawriter.DataWriter()
+        # dw.Write3DData(self.data3d, outputfile, filetype)
 
     def show(self):
         import sed3 as se
         pyed = se.sed3(self.data3d)
         pyed.show()
-
-

@@ -8,6 +8,7 @@ import skimage.io
 import os
 import os.path as op
 
+
 def save_image_stack(data3d, filename="output{:05d}.png"):
     """
 
@@ -26,6 +27,3 @@ def save_image_stack(data3d, filename="output{:05d}.png"):
         # import ipdb; ipdb.set_trace()
 
         skimage.io.imsave(fn, slice)
-
-
-

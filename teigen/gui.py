@@ -19,9 +19,9 @@ import argparse
 
 import logging.handlers
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel,\
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar,\
+from PyQt4.QtGui import QGridLayout, QLabel, \
+    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
+    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar, \
     QFileDialog
 
 from tgmain import main
@@ -44,6 +44,7 @@ import io3d.misc
 from pyqtconfig import ConfigManager
 
 from tgmain import CKEY_OUTPUT, CKEY_APPEARANCE, Teigen
+
 
 class TeigenWidget(QtGui.QWidget):
     def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log", config=None):
@@ -100,7 +101,6 @@ class TeigenWidget(QtGui.QWidget):
     def run(self):
         self.collect_config_from_gui_and_push_to_teigen()
 
-
         # self.config = new_cfg
         self.teigen.run()
 
@@ -132,10 +132,10 @@ class TeigenWidget(QtGui.QWidget):
 
         run_number_alpha = chr(ord("A") + self.run_number)
         if self.ui_stats_shown:
-        #     self._wg_tab_describe.deleteLater()
-        #     self._wg_tab_describe = None
-        #     self._wg_tab_merne.deleteLater()
-        #     self._wg_tab_merne = None
+            #     self._wg_tab_describe.deleteLater()
+            #     self._wg_tab_describe = None
+            #     self._wg_tab_merne.deleteLater()
+            #     self._wg_tab_merne = None
             pass
         else:
 
@@ -145,7 +145,6 @@ class TeigenWidget(QtGui.QWidget):
         self.actual_subtab_wg = QTabWidget()
         self.stats_tab_wg.addTab(self.actual_subtab_wg, '' + run_number_alpha)
         if True:
-
             self.figure = plt.figure()
             self.canvas = FigureCanvas(self.figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)
@@ -266,8 +265,7 @@ class TeigenWidget(QtGui.QWidget):
 
             # import matplotlib.pyplot as plt
             from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-            vertices = self.teigen._aposteriori_surface_vertices
-            faces = self.teigen._aposteriori_surface_faces
+            faces, vertices = self.teigen.get_aposteriori_faces_and_vertices()
             # fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(111, projection='3d')
 
@@ -300,7 +298,6 @@ class TeigenWidget(QtGui.QWidget):
     def _get_generator(self, id):
         pass
 
-
     def init_ui(self):
         wtitle = "Teigen " + self.version
         self.setWindowTitle(wtitle)
@@ -324,29 +321,28 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_load_config = QPushButton("Load params", self)
         self._ui_btn_load_config.setToolTip("Load params from file with file dialog")
         self._ui_btn_load_config.clicked.connect(self.btn_load_config)
-        self.configBarLayout.addWidget(self._ui_btn_load_config, 1, 3, 1, 1) # , (gd_max_i / 2), text_col)
+        self.configBarLayout.addWidget(self._ui_btn_load_config, 1, 3, 1, 1)  # , (gd_max_i / 2), text_col)
 
         self._ui_btn_save = QPushButton("Save parameters", self)
         self._ui_btn_save.setToolTip("Save generator parameters")
         self._ui_btn_save.clicked.connect(self.btn_save_parameters)
         self.configBarLayout.addWidget(self._ui_btn_save, 1, 1, 1, 1)
 
-
         self._ui_btn_save_and_add_to_batch = QPushButton("Save parameters and add to batch", self)
         self._ui_btn_save_and_add_to_batch.setToolTip("Save generator parameters and then add to batch")
         self._ui_btn_save_and_add_to_batch.clicked.connect(self.btn_save_parameters_and_add_to_batch)
-        self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1) # , (gd_max_i / 2), text_col)
+        self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1)  # , (gd_max_i / 2), text_col)
 
         self._ui_output_path = QLabel(self)
         self._ui_output_path.setText("")
-        self.mainLayout.addWidget(self._ui_output_path, 2, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self._ui_output_path, 2, 1, 1, 2)  # , (gd_max_i / 2), text_col)
         self._ui_show_potential_output_path()
 
-        self.mainLayout.addLayout(self.configBarLayout, 3, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addLayout(self.configBarLayout, 3, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         self._ui_btn_step1 = QPushButton("Step 1 - Preview - Generate skeleton", self)
         self._ui_btn_step1.clicked.connect(self.btnRunStep1)
-        self.mainLayout.addWidget(self._ui_btn_step1, 4, 1, 1, 2) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self._ui_btn_step1, 4, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
@@ -354,19 +350,17 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_step2 = QPushButton("Step 2 - Generate and save volumetric data", self)
         self._ui_btn_step2.setToolTip("Save image slices and meta information")
         self._ui_btn_step2.clicked.connect(self.btnRunStep2)
-        self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2) # , (gd_max_i / 2), text_col)
-
+        self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         self._ui_config_init()
-
 
     def _ui_config_init(self):
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
             self.teigen.config["filepattern"], "output directory")
-        self.ui_output_dir_widget.setToolTip("Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
-        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2) # , (gd_max_i / 2), text_col)
-
+        self.ui_output_dir_widget.setToolTip(
+            "Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
+        self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         postprocessing_params = self.teigen.config["postprocessing"]
 
@@ -376,7 +370,7 @@ class TeigenWidget(QtGui.QWidget):
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
-            }
+        }
 
         # list is pointer. It causes problems with temporary reconstruction information
         # copy fix this issue
@@ -402,10 +396,11 @@ class TeigenWidget(QtGui.QWidget):
         import pyqtgraph
         from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
         input_params = {
-            "Area Sampling":  dictwidgetpg.AreaSamplingParameter(name='Area Sampling', **self.teigen.config["areasampling"]),
+            "Area Sampling": dictwidgetpg.AreaSamplingParameter(name='Area Sampling',
+                                                                **self.teigen.config["areasampling"]),
             "Postprocessing": postprocessing_params,
             "Batch processing": dictwidgetpg.BatchFileProcessingParameter(
-                name="Batch processing" , children=[
+                name="Batch processing", children=[
                     {'name': 'Run batch', 'type': 'action'},
                 ]),
             "Appearance": self.teigen.config["appearance"],
@@ -470,7 +465,7 @@ class TeigenWidget(QtGui.QWidget):
         if filename is None:
             fn = op.dirname(self.teigen.get_fn_base())
             filename = QFileDialog.getOpenFileName(self, 'Open config file',
-                fn,"Config files (*.yaml)")
+                                                   fn, "Config files (*.yaml)")
             if filename is not None:
                 filename = str(filename)
 
@@ -482,11 +477,11 @@ class TeigenWidget(QtGui.QWidget):
             self._ui_config_init()
 
     def _progressbar_update(self, obj, level, *args, **kwargs):
-        self.progressBar.setValue(int(10000*level))
+        self.progressBar.setValue(int(10000 * level))
         if "statusbar_text" in kwargs:
             # add this in gui
             print "statusbar_text " + kwargs["statusbar_text"]
-        ## end of pyqtgraph tree
+            ## end of pyqtgraph tree
 
     def run_batch(self):
 
@@ -501,9 +496,9 @@ class TeigenWidget(QtGui.QWidget):
         if filename is None:
             # fn = op.dirname(self.teigen.get_fn_base())
             fn = op.dirname(self.teigen.get_fn_base())
-            fn = fn + "_parameters.yaml"
+            fn += "_parameters.yaml"
             filename = QFileDialog.getSaveFileName(self, 'Save config file',
-                                                   fn,"Config files (*.yaml)")
+                                                   fn, "Config files (*.yaml)")
             if filename is not None:
                 filename = str(filename)
         self.collect_config_from_gui_and_push_to_teigen()
@@ -533,7 +528,7 @@ class TeigenWidget(QtGui.QWidget):
         # fn = op.dirname(self.teigen.get_fn_base())
         fn_base, fn_ext = self.teigen.filepattern_split()
         fn = op.dirname(fn_base)
-        superior_dir , filen  = op.split(fn)
+        superior_dir, filen = op.split(fn)
         fn = op.join(superior_dir, "output_rows.csv")
         filename = QFileDialog.getSaveFileName(self,
                                                'Save config file',
@@ -542,7 +537,7 @@ class TeigenWidget(QtGui.QWidget):
                                                options=QtGui.QFileDialog.DontConfirmOverwrite
                                                )
         text, ok = QtGui.QInputDialog.getText(self, 'Note Dialog',
-            'Note:')
+                                              'Note:')
         if filename is not None:
             filename = str(filename)
             self.teigen.save_stats_to_row(filename, note=text)
@@ -562,7 +557,6 @@ class TeigenWidget(QtGui.QWidget):
             self.run()
             self._show_stats()
 
-
         # filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = self.config["filepattern"]
 
@@ -577,19 +571,15 @@ class TeigenWidget(QtGui.QWidget):
         self.figure.savefig(fn_base + "_" + "graph.svg")
         self.figure.savefig(fn_base + "_" + "graph.eps")
 
-
         from PyQt4.QtGui import QPixmap
-        p = QPixmap.grabWidget( self._wg_show_3d.vtkWidget)
+        p = QPixmap.grabWidget(self._wg_show_3d.vtkWidget)
         p.save(fn_base + "_snapshot.png", 'png')
 
         # self.teigen.gen.saveVolumeToFile(filename)
         self.update_stats()
 
-
-
     def on_config_update(self):
         pass
-
 
     def config_as_dict(self):
         dictionary = self.config.as_dict()
@@ -602,7 +592,6 @@ class TeigenWidget(QtGui.QWidget):
             dictionary[key] = value
 
         return dictionary
-
 
 
 if __name__ == "__main__":

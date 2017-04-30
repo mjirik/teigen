@@ -11,6 +11,7 @@
 """
 
 import logging
+
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
@@ -26,12 +27,10 @@ def __half_plane(self, perp, plane_point, point):
     out = perp[0] * cdf[0] + \
           perp[1] * cdf[1] + \
           perp[2] * cdf[2]
-    return  out > 0
-
+    return out > 0
 
 
 class UnconnectedCylinderGenerator(general.GeneralGenerator):
-
     def __init__(self,
                  build=True,
                  gtree=None,
@@ -58,7 +57,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  # intensity_profile=None
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
-                 orientation_anisotropic = True,
+                 orientation_anisotropic=True,
                  orientation_main=[1.0, 1.0, 0.0],
                  orientation_variance_rad=0.1,
                  volume_fraction=0.1,
@@ -92,7 +91,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self._cylinder_nodes_radiuses = []
         self.random_generator_seed = random_generator_seed
         self.radius_generator = self._const
-        self.radius_generator_args=[radius_distribution_mean]
+        self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
         if uniform_radius_distribution:
             self.radius_generator = np.random.uniform
@@ -175,7 +174,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         logger.debug("iteration: " + str(self.iterations) + " / " + str(self.max_iteration))
         logger.debug("actual_volume_fraction: " + str(actual_volume_fraction))
-        if self.iterations >  self.max_iteration:
+        if self.iterations > self.max_iteration:
             return True
         elif actual_volume_fraction > self.requeseted_volume_fraction:
             return True
@@ -187,13 +186,13 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.actual_object_volume = 0
         self.requeseted_volume = self.requeseted_volume_fraction * self.area_volume
         self.geometry_data = {
-            "length":[],
-            "radius":[],
-            "volume":[],
-            "surface":[],
-            "vector":[],
-            "point1":[],
-            "point2":[]
+            "length": [],
+            "radius": [],
+            "volume": [],
+            "surface": [],
+            "vector": [],
+            "point1": [],
+            "point2": []
         }
 
     def add_cylinder_to_stats(self, pt1, pt2, radius):
@@ -229,12 +228,11 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.geometry_data["point2"].append(pt2)
         self.surface += surf
 
-
     def create_cylinder(
             self,
             try_shorter_iteration_number=8,
             n_nearest=4,
-            length_to_radius_ratio = 4
+            length_to_radius_ratio=4
     ):
         generated = False
         while not generated:
@@ -265,17 +263,18 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             center = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
             if self.collision_model.object_number > 2 * n_nearest:
                 if self.iterations % 5:
-                # if self.collision_model.get_node_number() > n_nearest:
+                    # if self.collision_model.get_node_number() > n_nearest:
                     center = np.asarray(center)
                     npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
                     center = np.mean(npts, axis=0)
 
             if self.orientation_anisotropic:
-                direction_vector = np.asarray(self.orientation_main).reshape(3,1)
+                direction_vector = np.asarray(self.orientation_main).reshape(3, 1)
                 # past solution
                 # direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
                 # direction_vector = direction_vector / np.linalg.norm(direction_vector)
-                direction_vector = g3.random_vector_along_direction(direction_vector, self.orientation_variance_rad, size=1)
+                direction_vector = g3.random_vector_along_direction(direction_vector, self.orientation_variance_rad,
+                                                                    size=1)
                 direction_vector = direction_vector.squeeze()
 
             else:
@@ -286,7 +285,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
             volume = g3.pill_volume(radius, length)
 
-            planned_volume_is_too_much = ((self.actual_object_volume + volume ) / self.area_volume) > self.requeseted_volume_fraction
+            planned_volume_is_too_much = ((
+                                          self.actual_object_volume + volume) / self.area_volume) > self.requeseted_volume_fraction
             if planned_volume_is_too_much and self.last_element_can_be_smaller:
                 # just in case of last element and if is this feature enabled
                 radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
@@ -295,7 +295,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                 pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
                 pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
                 collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
-                print "rad len, p1, p2 ",  radius, length, pt1, pt2
+                print "rad len, p1, p2 ", radius, length, pt1, pt2
 
             else:
                 # normal run
@@ -334,7 +334,6 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         return radius, length
 
-
     def getStats(self):
         # self.assertTrue(False)
         # print "Surface: ", self.surface
@@ -345,16 +344,16 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # print desc
         return df
 
-    def _make_cylinder_shorter(self, nodeA, nodeB, radius): #, radius, cylinder_id):
+    def _make_cylinder_shorter(self, nodeA, nodeB, radius):  # , radius, cylinder_id):
         vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
-        if np.linalg.norm(vector) < 2*radius:
+        if np.linalg.norm(vector) < 2 * radius:
             return None, None
 
         # mov circles to center of cylinder by size of radius because of joint
         nodeA = g3.translate(nodeA, vector,
-                             -radius) # * self.endDistMultiplicator)
+                             -radius)  # * self.endDistMultiplicator)
         nodeB = g3.translate(nodeB, vector,
-                             radius) #  * self.endDistMultiplicator)
+                             radius)  # * self.endDistMultiplicator)
         return nodeA, nodeB
 
     def _is_in_area(self, node, radius=None):
@@ -392,6 +391,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         CVlist = CVlistA + CVlistB
 
         self.CV.append(CVlist)
+
 
 # lar add ball
 #         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
@@ -512,4 +512,3 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
 
 if __name__ == "__main__":
     main()
-

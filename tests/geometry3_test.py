@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 import teigen.geometry3d as g3
 
+
 class GeometryTestCase(unittest.TestCase):
     def test_collision_model_no_collision(self):
         cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
@@ -21,7 +22,6 @@ class GeometryTestCase(unittest.TestCase):
         collision2 = cm.add_cylinder_if_no_collision(pt3, pt4, radius=r2)
 
         self.assertEqual(collision2, False)
-
 
     def test_collision_model_collision(self):
         cm = g3.CollisionModelSpheres(areasize=[150, 151, 155])
@@ -82,16 +82,15 @@ class GeometryTestCase(unittest.TestCase):
             out = g3.bbox_collision(param[0], param[1])
             self.assertEqual(out, param[2])
 
-        # g3.bbox_collision(bb1, bb2)
+            # g3.bbox_collision(bb1, bb2)
 
     def test_get_bbox(self):
         points = [[10, 20, 0], [30, 40, 0]]
         bbox_expected = np.asarray([[5, 35], [15, 45], [-5, 5]])
 
         bbox = g3.get_bbox(points, margin=5)
-        err = np.sum((bbox - bbox_expected)**2)
+        err = np.sum((bbox - bbox_expected) ** 2)
         self.assertAlmostEquals(err, 0)
-
 
     def test_dist_between_lines(self):
         # TODO
@@ -134,7 +133,6 @@ class GeometryTestCase(unittest.TestCase):
 
         self.assertAlmostEquals(dist, 1.0)
 
-
     def test_point_in_plane(self):
         pl_pt = [0, 0, 0]
         pl_vect = [1, 0, 0]
@@ -146,7 +144,7 @@ class GeometryTestCase(unittest.TestCase):
             [1, 15, 13],
             [-1, -1, 1],
             [-8, -1, 1]
-            ])
+        ])
 
         retval_expected = [
             0,
@@ -158,7 +156,7 @@ class GeometryTestCase(unittest.TestCase):
         ]
         retval = g3.point_and_plane_pose(pl_pt, pl_vect, pts)
         retval = np.sign(retval)
-        err = np.sum((retval - retval_expected)**2)
+        err = np.sum((retval - retval_expected) ** 2)
 
         self.assertAlmostEqual(err, 0)
 
@@ -187,10 +185,10 @@ class GeometryTestCase(unittest.TestCase):
         bbox = [[5, 10], [13, 17], [16, 18]]
         points = g3.get_bbox_corners(bbox)
 
-        expected_point = np.array([10,13,16])
+        expected_point = np.array([10, 13, 16])
         found = False
         for point in points:
-            err = np.sum((point - expected_point)**2)
+            err = np.sum((point - expected_point) ** 2)
             if err == 0:
                 found = True
                 break
@@ -234,12 +232,12 @@ class GeometryTestCase(unittest.TestCase):
         rB = 10
         rC = 15
         cylA = g3.CylinderObject(
-            [ 8.2932388 , -0.65185999,  9.54170155],
-            [8.2932388 ,  11.23408448,  21.42764602],
+            [8.2932388, -0.65185999, 9.54170155],
+            [8.2932388, 11.23408448, 21.42764602],
             radius=5.691834898023455)
         cylB = g3.CylinderObject(
-            [ 2.76365903,  0.86076129,  4.30361747],
-            [2.76365903,   7.00253318,  10.44538936],
+            [2.76365903, 0.86076129, 4.30361747],
+            [2.76365903, 7.00253318, 10.44538936],
             radius=7.2248666037231875
         )
         collision1 = cylA.collision(cylB)

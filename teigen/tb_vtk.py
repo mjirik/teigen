@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 import numpy as nm
@@ -18,6 +19,7 @@ class TBVTK:
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
+
     def __init__(self, gtree, cylinder_resolution=50, sphere_resolution=50):
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
@@ -59,16 +61,17 @@ class TBVTK:
 
     def show(self):
         logger.info("there is no show implemented")
+
+
 # old interface
 
 
 def get_cylinder(upper, height, radius,
                  direction,
                  resolution=10):
-
     import vtk
     src = vtk.vtkCylinderSource()
-    src.SetCenter((0, height/2, 0))
+    src.SetCenter((0, height / 2, 0))
     # src.SetHeight(height + radius/2.0)
     src.SetHeight(height)
     src.SetRadius(radius)
@@ -91,7 +94,7 @@ def get_cylinder(upper, height, radius,
         else:
             psi = nm.arccos(direction[0] / u)
 
-        logger.debug('d0 '+str(direction[0])+'  u '+str(u)+' psi '+str(psi))
+        logger.debug('d0 ' + str(direction[0]) + '  u ' + str(u) + ' psi ' + str(psi))
         if direction[2] < 0:
             psi = 2 * nm.pi - psi
 
@@ -127,6 +130,7 @@ def get_cylinder(upper, height, radius,
 
     return tr2.GetOutput()
 
+
 def get_sphere(center, radius, resolution=10):
     # create source
     import vtk
@@ -137,6 +141,7 @@ def get_sphere(center, radius, resolution=10):
     source.SetRadius(radius)
     source.Update()
     return source.GetOutput()
+
 
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     import vtk
@@ -153,30 +158,31 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
         booleanOperation2.SetOperationToUnion()
         booleanOperation3.SetOperationToUnion()
 
-    import ipdb; ipdb.set_trace()
+    import ipdb;
+    ipdb.set_trace()
     for br in tree_data:
-        import ipdb; ipdb.set_trace()
+        import ipdb;
+        ipdb.set_trace()
 
         dbg_msg = "generating edge " + str(br["length"])
         logger.debug(dbg_msg)
         print(dbg_msg)
         cylinder = get_cylinder(br['upperVertex'],
-                           br['length'],
-                           br['radius'],
-                           br['direction'],
-                           resolution=cylinder_resolution)
-        sphere1 = get_sphere(br['upperVertex'], br['radius'], resolution=sphere_resolution )
+                                br['length'],
+                                br['radius'],
+                                br['direction'],
+                                resolution=cylinder_resolution)
+        sphere1 = get_sphere(br['upperVertex'], br['radius'], resolution=sphere_resolution)
         uv = br['upperVertex']
         length = br["length"]
         direction = br["direction"]
         # length = nm.linalg.norm(direction)
         # print "obj ", uv, length
         if length > 0:
-
-            direction = direction / nm.linalg.norm(direction)
+            direction /= nm.linalg.norm(direction)
 
             lv = uv + direction * length
-            sphere2 = get_sphere(lv, br['radius'], resolution=sphere_resolution )
+            sphere2 = get_sphere(lv, br['radius'], resolution=sphere_resolution)
 
         if vtk.VTK_MAJOR_VERSION <= 5:
             appendFilter.AddInputConnection(cylinder.GetProducerPort())
@@ -213,25 +219,26 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
                 booleanOperation3.Update()
                 appendedData = booleanOperation3.GetOutput()
 
-            # import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
     # import ipdb; ipdb.set_trace()
 
     if vtk.VTK_MAJOR_VERSION > 5:
-        del(cylinderTri)
-        del(sphere1Tri)
-        del(sphere2Tri)
-        del(booleanOperation1)
-        del(booleanOperation2)
-        del(booleanOperation3)
+        del (cylinderTri)
+        del (sphere1Tri)
+        del (sphere2Tri)
+        del (booleanOperation1)
+        del (booleanOperation2)
+        del (booleanOperation3)
     print ("konec gen_tree()")
     logger.debug("konec gen_tree()")
     # appendFilter.Update()
     # appendedData = appendFilter.GetOutput()
-    import ipdb; ipdb.set_trace()
+    import ipdb;
+    ipdb.set_trace()
     return appendedData
 
-def gen_tree_old(tree_data):
 
+def gen_tree_old(tree_data):
     import vtk
     points = vtk.vtkPoints()
     polyData = vtk.vtkPolyData()
@@ -326,12 +333,14 @@ def compatibility_processing(indata):
 
     return outdata
 
+
 def fix_tree_structure(tree_raw_data):
     if 'graph' in tree_raw_data:
         trees = tree_raw_data['graph']
     else:
         trees = tree_raw_data['Graph']
     return trees
+
 
 def vt_file_2_vtk_file(infile, outfile, text_label=None):
     """
@@ -346,7 +355,6 @@ def vt_file_2_vtk_file(infile, outfile, text_label=None):
     yaml_file = open(infile, 'r')
     tree_raw_data = yaml.load(yaml_file)
     vt2vtk_file(tree_raw_data, outfile, text_label)
-
 
 
 def vt2vtk_file(vessel_tree, outfile, text_label=None):
@@ -367,7 +375,8 @@ def vt2vtk_file(vessel_tree, outfile, text_label=None):
     tree_data = compatibility_processing(trees[text_label])
     polyData = gen_tree(tree_data)
 
-    import ipdb; ipdb.set_trace()
+    import ipdb;
+    ipdb.set_trace()
     writer = vtk.vtkPolyDataWriter()
     writer.SetFileName(outfile)
     try:
@@ -410,7 +419,7 @@ def main():
         help='output file'
     )
     parser.add_argument(
-        '-l','--label',
+        '-l', '--label',
         default=None,
         help='text label of vessel tree. f.e. "porta" or "hepatic_veins". \
         First label is used if it is set to None'

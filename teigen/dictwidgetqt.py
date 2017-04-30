@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 import argparse
 
 import PyQt4
-from PyQt4.QtGui import QLabel,\
-    QPushButton, QApplication, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
+from PyQt4.QtGui import QLabel, \
+    QPushButton, QApplication, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
     QDoubleSpinBox
 
 from PyQt4 import QtGui
@@ -221,7 +221,6 @@ class DictWidget(QtGui.QWidget):
             if type(key) == ComposedDictMetadata:
                 dictionary.pop(key)
 
-
         # for key, value in dictionary.iteritems():
         #     if type(key) == tuple:
         #         dictionary
@@ -253,6 +252,7 @@ def complicated_to_yaml(cfg):
 
 class ComposedDictMetadata(tuple):
     pass
+
 
 def main():
     logger = logging.getLogger()
@@ -288,9 +288,8 @@ def main():
     if args.debug:
         ch.setLevel(logging.DEBUG)
 
-
     app = QApplication(sys.argv)
-    cfg = {"bool": True, "int":5, 'str': 'strdrr'}
+    cfg = {"bool": True, "int": 5, 'str': 'strdrr'}
     captions = {"int": "toto je int"}
     cw = DictWidget(cfg, captions=captions)
     cw.show()

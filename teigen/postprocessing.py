@@ -5,13 +5,14 @@
 
 """
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 # import funkcí z jiného adresáře
 import sys
 import os.path
 import scipy
+
 
 def filter_data(data3d, voxelsize_mm, gaussian_filter=True, gaussian_filter_sigma_mm=1.0):
     sigma_px = gaussian_filter_sigma_mm / voxelsize_mm
@@ -20,10 +21,6 @@ def filter_data(data3d, voxelsize_mm, gaussian_filter=True, gaussian_filter_sigm
         sigma=sigma_px)
 
     return data3d
-
-
-
-
 
 
 def main():
@@ -59,7 +56,6 @@ def main():
 
     if args.debug:
         ch.setLevel(logging.DEBUG)
-
 
     app = QApplication(sys.argv)
     # cfg = {"bool": True, "int":5, 'str': 'strdrr'}

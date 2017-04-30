@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 import argparse
 
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel,\
-    QPushButton, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
+from PyQt4.QtGui import QGridLayout, QLabel, \
+    QPushButton, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
+    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
 
 from PyQt4 import QtGui
 import sys
@@ -27,6 +27,7 @@ import copy
 import numpy as np
 
 from pyqtconfig import ConfigManager
+
 
 def str_format_old_to_new(string):
     """
@@ -37,7 +38,6 @@ def str_format_old_to_new(string):
     """
     import re
     return re.sub(r"%(\d*d)", r"{:\1}", string)
-
 
 
 class SetDirWidget(QtGui.QWidget):
@@ -68,7 +68,6 @@ class SetDirWidget(QtGui.QWidget):
         # self.config.add_handler(key, dir_box)
         grid.addWidget(self.ui_dir_box, 0, 1)
 
-
         btn_accept = QPushButton("Set dir", self)
         if self.tooltip is not None:
             btn_accept.setToolTip(self.tooltip)
@@ -90,7 +89,6 @@ class SetDirWidget(QtGui.QWidget):
         filename = op.join(str(filename), file)
 
         self.ui_dir_box.setText(filename)
-
 
 
 def main():
@@ -126,7 +124,6 @@ def main():
 
     if args.debug:
         ch.setLevel(logging.DEBUG)
-
 
     app = QApplication(sys.argv)
     # cfg = {"bool": True, "int":5, 'str': 'strdrr'}

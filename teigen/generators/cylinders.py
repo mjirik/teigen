@@ -11,6 +11,7 @@
 """
 
 import logging
+
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
@@ -26,10 +27,10 @@ def __half_plane(self, perp, plane_point, point):
     out = perp[0] * cdf[0] + \
           perp[1] * cdf[1] + \
           perp[2] * cdf[2]
-    return  out > 0
+    return out > 0
+
 
 class CylinderGenerator(GeneralGenerator):
-
     def __init__(self,
                  build=True,
                  gtree=None,
@@ -82,7 +83,7 @@ class CylinderGenerator(GeneralGenerator):
         self._cylinder_nodes_radiuses = []
         self.random_generator_seed = random_generator_seed
         self.radius_generator = self._const
-        self.radius_generator_args=[radius_distribution_mean]
+        self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
         if uniform_radius_distribution:
             self.radius_generator = np.random.uniform
@@ -111,12 +112,11 @@ class CylinderGenerator(GeneralGenerator):
     def _const(self, value):
         return value
 
-
     def _cylinder_collision(self,
                             pt1,
                             pt2,
                             radius,
-                            COLLISION_RADIUS=1.5 # higher then sqrt(2)
+                            COLLISION_RADIUS=1.5  # higher then sqrt(2)
                             ):
         # TODO use geometry3.check_collision_along_line
         collision, new_nodes, nodes_radiuses = g3.cylinder_collision(
@@ -160,7 +160,6 @@ class CylinderGenerator(GeneralGenerator):
     def run(self):
         logger.info("cylynder generator running")
 
-
         tree_data = {
 
         }
@@ -172,11 +171,11 @@ class CylinderGenerator(GeneralGenerator):
         import itertools
         vor3 = scipy.spatial.Voronoi(pts)
         self.geometry_data = {
-            "length":[],
-            "radius":[],
-            "volume":[],
-            "surface":[],
-            "vector":[]
+            "length": [],
+            "radius": [],
+            "volume": [],
+            "surface": [],
+            "vector": []
         }
 
         # radius = self.radius_maximum
@@ -198,13 +197,11 @@ class CylinderGenerator(GeneralGenerator):
                         continue
                     pt1 = vor3.vertices[two_points_id[0]]
                     pt2 = vor3.vertices[two_points_id[1]]
-                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius*self.MAKE_IT_SHORTER_CONSTANT)
+                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius * self.MAKE_IT_SHORTER_CONSTANT)
                     pt1 = np.asarray(pt1)
                     pt2 = np.asarray(pt2)
                     collision, outa, outb = self._cylinder_collision(pt1, pt2, radius)
                     if not collision:
-
-
                         edge = {
                             "nodeA_ZYX_mm": pt1,
                             "nodeB_ZYX_mm": pt2,
@@ -217,7 +214,7 @@ class CylinderGenerator(GeneralGenerator):
                         # self._cylinder_nodes.extend(line_nodes)
                         length = np.linalg.norm(pt1 - pt2)
                         surf = 2 * np.pi * radius * (radius + length)
-                        volume =  np.pi * radius**2 * length
+                        volume = np.pi * radius ** 2 * length
                         vector = pt1 - pt2
 
                         self.geometry_data["length"].append(length)
@@ -235,12 +232,12 @@ class CylinderGenerator(GeneralGenerator):
             for i in range(self.element_number):
                 edge = {
                     #         #"nodeA_ZYX_mm": np.random.random(3) * 100,
-                    "nodeA_ZYX_mm": pts[i-1],
+                    "nodeA_ZYX_mm": pts[i - 1],
                     "nodeB_ZYX_mm": pts[i],
                     #         "nodeB_ZYX_mm": np.random.random(3) * 100,
                     "radius_mm": 1
                 }
-                tree_data[i+length] = edge
+                tree_data[i + length] = edge
 
         self.tree_data = tree_data
         if self.build:
@@ -252,13 +249,12 @@ class CylinderGenerator(GeneralGenerator):
             tvg.voxelsize_mm = self.voxelsize_mm
             tvg.shape = self.areasize_px
             tvg.tree_data = tree_data
-            output = tvg.buildTree() # noqa
+            output = tvg.buildTree()  # noqa
             # tvg.show()
             tvg.saveToFile("tree_output.vtk")
 
         self.getStats()
         self.data3d = None
-
 
     def getStats(self):
         # self.assertTrue(False)
@@ -270,16 +266,16 @@ class CylinderGenerator(GeneralGenerator):
         print desc
         return df
 
-    def _make_cylinder_shorter(self, nodeA, nodeB, radius): #, radius, cylinder_id):
+    def _make_cylinder_shorter(self, nodeA, nodeB, radius):  # , radius, cylinder_id):
         vector = (np.asarray(nodeA) - np.asarray(nodeB)).tolist()
-        if np.linalg.norm(vector) < 2*radius:
+        if np.linalg.norm(vector) < 2 * radius:
             return None, None
 
         # mov circles to center of cylinder by size of radius because of joint
         nodeA = g3.translate(nodeA, vector,
-                             -radius) # * self.endDistMultiplicator)
+                             -radius)  # * self.endDistMultiplicator)
         nodeB = g3.translate(nodeB, vector,
-                             radius) #  * self.endDistMultiplicator)
+                             radius)  # * self.endDistMultiplicator)
         return nodeA, nodeB
 
     def _is_in_area(self, node, radius=None):
@@ -326,6 +322,7 @@ class CylinderGenerator(GeneralGenerator):
         CVlist = CVlistA + CVlistB
 
         self.CV.append(CVlist)
+
 
 # lar add ball
 #         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
@@ -446,4 +443,3 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
 
 if __name__ == "__main__":
     main()
-

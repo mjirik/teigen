@@ -18,7 +18,6 @@ import datetime
 
 
 class TreeBuilder:
-
     def __init__(self, generator_class='volume', generator_params=None):
         """
         This function can be used as vessel_tree iterator. Just implement generator_class
@@ -39,19 +38,19 @@ class TreeBuilder:
         if generator_class in ['vol', 'volume']:
             import tb_volume
             generator_class = tb_volume.TBVolume
-        elif generator_class  in ['lar']:
+        elif generator_class in ['lar']:
             import tb_lar
             generator_class = tb_lar.TBLar
-        elif generator_class  in ['vtk']:
+        elif generator_class in ['vtk']:
             import tb_vtk
             generator_class = tb_vtk.TBVTK
-        elif generator_class  in ['kunes']:
+        elif generator_class in ['kunes']:
             import tb_lar_kunes
             generator_class = tb_lar_kunes.TBLar
-        elif generator_class  in ['larsm']:
+        elif generator_class in ['larsm']:
             import tb_lar_smooth
             generator_class = tb_lar_smooth.TBLarSmooth
-        elif generator_class  in ['lar_nojoints']:
+        elif generator_class in ['lar_nojoints']:
             import tb_lar
             generator_class = tb_lar.TBLar
             generator_params = {
@@ -69,13 +68,12 @@ class TreeBuilder:
         """
         if 'graph' in tree_raw_data:
             gr = tree_raw_data.pop('graph')
-            tree_raw_data['Graph'] = gr #{'tree1':gr}
+            tree_raw_data['Graph'] = gr  # {'tree1':gr}
 
         # if all keys in Graph a
         if all([type(k) != str for k in tree_raw_data['Graph'].keys()]):
             gr = tree_raw_data.pop('Graph')
-            tree_raw_data['Graph'] = {'tree1':gr}
-
+            tree_raw_data['Graph'] = {'tree1': gr}
 
         # else:
         #     tree_raw_data = tree_raw_data['Graph']
@@ -89,7 +87,7 @@ class TreeBuilder:
         self.rawdata = self.fix_tree_structure(rawdata)
 
         tkeys = self.rawdata['Graph'].keys()
-        if (self.tree_label is None) or (self.tree_label not in  tkeys):
+        if (self.tree_label is None) or (self.tree_label not in tkeys):
             self.tree_label = tkeys[0]
         self.tree_data = self.rawdata['Graph'][self.tree_label]
 
@@ -134,9 +132,8 @@ class TreeBuilder:
 
         return tree_output
 
-
     def _build_tree_per_segments(self):
-        progress_step = 1.0/len(self.tree_data)
+        progress_step = 1.0 / len(self.tree_data)
         progress = 0.0
 
         for cyl_id in self.tree_data:
@@ -160,7 +157,7 @@ class TreeBuilder:
                 # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
 
                 logger.error(
-                    "Segment id " + str(cyl_id) + ": error reading data from yaml!: "+str(e))
+                    "Segment id " + str(cyl_id) + ": error reading data from yaml!: " + str(e))
                 # return
 
                 # if self.use_lar:
@@ -199,64 +196,63 @@ class TreeBuilder:
     def stop(self):
         self.stop_processing = True
 
-    # def generateTree_vtk(self):
-    #     import vtk
-    #     from vtk.util import numpy_support
-    #     """
-    #     | Funkce na vygenerování objemu stromu ze zadaných dat.
-    #     | Veze pro generování pomocí VTK
-    #     | !!! funguje špatně -> vstupní data musí být pouze povrchové body, jinak generuje ve výstupních datech dutiny
-    #
-    #     """
-    #     # get vtkPolyData
-    #     tree_data = gen_vtk_tree.compatibility_processing(self.rawdata['Graph'])
-    #     polyData = gen_vtk_tree.gen_tree(tree_data)
-    #
-    #     polyData.GetBounds()
-    #     # bounds = polyData.GetBounds()
-    #
-    #     white_image = vtk.vtkImageData()
-    #     white_image.SetSpacing(self.voxelsize_mm)
-    #     white_image.SetDimensions(self.shape)
-    #     white_image.SetExtent(
-    #         [0, self.shape[0] - 1, 0, self.shape[1] - 1, 0, self.shape[2] - 1])
-    #     # origin = [(bounds[0] + self.shape[0])/2, (bounds[1] + self.shape[1])/2, (bounds[2] + self.shape[2])/2]
-    #     # white_image.SetOrigin(origin) #neni potreba?
-    #     # white_image.SetScalarTypeToUnsignedChar()
-    #     white_image.AllocateScalars()
-    #
-    #     # fill the image with foreground voxels: (still black until stecil)
-    #     inval = 255
-    #     outval = 0
-    #     count = white_image.GetNumberOfPoints()
-    #     for i in range(0, count):
-    #         white_image.GetPointData().GetScalars().SetTuple1(i, inval)
-    #
-    #     pol2stencil = vtk.vtkPolyDataToImageStencil()
-    #     pol2stencil.SetInput(polyData)
-    #
-    #     # pol2stencil.SetOutputOrigin(origin) # TOHLE BLBNE
-    #     pol2stencil.SetOutputSpacing(self.voxelsize_mm)
-    #     pol2stencil.SetOutputWholeExtent(white_image.GetExtent())
-    #     pol2stencil.Update()
-    #
-    #     imgstenc = vtk.vtkImageStencil()
-    #     imgstenc.SetInput(white_image)
-    #     imgstenc.SetStencil(pol2stencil.GetOutput())
-    #     imgstenc.ReverseStencilOff()
-    #     imgstenc.SetBackgroundValue(outval)
-    #     imgstenc.Update()
-    #
-    #     # VTK -> Numpy
-    #     vtk_img_data = imgstenc.GetOutput()
-    #     vtk_data = vtk_img_data.GetPointData().GetScalars()
-    #     numpy_data = numpy_support.vtk_to_numpy(vtk_data)
-    #     numpy_data = numpy_data.reshape(
-    #         self.shape[0], self.shape[1], self.shape[2])
-    #     numpy_data = numpy_data.transpose(2, 1, 0)
-    #
-    #     self.data3d = numpy_data
-
+        # def generateTree_vtk(self):
+        #     import vtk
+        #     from vtk.util import numpy_support
+        #     """
+        #     | Funkce na vygenerování objemu stromu ze zadaných dat.
+        #     | Veze pro generování pomocí VTK
+        #     | !!! funguje špatně -> vstupní data musí být pouze povrchové body, jinak generuje ve výstupních datech dutiny
+        #
+        #     """
+        #     # get vtkPolyData
+        #     tree_data = gen_vtk_tree.compatibility_processing(self.rawdata['Graph'])
+        #     polyData = gen_vtk_tree.gen_tree(tree_data)
+        #
+        #     polyData.GetBounds()
+        #     # bounds = polyData.GetBounds()
+        #
+        #     white_image = vtk.vtkImageData()
+        #     white_image.SetSpacing(self.voxelsize_mm)
+        #     white_image.SetDimensions(self.shape)
+        #     white_image.SetExtent(
+        #         [0, self.shape[0] - 1, 0, self.shape[1] - 1, 0, self.shape[2] - 1])
+        #     # origin = [(bounds[0] + self.shape[0])/2, (bounds[1] + self.shape[1])/2, (bounds[2] + self.shape[2])/2]
+        #     # white_image.SetOrigin(origin) #neni potreba?
+        #     # white_image.SetScalarTypeToUnsignedChar()
+        #     white_image.AllocateScalars()
+        #
+        #     # fill the image with foreground voxels: (still black until stecil)
+        #     inval = 255
+        #     outval = 0
+        #     count = white_image.GetNumberOfPoints()
+        #     for i in range(0, count):
+        #         white_image.GetPointData().GetScalars().SetTuple1(i, inval)
+        #
+        #     pol2stencil = vtk.vtkPolyDataToImageStencil()
+        #     pol2stencil.SetInput(polyData)
+        #
+        #     # pol2stencil.SetOutputOrigin(origin) # TOHLE BLBNE
+        #     pol2stencil.SetOutputSpacing(self.voxelsize_mm)
+        #     pol2stencil.SetOutputWholeExtent(white_image.GetExtent())
+        #     pol2stencil.Update()
+        #
+        #     imgstenc = vtk.vtkImageStencil()
+        #     imgstenc.SetInput(white_image)
+        #     imgstenc.SetStencil(pol2stencil.GetOutput())
+        #     imgstenc.ReverseStencilOff()
+        #     imgstenc.SetBackgroundValue(outval)
+        #     imgstenc.Update()
+        #
+        #     # VTK -> Numpy
+        #     vtk_img_data = imgstenc.GetOutput()
+        #     vtk_data = vtk_img_data.GetPointData().GetScalars()
+        #     numpy_data = numpy_support.vtk_to_numpy(vtk_data)
+        #     numpy_data = numpy_data.reshape(
+        #         self.shape[0], self.shape[1], self.shape[2])
+        #     numpy_data = numpy_data.transpose(2, 1, 0)
+        #
+        #     self.data3d = numpy_data
 
 
 def main():

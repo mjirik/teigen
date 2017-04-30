@@ -37,6 +37,7 @@ import dictwidgetqt
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
 
+
 class Teigen():
     def __init__(self, logfile='~/tegen.log', loglevel=logging.DEBUG):
         self.config_file_manager = ConfigFileManager("teigen")
@@ -51,28 +52,27 @@ class Teigen():
         )
         handler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
-        self.formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
+        self.formatter = logging.Formatter(
+            '%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
         handler.setFormatter(self.formatter)
         logger.addHandler(handler)
 
         # streamhandler = logging.StreamHandler()
         # streamhandler.setFormatter(formatter)
         # self.memoryhandler = logging.handlers.MemoryHandler(1024*10, logging.DEBUG, streamhandler)
-        self.memoryhandler = logging.handlers.MemoryHandler(1024*100)#, logging.DEBUG, streamhandler)
+        self.memoryhandler = logging.handlers.MemoryHandler(1024 * 100)  # , logging.DEBUG, streamhandler)
         self.memoryhandler.setLevel(self.loglevel)
         logger.addHandler(self.memoryhandler)
 
         logger.info("Starting Teigen")
 
-
-
-        self.logfile=logfile
+        self.logfile = logfile
         self.version = "0.2.17"
         self.data3d = None
         self.voxelsize_mm = None
         self.need_run = True
         self.gen = None
-        self.generators_classes =  [
+        self.generators_classes = [
             generators.cylinders.CylinderGenerator,
             generators.gensei_wrapper.GenseiGenerator,
             generators.cylinders.CylinderGenerator,
@@ -151,7 +151,7 @@ class Teigen():
 
         if "required_teigen_version" in config.keys():
             reqired_version = config["required_teigen_version"]
-            if  reqired_version != self.version:
+            if reqired_version != self.version:
                 logger.error(
                     "Wrong teigen version. Required: " + reqired_version + " , actual " + self.version)
                 return
@@ -173,9 +173,6 @@ class Teigen():
         #         series_number=series_number
         #     )
         self.config_file_manager.save_init(self.config)
-
-
-
 
         id = config.pop('generator_id')
 
@@ -207,27 +204,31 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         logger.debug("1D structure generator started")
-        #print "1D structure generator started"
-        #import ipdb; ipdb.set_trace()
+        # print "1D structure generator started"
+        # import ipdb; ipdb.set_trace()
         self.gen.run()
 
         logger.debug("1D structure is generated")
         self.polydata = self.__generate_vtk(self.temp_vtk_file)
-        #logger.debug("vtk generated")
-        #import ipdb; ipdb.set_trace()
+        # logger.debug("vtk generated")
+        # import ipdb; ipdb.set_trace()
 
         self.prepare_stats()
         one_row_filename = self.config["output"]["one_row_filename"]
         if one_row_filename != "":
             self.save_stats_to_row(one_row_filename)
 
-
-
         t1 = time.time()
         self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
         self.need_run = False
         self.parameters_changed_before_save = False
+
+    def get_aposteriori_faces_and_vertices(self):
+        """
+        :return: (faces, vertices)
+        """
+        return self._aposteriori_surface_faces, self._aposteriori_surface_vertices
 
     def get_config_file_pattern(self):
         filepattern = self.config["filepattern"]
@@ -240,14 +241,15 @@ class Teigen():
         from tree import TreeBuilder
 
         if "tree_data" in dir(self.gen):
-            resolution=self.config["postprocessing"]["measurement_resolution"]
-            tvg = TreeBuilder('vtk', generator_params={"cylinder_resolution":resolution, "sphere_resolution":resolution})
+            resolution = self.config["postprocessing"]["measurement_resolution"]
+            tvg = TreeBuilder('vtk',
+                              generator_params={"cylinder_resolution": resolution, "sphere_resolution": resolution})
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
             tvg.shape = self.gen.areasize_px
             tvg.tree_data = self.gen.tree_data
-            output = tvg.buildTree() # noqa
+            output = tvg.buildTree()  # noqa
             # tvg.show()
             tvg.saveToFile(vtk_file)
             return tvg.generator.polyData
@@ -275,7 +277,6 @@ class Teigen():
             self.config["filepattern_series_number"] = sn
 
         filepattern_series_number = self.config["filepattern_series_number"]
-
 
         # filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
         # filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
@@ -326,7 +327,6 @@ class Teigen():
                 os.makedirs(dirname)
             filename = fn_base + "_parameters.yaml"
 
-
         io3d.misc.obj_to_file(self.config, filename=filename)
 
     def save_log(self):
@@ -353,7 +353,7 @@ class Teigen():
         self._numeric_measurement(fn_base)
         self.save_stats(fn_base)
         t1 = time.time()
-        logger.debug("before volume generate " + str(t1-t0))
+        logger.debug("before volume generate " + str(t1 - t0))
         # postprocessing
         skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
         if (not skip_vg) and ("generate_volume" in dir(self.gen)):
@@ -365,15 +365,15 @@ class Teigen():
             self.gen.data3d = data3d
         # self.gen.saveVolumeToFile(self.config["filepattern"])
         t2 = time.time()
-        logger.debug("before volume save " + str(t2-t0))
+        logger.debug("before volume save " + str(t2 - t0))
         self.gen.saveVolumeToFile(self.filepattern_fill_series())
         t3 = time.time()
-        logger.info("time before volume generate: " + str(t1-t0))
-        logger.info("time before volume save: " + str(t2-t0))
-        logger.info("time after volume save: " + str(t3-t0))
-        self.stats_times["numeric_measurement_time_s"] = [t1-t0]
-        self.stats_times["generate_volume_time_s"] = [t2-t1]
-        self.stats_times["save_volume_time_s"] = [t3-t2]
+        logger.info("time before volume generate: " + str(t1 - t0))
+        logger.info("time before volume save: " + str(t2 - t0))
+        logger.info("time after volume save: " + str(t3 - t0))
+        self.stats_times["numeric_measurement_time_s"] = [t1 - t0]
+        self.stats_times["generate_volume_time_s"] = [t2 - t1]
+        self.stats_times["save_volume_time_s"] = [t3 - t2]
 
         # self.memoryhandler.flush()
 
@@ -389,14 +389,13 @@ class Teigen():
             noise_exponent=0.0001,
             noise_lambda_start=0.1,
             noise_lambda_stop=3.0,
-            noise_amplitude = 40.0,
-            noise_mean = 30.0,
+            noise_amplitude=40.0,
+            noise_mean=30.0,
             #            surface_measurement=False,
             #            measurement_multiplier=-1,
             measurement_resolution=20,
             output_dtype="uint8",
             negative=False,
-
 
     ):
         if gaussian_blur:
@@ -407,7 +406,6 @@ class Teigen():
                 sigma=sigma_px)
 
         if add_noise:
-
             dt = self.data3d.dtype
             noise = self.generate_noise()
             noise = noise.astype(self.data3d.dtype)
@@ -439,7 +437,7 @@ class Teigen():
 
         ).astype(np.float16)
         mx = np.max(noise)
-        noise = pparams["noise_amplitude"] * noise/mx
+        noise = pparams["noise_amplitude"] * noise / mx
         noise += pparams["noise_mean"]
         return noise
 
@@ -475,7 +473,8 @@ class Teigen():
 
             data3d = tvgvol.buildTree()
             import measurement
-            surface, vertices, faces = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm, return_vertices_and_faces=True)
+            surface, vertices, faces = measurement.surface_measurement(data3d, tvgvol.voxelsize_mm,
+                                                                       return_vertices_and_faces=True)
             self._aposteriori_surface_vertices = vertices
             self._aposteriori_surface_faces = faces
 
@@ -487,7 +486,7 @@ class Teigen():
             filename = fn_base + "_raw_{:06d}.jpg"
             import io3d.misc
             data = {
-                'data3d': data3d.astype(np.uint8) * 70, #* self.output_intensity,
+                'data3d': data3d.astype(np.uint8) * 70,  # * self.output_intensity,
                 'voxelsize_mm': vxsz,
                 # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
             }
@@ -530,7 +529,6 @@ class Teigen():
         dfoverallf["area volume [mm^3]"] = [self.gen.area_volume]
         dfoverallf["count []"] = [count]
 
-
         # surface and volume measurement
         import vtk
         mass = vtk.vtkMassProperties()
@@ -538,8 +536,8 @@ class Teigen():
         mass.SetInputData(self.polydata)
         surf = mass.GetSurfaceArea()
         vol = mass.GetVolume()
-        dfoverallf["numeric volume [mm^3]"]=[vol]
-        dfoverallf["numeric surface [mm^2]"]=[surf]
+        dfoverallf["numeric volume [mm^3]"] = [vol]
+        dfoverallf["numeric surface [mm^2]"] = [surf]
         self.dataframes["overall"] = dfoverallf
 
     def save_stats(self, fn_base):
@@ -573,10 +571,8 @@ class Teigen():
         dfo = self.dataframes["overall"]
         dfd = self.dataframes["density"]
 
-
-
         config = self.config
-        config_fl = dili.flattenDict(config, join=lambda a,b:a+' '+b)
+        config_fl = dili.flattenDict(config, join=lambda a, b: a + ' ' + b)
         config_fl = dict(config_fl)
 
         # values must be a list for dataframe
@@ -590,7 +586,6 @@ class Teigen():
         dfout = pd.concat([note_df, dfo, dfd, config_df], axis=1)
 
         if op.exists(filename):
-
             dfin = pd.read_csv(filename)
             dfout = pd.concat([dfin, dfout], axis=0)
 
@@ -598,12 +593,12 @@ class Teigen():
         # import ipdb; ipdb.set_trace()
         # pass
 
-
     def _area_sampling_general_export(self, area_sampling_params):
         return {
             'voxelsize_mm': area_sampling_params["voxelsize_mm"],
             'areasize_px': area_sampling_params["areasize_px"]
         }
+
     # def save_volume_to_file(self, filename):
     #
     #     import io3
@@ -647,7 +642,7 @@ class ConfigFileManager():
         self.favorite_config = None
         self.init_config_file = op.join(self.config_dir, init_config_file)
         self.init_config = None
-        self.logfile= op.join(self.config_dir, log_file)
+        self.logfile = op.join(self.config_dir, log_file)
 
     def init_config_dir(self):
         if not op.exists(self.config_dir):
@@ -671,6 +666,7 @@ class ConfigFileManager():
 
     def load_init(self):
         return io3d.misc.obj_from_file(self.init_config_file)
+
 
 def main():
     logger = logging.getLogger()
@@ -715,11 +711,10 @@ def main():
         help='Debug mode')
     args = parser.parse_args()
 
-
     if args.debug:
         ch.setLevel(logging.DEBUG)
 
-    #default param file
+    # default param file
     if not op.exists(op.expanduser(args.parameterfile)):
         args.parameterfile = None
 
@@ -741,4 +736,3 @@ def main():
         cw = TeigenWidget(logfile=args.logfile, config=params)
         cw.show()
         app.exec_()
-

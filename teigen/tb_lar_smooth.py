@@ -6,13 +6,12 @@ Generator of histology report
 
 """
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 # import funkcí z jiného adresáře
 import sys
 import os.path
-
 
 path_to_script = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(path_to_script, "../../lar-cc/lib/py/"))
@@ -28,8 +27,8 @@ from larcc import UNITVECT, VECTPROD, PI, SUM, CAT, IDNT, UNITVECT
 from splines import BEZIER, S1, S2, COONSPATCH
 # from splines import *
 # import mapper
-#import hpc
-#import pyplasm.hpc
+# import hpc
+# import pyplasm.hpc
 
 
 import geometry3d as g3
@@ -37,13 +36,12 @@ import interpolation_pyplasm as ip
 
 
 class TBLarSmooth:
-
     def __init__(self, gtree=None):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
-# input of geometry and topology
+        # input of geometry and topology
         self.V = []
         self.CV = []
         self.joints = {}
@@ -51,7 +49,7 @@ class TBLarSmooth:
         self.gtree = gtree
         self.endDistMultiplicator = 2
         self.use_joints = True
-        #dir(splines)
+        # dir(splines)
         pass
 
     def add_cylinder(self, nodeA, nodeB, radius, cylinder_id):
@@ -66,69 +64,68 @@ class TBLarSmooth:
 
         vect = np.array(nodeA) - np.array(nodeB)
         u = g3.perpendicular_vector(vect)
-        u = u / np.linalg.norm(u)
+        u /= np.linalg.norm(u)
         u = u.tolist()
         vect = vect.tolist()
 
-
-
         c1 = self.__circle(nodeA, radius, vect)
         c2 = self.__circle(nodeB, radius, vect)
-        tube = BEZIER(S2)([c1,c2])
-        domain = PROD([ INTERVALS(2*PI)(36), INTERVALS(1)(4) ])
+        tube = BEZIER(S2)([c1, c2])
+        domain = PROD([INTERVALS(2 * PI)(36), INTERVALS(1)(4)])
         tube = MAP(tube)(domain)
-
 
         self.joints_lar.append(tube)
 
 
-        #self.__draw_circle(nodeB, vect, radius)
+        # self.__draw_circle(nodeB, vect, radius)
 
         ##vector = (np.array(nodeA) - np.array(nodeB)).tolist()
 
-# mov circles to center of cylinder by size of radius because of joint
-        ##nodeA = g3.translate(nodeA, vector,
-        ##                     -radius * self.endDistMultiplicator)
-        ##nodeB = g3.translate(nodeB, vector,
-        ##                     radius * self.endDistMultiplicator)
+    # mov circles to center of cylinder by size of radius because of joint
+    ##nodeA = g3.translate(nodeA, vector,
+    ##                     -radius * self.endDistMultiplicator)
+    ##nodeB = g3.translate(nodeB, vector,
+    ##                     radius * self.endDistMultiplicator)
 
-        ##ptsA, ptsB = g3.cylinder_circles(nodeA, nodeB, radius, element_number=32)
-        ##CVlistA = self.__construct_cylinder_end(ptsA, idA, nodeA)
-        ##CVlistB = self.__construct_cylinder_end(ptsB, idB, nodeB)
+    ##ptsA, ptsB = g3.cylinder_circles(nodeA, nodeB, radius, element_number=32)
+    ##CVlistA = self.__construct_cylinder_end(ptsA, idA, nodeA)
+    ##CVlistB = self.__construct_cylinder_end(ptsB, idB, nodeB)
 
-        ##CVlist = CVlistA + CVlistB
+    ##CVlist = CVlistA + CVlistB
 
-        ##self.CV.append(CVlist)
+    ##self.CV.append(CVlist)
 
-# lar add ball
-#         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
-#         V, CV = ball0
-#         # mapper.T
-#         # ball = STRUCT(MKPOLS(ball0))
-#
-#         # mapper.T(1)(nodeA[0])(mapper.T(2)(nodeA[1])(mapper.T(3)(nodeA[1])(ball)))
-#
-#         lenV = len(self.V)
-#
-#         self.V = self.V + (np.array(V) + np.array(nodeA)).tolist()
-#         self.CV = self.CV + (np.array(CV) + lenV).tolist()
+    # lar add ball
+    #         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
+    #         V, CV = ball0
+    #         # mapper.T
+    #         # ball = STRUCT(MKPOLS(ball0))
+    #
+    #         # mapper.T(1)(nodeA[0])(mapper.T(2)(nodeA[1])(mapper.T(3)(nodeA[1])(ball)))
+    #
+    #         lenV = len(self.V)
+    #
+    #         self.V = self.V + (np.array(V) + np.array(nodeA)).tolist()
+    #         self.CV = self.CV + (np.array(CV) + lenV).tolist()
 
-    def __circle(self, center=[0,0,0],radius=1,normal=[0,0,1],sign=1,shift=0):
+    def __circle(self, center=[0, 0, 0], radius=1, normal=[0, 0, 1], sign=1, shift=0):
         N = UNITVECT(normal)
-        if N == [0,0,1] or N == [0,0,-1]: Q = mat(IDNT(3))
-        else: 
-            QX = UNITVECT((VECTPROD([[0,0,1],N])))
+        if N == [0, 0, 1] or N == [0, 0, -1]:
+            Q = mat(IDNT(3))
+        else:
+            QX = UNITVECT((VECTPROD([[0, 0, 1], N])))
             QZ = N
-            QY = VECTPROD([QZ,QX])
-            Q = mat([QX,QY,QZ]).T
+            QY = VECTPROD([QZ, QX])
+            Q = mat([QX, QY, QZ]).T
+
         def circle0(p):
             u = p[0]
-            x = radius*cos(sign*u+shift)
-            y = radius*sin(sign*u+shift)
+            x = radius * cos(sign * u + shift)
+            y = radius * sin(sign * u + shift)
             z = 0
-            return SUM([ center, CAT((Q*[[x],[y],[z]]).tolist()) ])
-        return circle0
+            return SUM([center, CAT((Q * [[x], [y], [z]]).tolist())])
 
+        return circle0
 
     def __construct_cylinder_end(self, pts, id, node):
         """
@@ -173,13 +170,12 @@ class TBLarSmooth:
                 if len(joint) > 1:
                     self.__generate_joint(joint)
 
-
     def __half_plane(self, perp, plane_point, point):
         cdf = (np.array(point) - np.array(plane_point))
-        out = perp[0] * cdf[0] +\
-            perp[1] * cdf[1] + \
-            perp[2] * cdf[2]
-        return  out > 0
+        out = perp[0] * cdf[0] + \
+              perp[1] * cdf[1] + \
+              perp[2] * cdf[2]
+        return out > 0
 
     def __get_vessel_connection_curve(self, vessel_connection, perp, vec0, vec1):
         """
@@ -200,18 +196,17 @@ class TBLarSmooth:
         print 'center ', center
         print 'circle ', circle
         for vertex_id in circle:
-            if ((len(curve_pts_indexes_t) > 0) and 
-                (vertex_id - curve_pts_indexes_t[-1]) > 1):
+            if ((len(curve_pts_indexes_t) > 0) and
+                        (vertex_id - curve_pts_indexes_t[-1]) > 1):
                 brake_point_t = len(curve_pts_indexes_t)
-            if ((len(curve_pts_indexes_d) > 0) and 
-                (vertex_id - curve_pts_indexes_d[-1]) > 1):
+            if ((len(curve_pts_indexes_d) > 0) and
+                        (vertex_id - curve_pts_indexes_d[-1]) > 1):
                 brake_point_d = len(curve_pts_indexes_d)
 
-            #hp = self.__half_plane(perp_lr, center, self.V[vertex_id])
+            # hp = self.__half_plane(perp_lr, center, self.V[vertex_id])
             hp = self.__half_plane(perp, center, self.V[vertex_id])
 
-            
-            if(hp):
+            if (hp):
                 curve_t.append(self.V[vertex_id])
                 curve_pts_indexes_t.append(vertex_id)
             else:
@@ -220,17 +215,17 @@ class TBLarSmooth:
 
         ordered_curve_t = curve_t[brake_point_t:] + curve_t[:brake_point_t]
         ordered_pts_indexes_t = \
-            curve_pts_indexes_t[brake_point_t:] +\
+            curve_pts_indexes_t[brake_point_t:] + \
             curve_pts_indexes_t[:brake_point_t]
 
         ordered_curve_d = curve_d[brake_point_d:] + curve_d[:brake_point_d]
         ordered_pts_indexes_d = \
-            curve_pts_indexes_d[brake_point_t:] +\
+            curve_pts_indexes_d[brake_point_t:] + \
             curve_pts_indexes_d[:brake_point_d]
-        #print '    hp v id ', curve_pts_indexes_t    
-        #print 'ord hp v id ', ordered_pts_indexes_t
+        # print '    hp v id ', curve_pts_indexes_t
+        # print 'ord hp v id ', ordered_pts_indexes_t
 
-        #print 'hp circle ', curve_one
+        # print 'hp circle ', curve_one
 
         # add point from oposit half-circle
         first_pt_d = ordered_curve_d[0]
@@ -247,8 +242,8 @@ class TBLarSmooth:
         return ordered_curve_t, ordered_curve_d
 
     def __generate_joint(self, joint):
-        #joint = (np.array(joint).reshape(-1)).tolist()
-        #self.CV.append(joint)
+        # joint = (np.array(joint).reshape(-1)).tolist()
+        # self.CV.append(joint)
         cc0 = np.array(joint[0][0])
         cc1 = np.array(joint[1][0])
         cc2 = np.array(joint[2][0])
@@ -258,44 +253,41 @@ class TBLarSmooth:
 
         perp = np.cross(vec0, vec1)
 
-
         curvelistT = []
         curvelistD = []
 
         for vessel_connection in joint:
             ordered_curve_t, ordered_curve_d = self.__get_vessel_connection_curve(
                 vessel_connection, perp, vec0, vec1)
-            
-
 
             curvelistT.append(ordered_curve_t)
             curvelistD.append(ordered_curve_d)
-                #print '  ', self.V[vertex_id], '  hp: ', hp
+            # print '  ', self.V[vertex_id], '  hp: ', hp
 
         Betacurve_id, Astart, Alphacurve_id, Bstart, Gammacurve_id, Cstart = self.__find_couples(curvelistT)
-        
-        #print 'ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart
 
-        dom2D = ip.TRIANGLE_DOMAIN(32, [[1,0,0],[0,1,0],[0,0,1]])
+        # print 'ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart
+
+        dom2D = ip.TRIANGLE_DOMAIN(32, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         Cab0 = BEZIER(S1)(self.__order_curve(curvelistT[Gammacurve_id][-1:0:-1], Cstart))
         Cbc0 = BEZIER(S1)(self.__order_curve(curvelistT[Alphacurve_id], Bstart))
         Cbc1 = BEZIER(S2)(self.__order_curve(curvelistT[Alphacurve_id], Bstart))
         Cca0 = BEZIER(S1)(self.__order_curve(curvelistT[Betacurve_id][-1:0:-1], Astart))
-        
-        out1 = MAP(ip.TRIANGULAR_COONS_PATCH([Cab0,Cbc1,Cca0]))(STRUCT(dom2D))
+
+        out1 = MAP(ip.TRIANGULAR_COONS_PATCH([Cab0, Cbc1, Cca0]))(STRUCT(dom2D))
         self.joints_lar.append(out1)
 
         Betacurve_id, Astart, Alphacurve_id, Bstart, Gammacurve_id, Cstart = self.__find_couples(curvelistD)
-        
-        #print 'ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart
 
-        dom2D = ip.TRIANGLE_DOMAIN(32, [[1,0,0],[0,1,0],[0,0,1]])
+        # print 'ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart
+
+        dom2D = ip.TRIANGLE_DOMAIN(32, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         Cab0 = BEZIER(S1)(self.__order_curve(curvelistD[Gammacurve_id][-1:0:-1], Cstart))
         Cbc0 = BEZIER(S1)(self.__order_curve(curvelistD[Alphacurve_id], Bstart))
         Cbc1 = BEZIER(S2)(self.__order_curve(curvelistD[Alphacurve_id], Bstart))
         Cca0 = BEZIER(S1)(self.__order_curve(curvelistD[Betacurve_id][-1:0:-1], Astart))
 
-        out2 = MAP(ip.TRIANGULAR_COONS_PATCH([Cab0,Cbc1,Cca0]))(STRUCT(dom2D))
+        out2 = MAP(ip.TRIANGULAR_COONS_PATCH([Cab0, Cbc1, Cca0]))(STRUCT(dom2D))
         self.joints_lar.append(out2)
 
     def __find_couples(self, curvelist):
@@ -306,7 +298,7 @@ class TBLarSmooth:
         energy = None
         mn_ind = None
         output = None
-        for i in range(0,3):
+        for i in range(0, 3):
             Betacurve_id, Astart, dist0 = self.__find_nearest(
                 curvelist, i, 0, [i])
             Alphacurve_id, Bstart, dist1 = self.__find_nearest(
@@ -316,9 +308,8 @@ class TBLarSmooth:
             if energy is None or this_energy < energy:
                 energy = this_energy
                 mn_ind = i
-                #Gammacurve_id = i
+                # Gammacurve_id = i
                 output = Betacurve_id, Astart, Alphacurve_id, Bstart, i, 0
-
 
             Betacurve_id, Astart, dist0 = self.__find_nearest(
                 curvelist, i, -1, [i])
@@ -336,7 +327,6 @@ class TBLarSmooth:
 
         return output
 
-
     def __order_curve(self, curve, start):
         if start is 0:
             return curve
@@ -347,9 +337,9 @@ class TBLarSmooth:
         """
         start: use 0 or -1
         """
-        #if start:
+        # if start:
         #    start_index = 0
-        #else:
+        # else:
         #    start_index = -1
         if wrong_curve is None:
             wrong_curve = [this_curve_index]
@@ -376,10 +366,6 @@ class TBLarSmooth:
 
         return min_cv_ind, min_cv_start, dist
 
-
-
-
-
     def show(self):
 
         V = self.V
@@ -388,13 +374,14 @@ class TBLarSmooth:
         # V = [[0,0,0],[5,5,1],[0,5,5],[5,5,5]]
         # CV = [[0,1,2,3]]
         # print 'V, CV ', V, CV
-        #for joint in self.joints_lar:
+        # for joint in self.joints_lar:
 
         # out = STRUCT([MKPOL([V, AA(AA(lambda k:k + 1))(CV), []])] + self.joints_lar)
         out = STRUCT(self.joints_lar)
-        #VIEW(self.joints_lar[0])
-        #VIEW(MKPOL([V, AA(AA(lambda k:k + 1))(CV), []]))
+        # VIEW(self.joints_lar[0])
+        # VIEW(MKPOL([V, AA(AA(lambda k:k + 1))(CV), []]))
         VIEW(out)
+
     def get_output(self):
         pass
 

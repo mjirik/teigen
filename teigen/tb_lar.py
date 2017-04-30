@@ -6,8 +6,8 @@ Generator of histology report
 
 """
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 # import funkcí z jiného adresáře
 import sys
@@ -23,11 +23,12 @@ from splines import all
 # from largrid import *
 
 import geometry3d as g3
+
+
 # import warnings
 # warnings.filterwarnings('error')
 
 class TBLar:
-
     def __init__(self, gtree=None,
                  endDistMultiplicator=1,
                  use_joints=True
@@ -36,7 +37,7 @@ class TBLar:
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
-# input of geometry and topology
+        # input of geometry and topology
         self.V = []
         self.CV = []
         self.joints = {}
@@ -61,7 +62,7 @@ class TBLar:
 
         vector = (np.array(nodeA) - np.array(nodeB)).tolist()
 
-# mov circles to center of cylinder by size of radius because of joint
+        # mov circles to center of cylinder by size of radius because of joint
         nodeA = g3.translate(nodeA, vector,
                              -radius * self.endDistMultiplicator)
         nodeB = g3.translate(nodeB, vector,
@@ -79,18 +80,18 @@ class TBLar:
 
         self.CV.append(CVlist)
 
-# lar add ball
-#         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
-#         V, CV = ball0
-#         # mapper.T
-#         # ball = STRUCT(MKPOLS(ball0))
-#
-#         # mapper.T(1)(nodeA[0])(mapper.T(2)(nodeA[1])(mapper.T(3)(nodeA[1])(ball)))
-#
-#         lenV = len(self.V)
-#
-#         self.V = self.V + (np.array(V) + np.array(nodeA)).tolist()
-#         self.CV = self.CV + (np.array(CV) + lenV).tolist()
+    # lar add ball
+    #         ball0 = mapper.larBall(radius, angle1=PI, angle2=2*PI)([10, 16])
+    #         V, CV = ball0
+    #         # mapper.T
+    #         # ball = STRUCT(MKPOLS(ball0))
+    #
+    #         # mapper.T(1)(nodeA[0])(mapper.T(2)(nodeA[1])(mapper.T(3)(nodeA[1])(ball)))
+    #
+    #         lenV = len(self.V)
+    #
+    #         self.V = self.V + (np.array(V) + np.array(nodeA)).tolist()
+    #         self.CV = self.CV + (np.array(CV) + lenV).tolist()
 
     def __construct_cylinder_end(self, pts, id):
         """
@@ -159,7 +160,7 @@ class TBLar:
         # CV = [[0,1,2,3]]
         # print 'V, CV ', V, CV
         # DRAW(self.joints_lar[0])
-        VIEW(MKPOL([V, AA(AA(lambda k:k + 1))(CV), []]))
+        VIEW(MKPOL([V, AA(AA(lambda k: k + 1))(CV), []]))
 
     def get_output(self):
         pass

@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 logger = logging.getLogger(__name__)
 # import funkcí z jiného adresáře
 import os
 import os.path
 
 from nose.plugins.attrib import attr
+
 path_to_script = os.path.dirname(os.path.abspath(__file__))
 import unittest
 import numpy as np
@@ -15,8 +17,9 @@ import sys
 
 try:
     import skelet3d
-    data3d = np.ones([3,7,9])
-    data3d[:,3,3:6] = 0
+
+    data3d = np.ones([3, 7, 9])
+    data3d[:, 3, 3:6] = 0
     skelet3d.skelet3d(data3d)
     skelet3d_installed = True
     # skelet3d
@@ -26,6 +29,7 @@ except:
 
 try:
     import larcc
+
     larcc_installed = True
 except:
     larcc_installed = False
@@ -43,11 +47,13 @@ from teigen.tree import TreeBuilder
 
 VTK_MALLOC_PROBLEM = True
 
+
 #
 
 class TubeTreeTest(unittest.TestCase):
     def setUp(self):
         self.interactivetTest = False
+
     # interactivetTest = True
 
     @attr("LAR")
@@ -59,16 +65,15 @@ class TubeTreeTest(unittest.TestCase):
         tvg.importFromYaml(yaml_path)
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [100, 100, 100]
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         if self.interactiveTests:
             tvg.show()
 
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_nothing(self):
-        print "skelet3d_installed" , skelet3d_installed
+        print "skelet3d_installed", skelet3d_installed
         # import ipdb; ipdb.set_trace()
         self.assertTrue(False)
-
 
     # @unittest.skip("test debug")
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
@@ -78,7 +83,7 @@ class TubeTreeTest(unittest.TestCase):
         tvg.importFromYaml(yaml_path)
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [100, 100, 100]
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         # tvg.show()
         # tvg.saveToFile("tree_output.vtk")
 
@@ -86,7 +91,7 @@ class TubeTreeTest(unittest.TestCase):
     @unittest.skipIf(not ("skelet3d" in sys.modules), "skelet3d is not installed")
     @unittest.skipIf(not skelet3d_installed, "skelet3d is not installed")
     def test_vessel_tree_vtk_from_skeleton(self):
-        print "skelet3d_installed" , skelet3d_installed
+        print "skelet3d_installed", skelet3d_installed
 
         import skelet3d
         import skelet3d.skeleton_analyser
@@ -97,19 +102,19 @@ class TubeTreeTest(unittest.TestCase):
             os.remove(fn_out)
 
         volume_data = np.zeros([3, 7, 9], dtype=np.int)
-        volume_data [:, :, 1:3] = 1
-        volume_data [:, 5, 2:9] = 1
-        volume_data [:, 0:7, 5] = 1
+        volume_data[:, :, 1:3] = 1
+        volume_data[:, 5, 2:9] = 1
+        volume_data[:, 0:7, 5] = 1
         skelet = skelet3d.skelet3d(volume_data)
 
-        skan = skelet3d.skeleton_analyser.SkeletonAnalyser(skelet, volume_data=volume_data, voxelsize_mm=[1,1,1])
+        skan = skelet3d.skeleton_analyser.SkeletonAnalyser(skelet, volume_data=volume_data, voxelsize_mm=[1, 1, 1])
         stats = skan.skeleton_analysis()
 
         tvg = TreeBuilder('vtk')
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [100, 100, 100]
         tvg.tree_data = stats
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         tvg.saveToFile(fn_out)
         os.path.exists(fn_out)
 
@@ -122,7 +127,7 @@ class TubeTreeTest(unittest.TestCase):
         tvg.importFromYaml(yaml_path)
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [100, 100, 100]
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         # tvg.show()
         # if self.interactiveTests:
         #     tvg.show()
@@ -143,7 +148,6 @@ class TubeTreeTest(unittest.TestCase):
 
         cg = CylinderGenerator()
         cg.run()
-
 
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_vtk_tree(self):
@@ -173,7 +177,7 @@ class TubeTreeTest(unittest.TestCase):
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [area_size, area_size, area_size]
         tvg.tree_data = tree_data
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         # tvg.show()
         tvg.saveToFile("test_tree_output.vtk")
 
@@ -193,7 +197,6 @@ class TubeTreeTest(unittest.TestCase):
         import itertools
         vor3 = scipy.spatial.Voronoi(pts)
 
-
         # for i, two_points in enumerate(vor3.ridge_points):
         for i, simplex in enumerate(vor3.ridge_vertices):
             simplex = np.asarray(simplex)
@@ -205,8 +208,6 @@ class TubeTreeTest(unittest.TestCase):
                 y = vor3.vertices[simplex, 1]
                 z = vor3.vertices[simplex, 2]
                 for two_points in itertools.combinations(simplex, 2):
-
-
                     edge = {
                         # "nodeA_ZYX_mm": vor3.vertices[simplex],
                         # "nodeB_ZYX_mm": vor3.vertices[simplex],
@@ -224,12 +225,12 @@ class TubeTreeTest(unittest.TestCase):
             for i in range(element_number):
                 edge = {
                     #         #"nodeA_ZYX_mm": np.random.random(3) * 100,
-                    "nodeA_ZYX_mm": pts[i-1],
+                    "nodeA_ZYX_mm": pts[i - 1],
                     "nodeB_ZYX_mm": pts[i],
                     #         "nodeB_ZYX_mm": np.random.random(3) * 100,
                     "radius_mm": 1
                 }
-                tree_data[i+length] = edge
+                tree_data[i + length] = edge
 
         tvg = TreeBuilder('vtk')
         yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
@@ -237,10 +238,9 @@ class TubeTreeTest(unittest.TestCase):
         tvg.voxelsize_mm = [1, 1, 1]
         tvg.shape = [100, 100, 100]
         tvg.tree_data = tree_data
-        output = tvg.buildTree() # noqa
+        output = tvg.buildTree()  # noqa
         # tvg.show()
         tvg.saveToFile("test_tree_output.vtk")
-
 
         tvgvol = TreeBuilder('vol')
         tvgvol.voxelsize_mm = [1, 1, 1]
@@ -250,32 +250,31 @@ class TubeTreeTest(unittest.TestCase):
         tvgvol.saveToFile("tree_volume.pklz")
         # self.assertTrue(False)
 
-
     # @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_io3d(self):
         import io3d
-        data3d = np.zeros([10,10,10])
-        segmentation = np.zeros([10,10,10])
+        data3d = np.zeros([10, 10, 10])
+        segmentation = np.zeros([10, 10, 10])
 
-        data3d [2:7,:3:5, :6] = 100
+        data3d[2:7, :3:5, :6] = 100
         datap = {
             "data3d": data3d,
             # "segmentation": segmentation,
-            "voxelsize_mm": [1,1,1]
+            "voxelsize_mm": [1, 1, 1]
         }
         io3d.write(datap, "file1.pklz")
 
     # @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_skimage_io_imsave(self):
         import skimage.io
-        data3d = np.zeros([10,10,10])
-        segmentation = np.zeros([10,10,10])
+        data3d = np.zeros([10, 10, 10])
+        segmentation = np.zeros([10, 10, 10])
 
-        data3d [2:7,:3:5, :6] = 100
+        data3d[2:7, :3:5, :6] = 100
         datap = {
             "data3d": data3d,
             # "segmentation": segmentation,
-            "voxelsize_mm": [1,1,1]
+            "voxelsize_mm": [1, 1, 1]
         }
         skimage.io.imsave("skiamge.png", data3d[0])
 

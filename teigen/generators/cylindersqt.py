@@ -18,9 +18,9 @@ import argparse
 # import begin
 
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel,\
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
+from PyQt4.QtGui import QGridLayout, QLabel, \
+    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
+    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
 
 from PyQt4 import QtGui
 import sys
@@ -33,7 +33,6 @@ import cylinders
 from pyqtconfig import ConfigManager
 
 
-
 class CylindersWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
         super(CylindersWidget, self).__init__()
@@ -44,7 +43,6 @@ class CylindersWidget(QtGui.QWidget):
         print self.config
         self.gen = None
         self.init_ui()
-
 
     def run(self):
         print "generator args"
@@ -96,11 +94,8 @@ class CylindersWidget(QtGui.QWidget):
         tw.setMinimumWidth(600)
         tw.setMinimumHeight(200)
 
-        self.mainLayout.addWidget(tw,0,2,5,2)
-        self.resize(600,700)
-
-
-
+        self.mainLayout.addWidget(tw, 0, 2, 5, 2)
+        self.resize(600, 700)
 
     def complicated_to_yaml(self, cfg):
         import yaml
@@ -118,7 +113,6 @@ class CylindersWidget(QtGui.QWidget):
                 cfg[key] = yaml.dump(value, default_flow_style=True)
         return cfg
 
-
     def init_ui(self):
         self.mainLayout = QGridLayout(self)
         hide_keys = ["build", "gtree"]
@@ -130,14 +124,14 @@ class CylindersWidget(QtGui.QWidget):
 
         btn_accept = QPushButton("Run", self)
         btn_accept.clicked.connect(self.btnAccept)
-        self.mainLayout.addWidget(btn_accept) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_accept)  # , (gd_max_i / 2), text_col)
 
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget("~", "output directory")
-        self.mainLayout.addWidget(self.ui_output_dir_widget) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(self.ui_output_dir_widget)  # , (gd_max_i / 2), text_col)
 
         btn_save = QPushButton("Save", self)
         btn_save.clicked.connect(self.btnSave)
-        self.mainLayout.addWidget(btn_save) # , (gd_max_i / 2), text_col)
+        self.mainLayout.addWidget(btn_save)  # , (gd_max_i / 2), text_col)
         # self.config.updated.connect(self.on_config_update)
 
     def btnAccept(self):
@@ -166,11 +160,8 @@ class CylindersWidget(QtGui.QWidget):
         filename = iowidgetqt.str_format_old_to_new(filename)
         self.gen.saveVolumeToFile(filename=filename)
 
-
-
     def on_config_update(self):
         pass
-
 
     def config_as_dict(self):
         dictionary = self.config.as_dict()
@@ -218,7 +209,6 @@ def main():
 
     if args.debug:
         ch.setLevel(logging.DEBUG)
-
 
     app = QApplication(sys.argv)
     cw = CylindersWidget()

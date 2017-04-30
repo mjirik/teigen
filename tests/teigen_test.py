@@ -10,6 +10,7 @@ from nose.plugins.attrib import attr
 import teigen
 import io3d
 
+
 class MyTestCase(unittest.TestCase):
     #
     @attr('interactive')
@@ -47,17 +48,17 @@ class MyTestCase(unittest.TestCase):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {
-            "areasampling":{
+            "areasampling": {
                 "voxelsize_mm": [1., 1., 1.],
                 "areasize_px": [110, 120, 130],
                 "areasize_mm": [110, 120, 130],
             },
-            "postprocessing":{
+            "postprocessing": {
                 "measurement_multiplier": -1,
                 "add_noise": False
             },
             "generators": {
-                "Unconnected cylinders":{
+                "Unconnected cylinders": {
                     "element_number": 10
                 }
             }
@@ -65,23 +66,22 @@ class MyTestCase(unittest.TestCase):
         tg.update_config(**conf)
         tg.run()
 
-
     @attr('interactive')
     def test_teigen_big(self):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {
-            "areasampling":{
+            "areasampling": {
                 "voxelsize_mm": [1., 1., 1.],
                 "areasize_px": [210, 720, 730],
                 "areasize_mm": [210, 720, 730],
             },
-            "postprocessing":{
+            "postprocessing": {
                 "measurement_multiplier": -1,
                 "add_noise": False
             },
             "generators": {
-                "Unconnected cylinders":{
+                "Unconnected cylinders": {
                     "element_number": 10
                 }
             }
@@ -90,21 +90,23 @@ class MyTestCase(unittest.TestCase):
         tg.run()
         tg.save_volume()
 
-    # def test_teigen_small(self):
-    #     import teigen.gui
-    #     tg = teigen.gui.Teigen()
-    #     conf = {
-    #         "areasampling":{
-    #             "voxelsize_mm": [1., 1., 1.],
-    #             "areasize_px": [110, 120, 130],
-    #             "areasize_mm": [110, 120, 130],
-    #         },
-    #         "postprocessing":{
-    #             "measurement_multiplier":-1,
-    #         }
-    #     }
-    #     tg.update_config(**conf)
-    #     tg.run()
-    #     tg.save_volume()
+        # def test_teigen_small(self):
+        #     import teigen.gui
+        #     tg = teigen.gui.Teigen()
+        #     conf = {
+        #         "areasampling":{
+        #             "voxelsize_mm": [1., 1., 1.],
+        #             "areasize_px": [110, 120, 130],
+        #             "areasize_mm": [110, 120, 130],
+        #         },
+        #         "postprocessing":{
+        #             "measurement_multiplier":-1,
+        #         }
+        #     }
+        #     tg.update_config(**conf)
+        #     tg.run()
+        #     tg.save_volume()
+
+
 if __name__ == '__main__':
     unittest.main()

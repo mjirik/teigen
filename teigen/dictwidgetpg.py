@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 import argparse
 
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel,\
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox,\
-        QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
+from PyQt4.QtGui import QGridLayout, QLabel, \
+    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
+    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
 
 from PyQt4 import QtGui
 import sys
@@ -37,9 +37,9 @@ import pyqtgraph.parametertree.parameterTypes as pTypes
 
 
 class DictWidget(ParameterTree):
-
     def __init__(self, input_dict, opts=None):
         pass
+
 
 def to_pyqtgraph_struct(name, value, opts={}):
     """
@@ -57,8 +57,8 @@ def to_pyqtgraph_struct(name, value, opts={}):
         tp = value.__class__.__name__
 
     if tp in (
-        'list', 'ndarray', 'OrderedDict', 'dict',
-        'int', 'float', 'bool', 'str', 'color', 'colormap'
+            'list', 'ndarray', 'OrderedDict', 'dict',
+            'int', 'float', 'bool', 'str', 'color', 'colormap'
     ):
         pass
     else:
@@ -100,8 +100,8 @@ def to_pyqtgraph_struct(name, value, opts={}):
 
         item_properties['children'] = children_list
 
-            # value = value_list
-            # print key_parameters
+        # value = value_list
+        # print key_parameters
     return item_properties
 
     #     if ntype is not None:
@@ -109,6 +109,7 @@ def to_pyqtgraph_struct(name, value, opts={}):
     #         outdict.append(key_parameters)
     #
     # return outdict
+
 
 def from_pyqtgraph_struct(dct):
     output = {}
@@ -141,7 +142,6 @@ def from_pyqtgraph_struct(dct):
     return key, value
 
 
-
 class ListParameter(pTypes.GroupParameter):
     """
     New keywords
@@ -149,17 +149,18 @@ class ListParameter(pTypes.GroupParameter):
     titles: is list of titles
     value: list of values
     """
+
     def __init__(self, **opts):
         values = opts.pop('value')
-        parent_opts={
+        parent_opts = {
             'name': opts.pop('name'),
             'type': 'bool',
             'value': values
         }
         if 'title' in opts.keys():
-            parent_opts['title']  = opts.pop('title')
+            parent_opts['title'] = opts.pop('title')
         if "reconstruction_type" in opts.keys():
-            parent_opts['reconstruction_type']  = opts.pop('reconstruction_type')
+            parent_opts['reconstruction_type'] = opts.pop('reconstruction_type')
         # opts['type'] = 'bool'
         # opts['value'] = True
         pTypes.GroupParameter.__init__(self, **parent_opts)
@@ -167,7 +168,7 @@ class ListParameter(pTypes.GroupParameter):
         if 'names' in opts.keys():
             names = opts['names']
         else:
-            names =  map(str, range(len(values)))
+            names = map(str, range(len(values)))
 
         for i in range(len(values)):
             opts['name'] = names[i]
@@ -194,7 +195,6 @@ class ListParameter(pTypes.GroupParameter):
         print new_val
 
 
-
 class AreaSamplingParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'bool'
@@ -212,9 +212,12 @@ class AreaSamplingParameter(pTypes.GroupParameter):
 
         pTypes.GroupParameter.__init__(self, **opts)
 
-        self.p_voxelsize_mm = ListParameter(name="voxelsize_mm", value=voxelsize_mm, type='float', suffix='mm', siPrefix=False, reconstruction_type='list')
-        self.p_areasize_px = ListParameter(name="areasize_px", value=areasize_px, type='int', suffix='px', siPrefix=False, reconstruction_type='list')
-        self.p_areasize_mm = ListParameter(name="areasize_mm", value=areasize_mm, type='float', suffix='mm', siPrefix=False, reconstruction_type='list')
+        self.p_voxelsize_mm = ListParameter(name="voxelsize_mm", value=voxelsize_mm, type='float', suffix='mm',
+                                            siPrefix=False, reconstruction_type='list')
+        self.p_areasize_px = ListParameter(name="areasize_px", value=areasize_px, type='int', suffix='px',
+                                           siPrefix=False, reconstruction_type='list')
+        self.p_areasize_mm = ListParameter(name="areasize_mm", value=areasize_mm, type='float', suffix='mm',
+                                           siPrefix=False, reconstruction_type='list')
 
         self.addChild(self.p_voxelsize_mm)
         self.addChild(self.p_areasize_mm)
@@ -222,7 +225,6 @@ class AreaSamplingParameter(pTypes.GroupParameter):
 
         self.p_areasize_mm.sigValueChanged.connect(self.areasize_mChanged)
         self.p_areasize_px.sigValueChanged.connect(self.areasize_pxChanged)
-
 
     def areasize_mChanged(self):
         as_m = np.asarray(self.p_areasize_mm.value())
@@ -240,18 +242,20 @@ class AreaSamplingParameter(pTypes.GroupParameter):
 
     def voxelsizeChanged(self):
         self.z_size_px.setValue(int(self.z_size_m.value() / self.z_m.value()), blockSignal=self.z_size_pxChanged)
+
     # def z_mChanged(self):
     #     self.z_.setValue(1.0 / self.a.value(), blockSignal=self.bChanged)
     def z_size_mChanged(self):
         self.z_size_px.setValue(int(self.z_size_m.value() / self.z_m.value()), blockSignal=self.z_size_pxChanged)
+
     def z_size_pxChanged(self):
         self.z_size_m.setValue(int(self.z_size_px.value() * self.z_m.value()), blockSignal=self.z_size_mChanged)
 
-    # def aChanged(self):
-    #     self.b.setValue(1.0 / self.a.value(), blockSignal=self.bChanged)
-    #
-    # def bChanged(self):
-    #     self.a.setValue(1.0 / self.b.value(), blockSignal=self.aChanged)
+        # def aChanged(self):
+        #     self.b.setValue(1.0 / self.a.value(), blockSignal=self.bChanged)
+        #
+        # def bChanged(self):
+        #     self.a.setValue(1.0 / self.b.value(), blockSignal=self.aChanged)
 
 
 ## test add/remove
@@ -269,7 +273,8 @@ class ScalableGroup(pTypes.GroupParameter):
             'float': 0.0,
             'int': 0
         }[typ]
-        self.addChild(dict(name="ScalableParam %d" % (len(self.childs)+1), type=typ, value=val, removable=True, renamable=True))
+        self.addChild(
+            dict(name="ScalableParam %d" % (len(self.childs) + 1), type=typ, value=val, removable=True, renamable=True))
 
 
 class BatchFileProcessingParameter(pTypes.GroupParameter):
@@ -290,7 +295,9 @@ class BatchFileProcessingParameter(pTypes.GroupParameter):
         self.add_filename(fname=fname)
 
     def add_filename(self, fname):
-        self.addChild(dict(name="%i" % ((len(self.childs)) ), type='str', value=str(fname), removable=True, renamable=True))
+        self.addChild(
+            dict(name="%i" % ((len(self.childs))), type='str', value=str(fname), removable=True, renamable=True))
+
 
 def main():
     logger = logging.getLogger()
@@ -326,9 +333,8 @@ def main():
     if args.debug:
         ch.setLevel(logging.DEBUG)
 
-
     app = QApplication(sys.argv)
-    cfg = {"bool": True, "int":5, 'str': 'strdrr'}
+    cfg = {"bool": True, "int": 5, 'str': 'strdrr'}
     captions = {"int": "toto je int"}
     to_pyqtgraph_struct(cfg)
     # cw = DictWidget(cfg, captions=captions)

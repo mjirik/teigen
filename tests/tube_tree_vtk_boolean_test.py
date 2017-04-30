@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 logger = logging.getLogger(__name__)
 import unittest
 from nose.plugins.attrib import attr
@@ -13,15 +14,15 @@ import vtk
 import teigen.tb_vtk
 import numpy as np
 
-class VtkBooleanTestCase(unittest.TestCase):
 
+class VtkBooleanTestCase(unittest.TestCase):
     @attr('interactive')
     def test_vtk_example_with_my_cylinder(self):
         # sphereSource1 = vtk.vtkSphereSource()
         # sphereSource1.SetCenter(0.25, 0, 0)
         # sphereSource1.Update()
         # input1 = sphereSource1.GetOutput()
-        input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5], 0.9, 0.7, [0.0,.0,.0])
+        input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5], 0.9, 0.7, [0.0, .0, .0])
         sphere1Tri = vtk.vtkTriangleFilter()
         sphere1Tri.SetInputData(input1)
 
@@ -30,7 +31,7 @@ class VtkBooleanTestCase(unittest.TestCase):
         # sphereSource2.Update()
         # input2 = sphereSource2.GetOutput()
         direction = np.asarray([1., 1., 1.])
-        direction = direction / np.linalg.norm(direction)
+        direction /= np.linalg.norm(direction)
         input2 = teigen.tb_vtk.get_cylinder([0, .1, 0], 0.7, 0.5, direction)
 
         sphere2Tri = vtk.vtkTriangleFilter()
@@ -45,8 +46,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         input1Mapper.ScalarVisibilityOff()
         input1Actor = vtk.vtkActor()
         input1Actor.SetMapper(input1Mapper)
-        input1Actor.GetProperty().SetColor(1,0,0)
-        input1Actor.SetPosition(input1.GetBounds()[1]-input1.GetBounds()[0],0 ,0)
+        input1Actor.GetProperty().SetColor(1, 0, 0)
+        input1Actor.SetPosition(input1.GetBounds()[1] - input1.GetBounds()[0], 0, 0)
         input2Mapper = vtk.vtkPolyDataMapper()
         if vtk.VTK_MAJOR_VERSION <= 5:
             input2Mapper.SetInputConnection(input2.GetProducerPort())
@@ -56,8 +57,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         input2Mapper.ScalarVisibilityOff()
         input2Actor = vtk.vtkActor()
         input2Actor.SetMapper(input2Mapper)
-        input2Actor.GetProperty().SetColor(0,1,0)
-        input2Actor.SetPosition(-(input2.GetBounds()[1]-input2.GetBounds()[0]), 0, 0)
+        input2Actor.GetProperty().SetColor(0, 1, 0)
+        input2Actor.SetPosition(-(input2.GetBounds()[1] - input2.GetBounds()[0]), 0, 0)
 
         booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
         # booleanOperation.SetOperationToUnion()
@@ -87,11 +88,10 @@ class VtkBooleanTestCase(unittest.TestCase):
         renderer.AddViewProp(booleanOperationActor)
         renderer.SetBackground(.1, .2, .3)
         renderWindow = vtk.vtkRenderWindow()
-        renderWindow.AddRenderer( renderer )
+        renderWindow.AddRenderer(renderer)
 
         renWinInteractor = vtk.vtkRenderWindowInteractor()
-        renWinInteractor.SetRenderWindow( renderWindow )
-
+        renWinInteractor.SetRenderWindow(renderWindow)
 
         renderWindow.Render()
         renWinInteractor.Start()
@@ -123,8 +123,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         input1Mapper.ScalarVisibilityOff()
         input1Actor = vtk.vtkActor()
         input1Actor.SetMapper(input1Mapper)
-        input1Actor.GetProperty().SetColor(1,0,0)
-        input1Actor.SetPosition(input1.GetBounds()[1]-input1.GetBounds()[0],0 ,0)
+        input1Actor.GetProperty().SetColor(1, 0, 0)
+        input1Actor.SetPosition(input1.GetBounds()[1] - input1.GetBounds()[0], 0, 0)
         input2Mapper = vtk.vtkPolyDataMapper()
         if vtk.VTK_MAJOR_VERSION <= 5:
             input2Mapper.SetInputConnection(input2.GetProducerPort())
@@ -134,8 +134,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         input2Mapper.ScalarVisibilityOff()
         input2Actor = vtk.vtkActor()
         input2Actor.SetMapper(input2Mapper)
-        input2Actor.GetProperty().SetColor(0,1,0)
-        input2Actor.SetPosition(-(input2.GetBounds()[1]-input2.GetBounds()[0]), 0, 0)
+        input2Actor.GetProperty().SetColor(0, 1, 0)
+        input2Actor.SetPosition(-(input2.GetBounds()[1] - input2.GetBounds()[0]), 0, 0)
 
         booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
         # booleanOperation.SetOperationToUnion()
@@ -165,11 +165,10 @@ class VtkBooleanTestCase(unittest.TestCase):
         renderer.AddViewProp(booleanOperationActor)
         renderer.SetBackground(.1, .2, .3)
         renderWindow = vtk.vtkRenderWindow()
-        renderWindow.AddRenderer( renderer )
+        renderWindow.AddRenderer(renderer)
 
         renWinInteractor = vtk.vtkRenderWindowInteractor()
-        renWinInteractor.SetRenderWindow( renderWindow )
-
+        renWinInteractor.SetRenderWindow(renderWindow)
 
         renderWindow.Render()
         renWinInteractor.Start()
@@ -183,7 +182,7 @@ class VtkBooleanTestCase(unittest.TestCase):
         input1 = teigen.tb_vtk.get_cylinder([0.25, 0, -.5],
                                             height=height,
                                             radius=radius,
-                                            direction=[0.0,.0,.0],
+                                            direction=[0.0, .0, .0],
                                             resolution=50
                                             )
         object1Tri = vtk.vtkTriangleFilter()
@@ -204,6 +203,7 @@ class VtkBooleanTestCase(unittest.TestCase):
         max_error = 0.01
         self.assertLess(err_surf, max_error)
         self.assertLess(err_vol, max_error)
+
 
 if __name__ == '__main__':
     unittest.main()

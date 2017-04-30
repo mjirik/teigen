@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import skimage.measure
 
+
 def surface_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=False, **kwargs):
     vertices, faces = skimage.measure.marching_cubes(volume, level=level, spacing=voxelsize)
     surface_area = skimage.measure.mesh_surface_area(verts=vertices, faces=faces)
@@ -18,9 +19,11 @@ def surface_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=
     else:
         return surface_area
 
+
 def volume_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=False, **kwargs):
     volume = np.sum(volume > level) * np.prod(voxelsize)
     return volume
+
 
 def main():
     logger = logging.getLogger()

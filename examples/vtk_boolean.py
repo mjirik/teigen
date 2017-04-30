@@ -33,8 +33,8 @@ else:
 input1Mapper.ScalarVisibilityOff()
 input1Actor = vtk.vtkActor()
 input1Actor.SetMapper(input1Mapper)
-input1Actor.GetProperty().SetColor(1,0,0)
-input1Actor.SetPosition(input1.GetBounds()[1]-input1.GetBounds()[0],0 ,0)
+input1Actor.GetProperty().SetColor(1, 0, 0)
+input1Actor.SetPosition(input1.GetBounds()[1] - input1.GetBounds()[0], 0, 0)
 input2Mapper = vtk.vtkPolyDataMapper()
 if vtk.VTK_MAJOR_VERSION <= 5:
     input2Mapper.SetInputConnection(input2.GetProducerPort())
@@ -44,8 +44,8 @@ else:
 input2Mapper.ScalarVisibilityOff()
 input2Actor = vtk.vtkActor()
 input2Actor.SetMapper(input2Mapper)
-input2Actor.GetProperty().SetColor(0,1,0)
-input2Actor.SetPosition(-(input2.GetBounds()[1]-input2.GetBounds()[0]), 0, 0)
+input2Actor.GetProperty().SetColor(0, 1, 0)
+input2Actor.SetPosition(-(input2.GetBounds()[1] - input2.GetBounds()[0]), 0, 0)
 
 booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
 # booleanOperation.SetOperationToUnion()
@@ -75,14 +75,14 @@ renderer.AddViewProp(input2Actor)
 renderer.AddViewProp(booleanOperationActor)
 renderer.SetBackground(.1, .2, .3)
 renderWindow = vtk.vtkRenderWindow()
-renderWindow.AddRenderer( renderer )
+renderWindow.AddRenderer(renderer)
 
 renWinInteractor = vtk.vtkRenderWindowInteractor()
-renWinInteractor.SetRenderWindow( renderWindow )
-
+renWinInteractor.SetRenderWindow(renderWindow)
 
 renderWindow.Render()
 renWinInteractor.Start()
+
 
 def main():
     logger = logging.getLogger()
