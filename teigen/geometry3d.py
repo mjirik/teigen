@@ -180,7 +180,7 @@ def node_to_spheres_dist(node, nodes, nodes_radius=None, return_square=False):
     # dist = np.sum((np.asarray(nodes) - node)**2, axis=1)**0.5
     dist = np.linalg.norm(vectors, axis=1)
 
-    nodes = np.asarray(nodes)
+    # nodes = np.asarray(nodes)
     if nodes_radius is not None:
         dist -= np.asarray(nodes_radius)
     return dist
@@ -499,11 +499,6 @@ def polar2z(r, theta):
 
 def z2polar(z):
     return (np.abs(z), np.angle(z))
-
-
-def polar2cart3d(spherical):
-    pass
-
 
 def cart2polar3d(cartesian):
     """

@@ -30,6 +30,10 @@ def __half_plane(self, perp, plane_point, point):
     return out > 0
 
 
+def _const(value):
+    return value
+
+
 class UnconnectedCylinderGenerator(general.GeneralGenerator):
     def __init__(self,
                  build=True,
@@ -90,7 +94,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self._cylinder_nodes = []
         self._cylinder_nodes_radiuses = []
         self.random_generator_seed = random_generator_seed
-        self.radius_generator = self._const
+        self.radius_generator = _const
         self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
         if uniform_radius_distribution:
@@ -129,9 +133,6 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.orientation_anisotropic = orientation_anisotropic
         self.orientation_main = orientation_main
         self.orientation_variance_rad = orientation_variance_rad
-
-    def _const(self, value):
-        return value
 
     def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
                                       COLLISION_RADIUS=1.5  # higher then sqrt(2)

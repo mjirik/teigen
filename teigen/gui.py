@@ -13,15 +13,12 @@
 import logging
 
 logger = logging.getLogger(__name__)
-import argparse
 # conda install -c conda-forge begins
 # import begin
 
-import logging.handlers
 import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel, \
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
-    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox, QTabWidget, QStatusBar, \
+from PyQt4.QtGui import QLabel, \
+    QPushButton, QGridLayout, QTabWidget, QStatusBar, \
     QFileDialog
 
 from tgmain import main
@@ -37,11 +34,10 @@ import matplotlib.pyplot as plt
 
 import dictwidgetqt
 import iowidgetqt
-import dictwidgetpg
 import io3d.datawriter
 import io3d.misc
-
-from pyqtconfig import ConfigManager
+import dictwidgetpg
+from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from tgmain import CKEY_OUTPUT, CKEY_APPEARANCE, Teigen
 
@@ -359,7 +355,8 @@ class TeigenWidget(QtGui.QWidget):
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
             self.teigen.config["filepattern"], "output directory")
         self.ui_output_dir_widget.setToolTip(
-            "Data are stored in defined directory.\nOutput format is based on file extension.\nFor saving into image stack use 'filename{:06d}.jpg'")
+            "Data are stored in defined directory.\nOutput format is based on file extension.\n\
+For saving into image stack use 'filename{:06d}.jpg'")
         self.mainLayout.addWidget(self.ui_output_dir_widget, 1, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         postprocessing_params = self.teigen.config["postprocessing"]
@@ -389,12 +386,7 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_generators_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
-
-        import pyqtgraph as pg
-        ## pyqtgraph experiments
-        import dictwidgetpg
-        import pyqtgraph
-        from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
+        # pyqtgraph experiments
         input_params = {
             "Area Sampling": dictwidgetpg.AreaSamplingParameter(name='Area Sampling',
                                                                 **self.teigen.config["areasampling"]),

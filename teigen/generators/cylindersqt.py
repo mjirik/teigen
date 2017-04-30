@@ -33,6 +33,23 @@ import cylinders
 from pyqtconfig import ConfigManager
 
 
+def complicated_to_yaml(cfg):
+    import yaml
+    # convert values to json
+    isconverted = {}
+    for key, value in cfg.iteritems():
+        if type(value) in (str, int, float, bool):
+
+            isconverted[key] = False
+            if type(value) is str:
+                pass
+
+        else:
+            isconverted[key] = True
+            cfg[key] = yaml.dump(value, default_flow_style=True)
+    return cfg
+
+
 class CylindersWidget(QtGui.QWidget):
     def __init__(self, ncols=2):
         super(CylindersWidget, self).__init__()
@@ -96,22 +113,6 @@ class CylindersWidget(QtGui.QWidget):
 
         self.mainLayout.addWidget(tw, 0, 2, 5, 2)
         self.resize(600, 700)
-
-    def complicated_to_yaml(self, cfg):
-        import yaml
-        # convert values to json
-        isconverted = {}
-        for key, value in cfg.iteritems():
-            if type(value) in (str, int, float, bool):
-
-                isconverted[key] = False
-                if type(value) is str:
-                    pass
-
-            else:
-                isconverted[key] = True
-                cfg[key] = yaml.dump(value, default_flow_style=True)
-        return cfg
 
     def init_ui(self):
         self.mainLayout = QGridLayout(self)

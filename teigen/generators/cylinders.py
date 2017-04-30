@@ -30,6 +30,23 @@ def __half_plane(self, perp, plane_point, point):
     return out > 0
 
 
+def _const(value):
+    return value
+
+
+def _make_cylinder_shorter(node_a, node_b, radius):  # , radius, cylinder_id):
+    vector = (np.asarray(node_a) - np.asarray(node_b)).tolist()
+    if np.linalg.norm(vector) < 2 * radius:
+        return None, None
+
+    # mov circles to center of cylinder by size of radius because of joint
+    node_a = g3.translate(node_a, vector,
+                          -radius)  # * self.endDistMultiplicator)
+    node_b = g3.translate(node_b, vector,
+                          radius)  # * self.endDistMultiplicator)
+    return node_a, node_b
+
+
 class CylinderGenerator(GeneralGenerator):
     def __init__(self,
                  build=True,
@@ -82,7 +99,7 @@ class CylinderGenerator(GeneralGenerator):
         self._cylinder_nodes = []
         self._cylinder_nodes_radiuses = []
         self.random_generator_seed = random_generator_seed
-        self.radius_generator = self._const
+        self.radius_generator = _const
         self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
         if uniform_radius_distribution:
@@ -108,9 +125,6 @@ class CylinderGenerator(GeneralGenerator):
         self.tree_data = {}
         # self.data3d = None
         self.progress_callback = None
-
-    def _const(self, value):
-        return value
 
     def _cylinder_collision(self,
                             pt1,
@@ -197,7 +211,7 @@ class CylinderGenerator(GeneralGenerator):
                         continue
                     pt1 = vor3.vertices[two_points_id[0]]
                     pt2 = vor3.vertices[two_points_id[1]]
-                    pt1, pt2 = self._make_cylinder_shorter(pt1, pt2, radius * self.MAKE_IT_SHORTER_CONSTANT)
+                    pt1, pt2 = _make_cylinder_shorter(pt1, pt2, radius * self.MAKE_IT_SHORTER_CONSTANT)
                     pt1 = np.asarray(pt1)
                     pt2 = np.asarray(pt2)
                     collision, outa, outb = self._cylinder_collision(pt1, pt2, radius)
@@ -264,18 +278,6 @@ class CylinderGenerator(GeneralGenerator):
 
         print desc
         return df
-
-    def _make_cylinder_shorter(self, node_a, node_b, radius):  # , radius, cylinder_id):
-        vector = (np.asarray(node_a) - np.asarray(node_b)).tolist()
-        if np.linalg.norm(vector) < 2 * radius:
-            return None, None
-
-        # mov circles to center of cylinder by size of radius because of joint
-        node_a = g3.translate(node_a, vector,
-                              -radius)  # * self.endDistMultiplicator)
-        node_b = g3.translate(node_b, vector,
-                              radius)  # * self.endDistMultiplicator)
-        return node_a, node_b
 
     def _is_in_area(self, node, radius=None):
         """
