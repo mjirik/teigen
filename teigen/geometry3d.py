@@ -412,7 +412,7 @@ def closest_distance_between_lines(a0, a1, b0, b1, clamp_all=False, clamp_a0=Fal
     if not ((np.allclose(_A, _B) or np.allclose(_A, -_B))):
         # non parallel
         # worsk also for strong parallel lines
-        cross = np.cross(_A, _B);
+        cross = np.cross(_A, _B)
         denom = np.linalg.norm(cross) ** 2
     else:
         # almost paralel vectors
@@ -448,12 +448,12 @@ def closest_distance_between_lines(a0, a1, b0, b1, clamp_all=False, clamp_a0=Fal
         return None, None, np.linalg.norm(((d0 * _A) + a0) - b0)
 
     # Lines criss-cross: Calculate the projected closest points
-    t = (b0 - a0);
+    t = (b0 - a0)
     detA = np.linalg.det([t, _B, cross])
     detB = np.linalg.det([t, _A, cross])
 
-    t0 = detA / denom;
-    t1 = detB / denom;
+    t0 = detA / denom
+    t1 = detB / denom
 
     pA = a0 + (_A * t0)  # Projected closest point on segment A
     pB = b0 + (_B * t1)  # Projected closest point on segment B

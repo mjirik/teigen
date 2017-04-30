@@ -15,10 +15,10 @@ import logging
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
+import pandas as pd
 # import ..geometry3 as g3
 # from ..geometry3d import plane_fit
 from .. import geometry3d as g3
-import os.path
 from general import GeneralGenerator
 
 
@@ -258,8 +258,7 @@ class CylinderGenerator(GeneralGenerator):
 
     def get_stats(self):
         # self.assertTrue(False)
-        print "Surface: ", self.surface
-        import pandas as pd
+        # print "Surface: ", self.surface
         df = pd.DataFrame(self.geometry_data)
         desc = df.describe()
 

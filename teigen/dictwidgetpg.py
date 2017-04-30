@@ -15,24 +15,15 @@ import logging
 logger = logging.getLogger(__name__)
 import argparse
 
-import PyQt4
-from PyQt4.QtGui import QGridLayout, QLabel, \
-    QPushButton, QLineEdit, QApplication, QWidget, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
-    QComboBox, QTextEdit, QDialog, QMainWindow, QDoubleSpinBox
+from PyQt4.QtGui import QApplication
 
 from PyQt4 import QtGui
 import sys
-import os.path
-import copy
-import numpy as np
 
-from pyqtconfig import ConfigManager
-
-import inspect
 import collections
 import numpy as np
 
-from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
+from pyqtgraph.parametertree import ParameterTree
 import pyqtgraph.parametertree.parameterTypes as pTypes
 
 
