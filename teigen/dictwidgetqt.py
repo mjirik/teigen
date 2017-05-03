@@ -62,6 +62,7 @@ class DictWidget(QtGui.QWidget):
         else:
             self.config = config_manager
         self.mainLayout = QGridLayout(self)
+        self.setLayout(self.mainLayout)
         self.widgets = {}
         self.grid_i = 0
         self.init_ui()
@@ -92,9 +93,8 @@ class DictWidget(QtGui.QWidget):
         cfg.update(toappend)
 
     def init_ui(self):
-        self.mainLayout = QGridLayout(self)
-        self.widgets = {}
-        self.grid_i = 0
+        # self.widgets = {}
+        # self.grid_i = 0
         grid = self.mainLayout
 
         for key, value in self.config_in.iteritems():

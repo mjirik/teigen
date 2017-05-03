@@ -383,6 +383,13 @@ For saving into image stack use 'filename{:06d}.jpg'")
             )
             self._ui_generator_widgets.append(wg)
             self._ui_generators_tab_wg.addTab(wg, generator_name)
+        # wgn = QtGui.QWidget()
+        # layout = QtGui.QFormLayout()
+        # layout.addRow("Name", QtGui.QLineEdit())
+        # layout.addRow("Address",QtGui.QLineEdit())
+        # wgn.setLayout(layout)
+        # self._ui_generators_tab_wg.addTab(wgn, "ahoj")
+
         self._ui_generators_tab_wg.setCurrentIndex(teigen_config["generator_id"])
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
