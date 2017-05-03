@@ -80,10 +80,10 @@ class Teigen():
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
         ]
         self.generators_names = [
-            "Cylinder generator",
-            "Gensei generator",
-            "Cylinder continues",
-            "Unconnected cylinders"
+            "Voronoi tubes",
+            "Gensei",
+            "Continuous tubes",
+            "Unconnected tubes"
         ]
         self._cfg_export_fcn = [
             self._area_sampling_general_export,
