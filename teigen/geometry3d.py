@@ -501,7 +501,8 @@ def z2polar(z):
     return (np.abs(z), np.angle(z))
 
 def cart2polar3d(cartesian):
-    """
+    """ Convert 3D cartesian to 3D polar.
+
     :param spherical: [radius, theta, phi]
     :return:
     """
