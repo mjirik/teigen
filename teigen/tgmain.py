@@ -116,14 +116,14 @@ class Teigen():
                 self.generators_classes,
                 self.generators_names
         ):
-            generator_params = dictwidgetqt.get_default_args(generator_cl)
+            generator_params = dili.get_default_args(generator_cl)
             generator_params = dili.kick_from_dict(generator_params, hide_keys)
             config["generators"][generator_name] = generator_params
 
         # self.config["generator_id"] = self.generators_names[0]
         config["generator_id"] = 0
         # self.config = self.configs[0]
-        config["postprocessing"] = dictwidgetqt.get_default_args(self.postprocessing)
+        config["postprocessing"] = dili.get_default_args(self.postprocessing)
         # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
         config["areasampling"] = {
             "voxelsize_mm": [1.0, 1.0, 1.0],
