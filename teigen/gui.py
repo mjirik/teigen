@@ -40,6 +40,7 @@ import dictwidgetpg
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from tgmain import CKEY_OUTPUT, CKEY_APPEARANCE, Teigen
+from .teigendoc import teigendoc
 
 
 class TeigenWidget(QtGui.QWidget):
@@ -434,9 +435,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.config_wg = t
-        # TODO rename doc to something else
-        from .doc import doc
-        self.config_wg.setToolTip(doc)
+        self.config_wg.setToolTip(teigendoc)
         self.area_sampling_params = p
         self.teigen.progress_callback = self._progressbar_update
 

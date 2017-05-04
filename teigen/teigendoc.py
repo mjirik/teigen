@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 import argparse
 
-doc = "\
+teigendoc = "\
 Input settings<br></br>\
 appearance:<br></br>\
 show_surface:<br></br>\
