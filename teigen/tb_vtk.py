@@ -223,12 +223,12 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
     # import ipdb; ipdb.set_trace()
 
     if vtk.VTK_MAJOR_VERSION > 5:
-        # del (cylinderTri)
-        # del (sphere1Tri)
-        # del (sphere2Tri)
-        # del (boolean_operation1)
-        # del (boolean_operation2)
-        # del (boolean_operation3)
+        del (cylinderTri)
+        del (sphere1Tri)
+        del (sphere2Tri)
+        del (boolean_operation1)
+        del (boolean_operation2)
+        del (boolean_operation3)
         pass
     logger.debug("konec gen_tree()")
     # appendFilter.Update()

@@ -434,6 +434,9 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.config_wg = t
+        # TODO rename doc to something else
+        from .doc import doc
+        self.config_wg.setToolTip(doc)
         self.area_sampling_params = p
         self.teigen.progress_callback = self._progressbar_update
 
