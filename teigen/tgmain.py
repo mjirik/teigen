@@ -327,6 +327,7 @@ class Teigen():
             filename = fn_base + "_parameters.yaml"
 
         io3d.misc.obj_to_file(self.config, filename=filename)
+        return filename
 
     def save_log(self):
         fn_base = self.get_fn_base()
