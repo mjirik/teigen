@@ -250,6 +250,7 @@ class Teigen():
             tvg.tree_data = self.gen.tree_data
             output = tvg.buildTree()  # noqa
             # tvg.show()
+            # TODO control output
             tvg.saveToFile(vtk_file)
             return tvg.generator.polyData
 
@@ -353,6 +354,8 @@ class Teigen():
         self._numeric_measurement(fn_base)
         self.save_stats(fn_base)
         t1 = time.time()
+
+        self.save_surface_to_file(fn_base + "_surface.vtk")
         logger.debug("before volume generate " + str(t1 - t0))
         # postprocessing
         skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
@@ -376,6 +379,23 @@ class Teigen():
         self.stats_times["save_volume_time_s"] = [t3 - t2]
 
         # self.memoryhandler.flush()
+
+    def save_surface_to_file(self, outputfile, lc_all="C"):
+
+        import vtk
+        logger.debug("vtk version " + str(vtk.VTK_BUILD_VERSION))
+        if lc_all is not None:
+            import locale
+            locale.setlocale(locale.LC_ALL, lc_all)
+        # import ipdb; ipdb.set_trace()
+        writer = vtk.vtkPolyDataWriter()
+        writer.SetFileName(outputfile)
+        try:
+            writer.SetInputData(self.polydata)
+        except:
+            logger.warning("old vtk is used")
+            writer.SetInput(self.polydata)
+        writer.Write()
 
     def postprocessing(
             self,
