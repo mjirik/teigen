@@ -58,7 +58,7 @@ requirements:
     # - openpyxl
     - xlsxwriter
     - simpleitk
-    - imtools >=0.1.31
+    - imtools >=0.1.41
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei
