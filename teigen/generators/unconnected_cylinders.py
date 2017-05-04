@@ -62,7 +62,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  intensity_profile_radius=[0.4, 0.7, 1.0, 1.3],
                  intensity_profile_intensity=[195, 190, 200, 30],
                  orientation_anisotropic=True,
-                 orientation_main=[1.0, 1.0, 0.0],
+                 orientation_alpha_rad=0.0,
+                 orientation_beta_rad=0.0,
                  orientation_variance_rad=0.1,
                  volume_fraction=0.1,
                  maximum_1000_iteration_number=10,
@@ -131,7 +132,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         self.area_volume = np.prod(self.voxelsize_mm * self.areasize_px)
         self.orientation_anisotropic = orientation_anisotropic
-        self.orientation_main = orientation_main
+        self.orientation_alpha_rad = orientation_alpha_rad
+        self.orientation_beta_rad = orientation_beta_rad
         self.orientation_variance_rad = orientation_variance_rad
 
     def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
@@ -159,12 +161,12 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # for i in range(self.element_number):
         while not self.is_final_iteration():
             self.create_cylinder()
-        self.getStats()
+        self.get_stats()
         self.data3d = None
 
     def is_final_iteration(self):
         self.iterations += 1
-        stats = self.getStats()
+        stats = self.get_stats()
 
         if self.element_number > 0:
             n = len(self.geometry_data["volume"])
@@ -270,12 +272,14 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                     center = np.mean(npts, axis=0)
 
             if self.orientation_anisotropic:
-                direction_vector = np.asarray(self.orientation_main).reshape(3, 1)
+                # direction_vector = np.asarray(self.orientation_main).reshape(3, 1)
                 # past solution
                 # direction_vector = np.random.normal(direction_vector, self.orientation_variance_rad)
                 # direction_vector = direction_vector / np.linalg.norm(direction_vector)
-                direction_vector = g3.random_vector_along_direction(direction_vector, self.orientation_variance_rad,
-                                                                    size=1)
+                direction_vector = g3.random_vector_along_direction(
+                    alpha=self.orientation_alpha_rad, beta=self.orientation_beta_rad,
+                    sigma=self.orientation_variance_rad, size=1
+                )
                 direction_vector = direction_vector.squeeze()
 
             else:
@@ -335,7 +339,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         return radius, length
 
-    def getStats(self):
+    def get_stats(self):
         # self.assertTrue(False)
         # print "Surface: ", self.surface
         import pandas as pd

@@ -72,7 +72,7 @@ class GenseiGenerator:
         self.options = options
         pass
 
-    def getStats(self):
+    def get_stats(self):
         # self.objects.format_intersection_statistics(is_output=True)
         # output('saving report to %s' % reportname)
         # fd = open(reportname, 'w')

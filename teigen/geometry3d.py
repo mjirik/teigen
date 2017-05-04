@@ -596,16 +596,16 @@ def rotate_vector(vectors, alpha, beta):
     return ptsr
 
 
-def random_vector_along_direction(direction, sigma, size=1, axis_order1=[0, 1, 2], axis_order2=[0, 1, 2]):
+def random_vector_along_direction(vector=None, sigma=1.0, alpha=None, beta=None, size=1, axis_order1=[0, 1, 2], axis_order2=[0, 1, 2]):
     """
     Generates unit vectors along selected direction
 
 
     """
-    dir_sph = cart2spher(direction, axis_order=axis_order1)
-    print dir_sph
+    if vector is not None:
+        radius, alpha, beta = cart2spher(vector, axis_order=axis_order1)
     vecs = random_vector_along_axis(sigma=sigma, size=size, axis_order=axis_order2)
-    vecs_r = rotate_vector(vecs, dir_sph[1], dir_sph[2])
+    vecs_r = rotate_vector(vecs, alpha, beta)
 
     return vecs_r
 

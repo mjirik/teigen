@@ -86,10 +86,10 @@ class Teigen():
             "Unconnected tubes"
         ]
         self._cfg_export_fcn = [
-            self._area_sampling_general_export,
-            self._area_sampling_gensei_export,
-            self._area_sampling_general_export,
-            self._area_sampling_general_export,
+            self._config2generator_general_export,
+            self._config2generator_gensei_export,
+            self._config2generator_general_export,
+            self._config2generator_general_export,
         ]
         self.use_default_config()
         self.progress_callback = None
@@ -110,7 +110,7 @@ class Teigen():
         # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution",
-                     "n_slice", "dims"]
+                     "n_slice", "dims", "intensity_profile_intensity", "intensity_profile_radius"]
         config["generators"] = collections.OrderedDict()
         for generator_cl, generator_name in zip(
                 self.generators_classes,
@@ -124,6 +124,8 @@ class Teigen():
         config["generator_id"] = 0
         # self.config = self.configs[0]
         config["postprocessing"] = dili.get_default_args(self.postprocessing)
+        config["postprocessing"]["intensity_profile_radius"] = [0.4, 0.7, 1.0, 1.3]
+        config["postprocessing"]["intensity_profile_intensity"] = [195, 190, 200, 30]
         # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
         config["areasampling"] = {
             "voxelsize_mm": [1.0, 1.0, 1.0],
@@ -177,14 +179,10 @@ class Teigen():
 
         id = config.pop('generator_id')
 
-        # area_dct = dili.subdict(config, ["voxelsize_mm", "areasize_mm", "areasize_px"])
-        # config.pop("voxelsize_mm")
-        # config.pop("areasize_mm")
-        # config.pop("areasize_px")
+        # area_dct = config["areasampling"]
+        # area_cfg = self._cfg_export_fcn[id](area_dct)
 
-        area_dct = config["areasampling"]
-
-        area_cfg = self._cfg_export_fcn[id](area_dct)
+        area_cfg = self._cfg_export_fcn[id](config)
 
         # TODO probably unused
         config.update(area_cfg)
@@ -442,8 +440,8 @@ class Teigen():
         noise += pparams["noise_mean"]
         return noise
 
-    def _area_sampling_gensei_export(self, area_sampling_params):
-        asp = area_sampling_params
+    def _config2generator_gensei_export(self, config):
+        asp = config["areasampling"]
         vs_mm = np.asarray(asp["voxelsize_mm"])
         resolution = 1.0 / vs_mm
         dct = {
@@ -573,7 +571,7 @@ class Teigen():
         dfd = self.dataframes["density"]
 
         config = self.config
-        config_fl = dili.flattenDict(config, join=lambda a, b: a + ' ' + b)
+        config_fl = dili.flatten_dict(config, join=lambda a, b: a + ' ' + b)
         config_fl = dict(config_fl)
 
         # values must be a list for dataframe
@@ -594,10 +592,12 @@ class Teigen():
         # import ipdb; ipdb.set_trace()
         # pass
 
-    def _area_sampling_general_export(self, area_sampling_params):
+    def _config2generator_general_export(self, config):
         return {
-            'voxelsize_mm': area_sampling_params["voxelsize_mm"],
-            'areasize_px': area_sampling_params["areasize_px"]
+            'voxelsize_mm': config["areasampling"]["voxelsize_mm"],
+            'areasize_px': config["areasampling"]["areasize_px"],
+            "intensity_profile_radius": config["postprocessing"]["intensity_profile_radius"],
+            "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"]
         }
 
     # def save_volume_to_file(self, filename):
