@@ -45,11 +45,14 @@ class TBVTK:
     def get_output(self):
         return self.polyData
 
-    def save(self, outputfile):
+    def save(self, outputfile, lc_all="C"):
 
         import vtk
         logger.debug("vtk version " + str(vtk.VTK_BUILD_VERSION))
         # import ipdb; ipdb.set_trace()
+        if lc_all is not None:
+            import locale
+            locale.setlocale(locale.LC_ALL, lc_all)
         writer = vtk.vtkPolyDataWriter()
         writer.SetFileName(outputfile)
         try:
