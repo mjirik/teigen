@@ -364,6 +364,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
         self._ui_generators_tab_wg = QTabWidget()
+        self._ui_generators_tab_wg.setMinimumWidth(400)
         self.mainLayout.addWidget(self._ui_generators_tab_wg, 0, 1, 1, 2)
 
         rename_captions_dict = {
@@ -420,7 +421,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         t = ParameterTree()
         t.setParameters(p, showTop=False)
-        t.setMinimumWidth(350)
+        t.setMinimumWidth(380)
         # t.setColumnCount(3)
         t.show()
 
