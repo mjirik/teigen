@@ -36,6 +36,7 @@ from imtools import dili
 import io3d.datawriter
 import io3d.misc
 import dictwidgetqt
+from . import geometry3d as g3
 
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
@@ -244,7 +245,11 @@ class Teigen():
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
             tvg = TreeBuilder('vtk',
-                              generator_params={"cylinder_resolution": resolution, "sphere_resolution": resolution})
+                              generator_params={
+                                  "cylinder_resolution": resolution,
+                                  "sphere_resolution": resolution,
+                                  "radius_compensation_factor": g3.regular_polygon_surface_equivalent_radius(resolution)
+                              })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm

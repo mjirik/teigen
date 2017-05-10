@@ -256,6 +256,25 @@ class GeometryTestCase(unittest.TestCase):
 
         print ptA2
 
+    def test_polygon_equivalent_radius(self):
+
+        radius = 38.0
+        expected_surface = np.pi * radius**2
+        expected_perimeter = 2 * np.pi*radius
+
+        eq_radius_perimeter = g3.regular_polygon_perimeter_equivalent_radius(4, radius)
+        eq_radius_surface = g3.regular_polygon_surface_equivalent_radius(4, radius)
+
+        # eq_radius is
+        perimeter = 4.0 * eq_radius_perimeter * 2**0.5
+
+        surface = 4.0 * eq_radius_surface**2 / 2.0
+
+        norm_rs = eq_radius_surface / radius
+        norm_rp = eq_radius_perimeter / radius
+
+        self.assertAlmostEqual(perimeter, expected_perimeter)
+        self.assertAlmostEqual(surface, expected_surface)
 
 if __name__ == '__main__':
     unittest.main()

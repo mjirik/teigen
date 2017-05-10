@@ -20,13 +20,12 @@ class TBVTK:
     Other similar generator is used for generating LAR outputs.
     """
 
-    def __init__(self, gtree, cylinder_resolution=50, sphere_resolution=50,
-                 radius_compensation=True, radius_compensation_factor=1.05):
+    def __init__(self, gtree, cylinder_resolution=30, sphere_resolution=30,
+                 radius_compensation_factor=1.0):
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
         # make comapatible with old system
-        self.radius_compensation = radius_compensation
         self.radius_compensation_factor = radius_compensation_factor
         self.tree_data = gtree.tree_data
 
@@ -42,7 +41,9 @@ class TBVTK:
 
     def finish(self):
         # import ipdb; ipdb.set_trace()
-        self.polyData = gen_tree(self.tree_data_old, self.cylinder_resolution, self.sphere_resolution)
+        self.polyData = gen_tree(self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,
+                                 radius_compensation_factor=self.radius_compensation_factor
+                                 )
         # import ipdb; ipdb.set_trace()
 
     def get_output(self):
@@ -149,7 +150,16 @@ def get_sphere(center, radius, resolution=10):
     return source.GetOutput()
 
 
-def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
+def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
+             radius_compensation_factor=1.0):
+    """
+    
+    :param tree_data: 
+    :param cylinder_resolution: 
+    :param sphere_resolution: 
+    :param radius_compensation_factor: is used to change radius of cylinder and spheres
+    :return: 
+    """
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
     appended_data = None
@@ -164,12 +174,13 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
         dbg_msg = "generating edge " + str(br["length"])
         logger.debug(dbg_msg)
         # print(dbg_msg)
+        radius = br['radius'] * radius_compensation_factor
         cylinder = get_cylinder(br['upperVertex'],
                                 br['length'],
-                                br['radius'],
+                                radius,
                                 br['direction'],
                                 resolution=cylinder_resolution)
-        sphere1 = get_sphere(br['upperVertex'], br['radius'], resolution=sphere_resolution)
+        sphere1 = get_sphere(br['upperVertex'], radius, resolution=sphere_resolution)
         uv = br['upperVertex']
         length = br["length"]
         direction = br["direction"]
@@ -179,7 +190,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10):
             direction /= nm.linalg.norm(direction)
 
             lv = uv + direction * length
-            sphere2 = get_sphere(lv, br['radius'], resolution=sphere_resolution)
+            sphere2 = get_sphere(lv, radius, resolution=sphere_resolution)
 
         if vtk.VTK_MAJOR_VERSION <= 5:
             appendFilter.AddInputConnection(cylinder.GetProducerPort())
