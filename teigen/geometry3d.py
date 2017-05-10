@@ -732,7 +732,7 @@ def inscribed_radius(radius, n):
         """
         pass
 
-def regular_polygon_surface_equivalent_radius(n, radius):
+def regular_polygon_surface_equivalent_radius(n, radius=1.0):
     """ Compute equivalent radius to obtain same surface as circle.
     
     \theta = \frac{2 \pi}{n}
@@ -749,7 +749,7 @@ def regular_polygon_surface_equivalent_radius(n, radius):
     r = np.sqrt(theta * radius**2) / np.sin(theta)
     return r
 
-def regular_polygon_perimeter_equivalent_radius(n, radius):
+def regular_polygon_perimeter_equivalent_radius(n, radius=1.0):
     """ Compute equivalent radius to obtain same perimeter as circle.
     
     \theta = \frac{2 \pi}{n}
