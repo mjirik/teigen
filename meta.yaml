@@ -63,6 +63,7 @@ requirements:
     - pyqtgraph
     - git # kvuli instalaci gensei
     - ndnoise >=0.0.8
+    - begins
 
 test:
   # Python imports

@@ -989,3 +989,12 @@ class CollisionModelSpheres(CollisionModel):
                                              nodes_radius=self._cylinder_nodes_radiuses)
         nodes = np.asarray(self._cylinder_nodes)[indexes]
         return nodes, indexes, distances
+
+    def inscribed_radius(self, radius, n):
+        """ 
+        
+        :param radius: 
+        :return: 
+        """
+        pass
+

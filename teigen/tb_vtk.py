@@ -20,11 +20,14 @@ class TBVTK:
     Other similar generator is used for generating LAR outputs.
     """
 
-    def __init__(self, gtree, cylinder_resolution=50, sphere_resolution=50):
+    def __init__(self, gtree, cylinder_resolution=50, sphere_resolution=50,
+                 radius_compensation=True, radius_compensation_factor=1.05):
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
         # make comapatible with old system
+        self.radius_compensation = radius_compensation
+        self.radius_compensation_factor = radius_compensation_factor
         self.tree_data = gtree.tree_data
 
         self.tree_data_old = compatibility_processing(self.tree_data)
