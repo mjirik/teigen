@@ -10,12 +10,14 @@
 
 """
 
+# import click
 import logging
 
 logger = logging.getLogger(__name__)
 import logging.handlers
 import argparse
 
+import begin
 import sys
 import os
 import os.path as op
@@ -688,6 +690,64 @@ class ConfigFileManager():
 
     def load_init(self):
         return io3d.misc.obj_from_file(self.init_config_file)
+
+
+# @click.command()
+@begin.start
+def new_main(
+        parameterfile=None,
+        debug=True,
+        d=True,
+        nointeractivity=False,
+        logfile="~/teigen.log",
+):
+    """ Run test image generator.
+    
+    :param parameterfile: 
+    :param debug: 
+    :param d: 
+    :param nointeractivity: 
+    :param logfile: 
+    :return: 
+    """
+    logger = logging.getLogger()
+
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    logger.addHandler(ch)
+
+    config_file_manager = ConfigFileManager("teigen")
+    config_file_manager.init_config_dir()
+
+    if parameterfile is None:
+        parameterfile = config_file_manager.init_config_file
+
+    if debug or d:
+        ch.setLevel(logging.DEBUG)
+
+    # default param file
+    if not op.exists(op.expanduser(parameterfile)):
+        parameterfile = None
+
+    if nointeractivity:
+        tg = Teigen(logfile=logfile)
+        if parameterfile is not None:
+            params = io3d.misc.obj_from_file(parameterfile)
+            tg.update_config(**params)
+        tg.run()
+        # tg.run(**params)
+        tg.save_volume()
+    else:
+        from PyQt4.QtGui import QApplication
+        from gui import TeigenWidget
+        app = QApplication(sys.argv)
+        params = None
+        if parameterfile is not None:
+            params = io3d.misc.obj_from_file(parameterfile)
+        cw = TeigenWidget(logfile=logfile, config=params)
+        cw.show()
+        app.exec_()
 
 
 def main():
