@@ -48,7 +48,7 @@ requirements:
   run:
     - python
 #    - collections
-    - vtk
+    - vtk 6.* # 7.* pad na windows
     - io3d >=1.1.18
     - numpy
     - scikit-image
@@ -63,6 +63,8 @@ requirements:
     - pyqtgraph
     - git # kvuli instalaci gensei
     - ndnoise >=0.0.8
+    - begins
+    - xlsxwriter
 
 test:
   # Python imports

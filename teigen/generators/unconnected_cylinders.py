@@ -65,6 +65,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  orientation_alpha_rad=0.0,
                  orientation_beta_rad=0.0,
                  orientation_variance_rad=0.1,
+                 allow_overlap=False,
                  volume_fraction=0.1,
                  maximum_1000_iteration_number=10,
                  random_generator_seed=0,
@@ -104,6 +105,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         if normal_radius_distribution:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
+        self.alow_overlap = allow_overlap
 
         self.length_generator = general.random_normal
         self.length_generator_args = [length_distribution_mean, length_distribution_standard_deviation]
@@ -139,7 +141,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
     def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
                                       COLLISION_RADIUS=1.5  # higher then sqrt(2)
                                       ):
-        return self.collision_model.add_tube_if_no_collision(pt1, pt2, radius)
+        if self.alow_overlap:
+            return self.collision_model.add_tube(pt1, pt2, radius)
+        else:
+            return self.collision_model.add_tube_if_no_collision(pt1, pt2, radius)
 
     def run(self):
         logger.info("cylynder generator running")

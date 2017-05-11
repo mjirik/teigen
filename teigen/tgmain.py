@@ -10,12 +10,14 @@
 
 """
 
+# import click
 import logging
 
 logger = logging.getLogger(__name__)
 import logging.handlers
 import argparse
 
+import begin
 import sys
 import os
 import os.path as op
@@ -34,6 +36,7 @@ from imtools import dili
 import io3d.datawriter
 import io3d.misc
 import dictwidgetqt
+from . import geometry3d as g3
 
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
@@ -241,8 +244,13 @@ class Teigen():
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
+            radius_compensation_factor =  g3.regular_polygon_surface_equivalent_radius(resolution)
             tvg = TreeBuilder('vtk',
-                              generator_params={"cylinder_resolution": resolution, "sphere_resolution": resolution})
+                              generator_params={
+                                  "cylinder_resolution": resolution,
+                                  "sphere_resolution": resolution,
+                                  "radius_compensation_factor": radius_compensation_factor
+                              })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
@@ -415,6 +423,8 @@ class Teigen():
             #            measurement_multiplier=-1,
             measurement_resolution=20,
             output_dtype="uint8",
+            intensity_profile_radius=[0.7, 1.0, 1.3],
+            intensity_profile_intensity=[190, 200, 30],
             negative=False,
 
     ):
@@ -688,6 +698,64 @@ class ConfigFileManager():
 
     def load_init(self):
         return io3d.misc.obj_from_file(self.init_config_file)
+
+
+# @click.command()
+@begin.start
+def new_main(
+        parameterfile=None,
+        debug=True,
+        d=True,
+        nointeractivity=False,
+        logfile="~/teigen.log",
+):
+    """ Run test image generator.
+    
+    :param parameterfile: 
+    :param debug: 
+    :param d: 
+    :param nointeractivity: 
+    :param logfile: 
+    :return: 
+    """
+    logger = logging.getLogger()
+
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    logger.addHandler(ch)
+
+    config_file_manager = ConfigFileManager("teigen")
+    config_file_manager.init_config_dir()
+
+    if parameterfile is None:
+        parameterfile = config_file_manager.init_config_file
+
+    if debug or d:
+        ch.setLevel(logging.DEBUG)
+
+    # default param file
+    if not op.exists(op.expanduser(parameterfile)):
+        parameterfile = None
+
+    if nointeractivity:
+        tg = Teigen(logfile=logfile)
+        if parameterfile is not None:
+            params = io3d.misc.obj_from_file(parameterfile)
+            tg.update_config(**params)
+        tg.run()
+        # tg.run(**params)
+        tg.save_volume()
+    else:
+        from PyQt4.QtGui import QApplication
+        from gui import TeigenWidget
+        app = QApplication(sys.argv)
+        params = None
+        if parameterfile is not None:
+            params = io3d.misc.obj_from_file(parameterfile)
+        cw = TeigenWidget(logfile=logfile, config=params)
+        cw.show()
+        app.exec_()
 
 
 def main():

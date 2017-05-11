@@ -1,2 +1,3 @@
 # import gui.main
-from tgmain import main
+import tgmain
+# from tgmain import main
