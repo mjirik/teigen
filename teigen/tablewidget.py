@@ -40,8 +40,8 @@ class TableModel(QtCore.QAbstractTableModel):
             i = index.row()
             j = index.column()
             # return QtCore.QVariant(str(self.datatable.iget_value(i, j)))
-            return '{0}'.format(self.datatable.iget_value(i, j))
-            # return '{0}'.format(self.datatable.iat(i, j))
+            # return '{0}'.format(self.datatable.iget_value(i, j))
+            return '{0}'.format(self.datatable.iat[i, j])
         else:
             return QtCore.QVariant()
 

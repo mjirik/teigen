@@ -244,11 +244,12 @@ class Teigen():
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
+            radius_compensation_factor =  g3.regular_polygon_surface_equivalent_radius(resolution)
             tvg = TreeBuilder('vtk',
                               generator_params={
                                   "cylinder_resolution": resolution,
                                   "sphere_resolution": resolution,
-                                  "radius_compensation_factor": g3.regular_polygon_surface_equivalent_radius(resolution)
+                                  "radius_compensation_factor": radius_compensation_factor
                               })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
@@ -422,6 +423,8 @@ class Teigen():
             #            measurement_multiplier=-1,
             measurement_resolution=20,
             output_dtype="uint8",
+            intensity_profile_radius=[0.7, 1.0, 1.3],
+            intensity_profile_intensity=[190, 200, 30],
             negative=False,
 
     ):

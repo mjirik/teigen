@@ -746,7 +746,7 @@ def regular_polygon_surface_equivalent_radius(n, radius=1.0):
 
     theta = 2 * np.pi / n
 
-    r = np.sqrt(theta * radius**2) / np.sin(theta)
+    r = np.sqrt((theta * radius**2) / np.sin(theta))
     return r
 
 def regular_polygon_perimeter_equivalent_radius(n, radius=1.0):
@@ -948,6 +948,20 @@ class CollisionModelCombined(CollisionModel):
     def __init__(self, areasize=None):
         CollisionModel.__init__(self, areasize)
         self.objects = []
+
+    def add_tube(self, pt1, pt2, radius,
+                                 # COLLISION_RADIUS=1.5 # higher then sqrt(2)
+                                 ):
+        if not (
+                    self.is_point_in_area(pt1, radius) and
+                    self.is_point_in_area(pt2, radius)
+        ):
+            return True
+
+        new_obj = TubeObject(pt1, pt2, radius)
+        self.objects.append(new_obj)
+        return False
+
 
     def add_tube_if_no_collision(self, pt1, pt2, radius,
                                  # COLLISION_RADIUS=1.5 # higher then sqrt(2)

@@ -64,6 +64,7 @@ requirements:
     - git # kvuli instalaci gensei
     - ndnoise >=0.0.8
     - begins
+    - xlsxwriter
 
 test:
   # Python imports
