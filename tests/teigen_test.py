@@ -88,7 +88,7 @@ class MyTestCase(unittest.TestCase):
         }
         tg.update_config(**conf)
         tg.run()
-        tg.save_volume()
+        tg.step2()
 
         # def test_teigen_small(self):
         #     import teigen.gui

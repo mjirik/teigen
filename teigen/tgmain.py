@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 import logging.handlers
 import argparse
 
-import begin
+# import begin
 import sys
 import os
 import os.path as op
@@ -28,6 +28,7 @@ import re
 import datetime
 import copy
 import collections
+import pandas as pd
 
 import generators.cylinders
 import generators.gensei_wrapper
@@ -149,6 +150,7 @@ class Teigen():
             "one_row_filename": "~/teigen_data/output_rows.csv",
             "aposteriori_measurement": False,
             "aposteriori_measurement_multiplier": 1.0,
+            "note": ""
         }
         return config
 
@@ -347,7 +349,7 @@ class Teigen():
         self.memoryhandler.flush()
         self.memoryhandler.flushLevel = self.loglevel
 
-    def save_volume(self):
+    def step2(self):
         if self.parameters_changed_before_save:
             self.run()
         # TODO split save_volume and save_parameters
@@ -559,6 +561,7 @@ class Teigen():
         dfoverallf["area volume [mm^3]"] = [self.gen.area_volume]
         dfoverallf["count []"] = [count]
 
+
         # surface and volume measurement
         import vtk
         mass = vtk.vtkMassProperties()
@@ -569,6 +572,10 @@ class Teigen():
         dfoverallf["numeric volume [mm^3]"] = [vol]
         dfoverallf["numeric surface [mm^2]"] = [surf]
         self.dataframes["overall"] = dfoverallf
+
+        tm = datetime.datetime.now().isoformat()
+        note_df = pd.DataFrame({"datetime": [tm]})
+        self.dataframes["additional_info"] = note_df
 
     def save_stats(self, fn_base):
         import pandas as pd
@@ -596,10 +603,9 @@ class Teigen():
     def save_stats_to_row(self, filename, note=""):
         import pandas as pd
         filename = op.expanduser(filename)
-        tm = datetime.datetime.now().isoformat()
-        note_df = pd.DataFrame({"datetime": [tm], "note": [note]})
         dfo = self.dataframes["overall"]
         dfd = self.dataframes["density"]
+        dfi = self.dataframes["additional_info"]
 
         config = self.config
         config_fl = dili.flatten_dict(config, join=lambda a, b: a + ' ' + b)
@@ -613,7 +619,7 @@ class Teigen():
         config_fl_li = dict(zip(config_fl.keys(), new_values))
         config_df = pd.DataFrame(config_fl_li)
         # import ipdb; ipdb.set_trace()
-        dfout = pd.concat([note_df, dfo, dfd, config_df], axis=1)
+        dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
 
         if op.exists(filename):
             dfin = pd.read_csv(filename)
@@ -652,7 +658,7 @@ class Teigen():
             self.update_config(**params)
 
             self.run()
-            self.save_volume()
+            self.step2()
 
 
 class ConfigFileManager():
@@ -701,7 +707,7 @@ class ConfigFileManager():
 
 
 # @click.command()
-@begin.start
+# @begin.start
 def new_main(
         parameterfile=None,
         debug=True,
@@ -745,7 +751,7 @@ def new_main(
             tg.update_config(**params)
         tg.run()
         # tg.run(**params)
-        tg.save_volume()
+        tg.step2()
     else:
         from PyQt4.QtGui import QApplication
         from gui import TeigenWidget
@@ -815,7 +821,7 @@ def main():
             tg.update_config(**params)
         tg.run()
         # tg.run(**params)
-        tg.save_volume()
+        tg.step2()
     else:
         from PyQt4.QtGui import QApplication
         from gui import TeigenWidget

@@ -90,6 +90,7 @@ class TeigenWidget(QtGui.QWidget):
 
     def _parameters_changed(self):
         self.teigen.parameters_changed_before_save = True
+        self._ui_btn_step2.setEnabled(False)
 
     def collect_config_from_gui_and_push_to_teigen(self):
         self.collect_config_from_gui()
@@ -439,6 +440,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.config_wg.setToolTip(teigendoc)
         self.area_sampling_params = p
         self.teigen.progress_callback = self._progressbar_update
+        self._ui_btn_step2.setEnabled(False)
 
     def delete_wg(self, wg):
         self.mainLayout.removeWidget(wg)
@@ -522,6 +524,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.run()
         self._show_stats()
         self.run_number += 1
+        self._ui_btn_step2.setEnabled(True)
 
     def btnStop(self):
         pass
@@ -566,7 +569,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
 
 
-        self.teigen.save_volume()
+        self.teigen.step2()
         fn_base, fn_ext = self.teigen.filepattern_split()
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
