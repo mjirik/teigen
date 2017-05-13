@@ -88,9 +88,12 @@ class TeigenWidget(QtGui.QWidget):
         config[CKEY_OUTPUT] = area_cfg["Output"]
         self.config = config
 
-    def _parameters_changed(self):
+    def _parameters_changed(self, param, changes):
+        logger.debug("parameters changed")
+        print("parameters changed")
         self.teigen.parameters_changed_before_save = True
         self._ui_btn_step2.setEnabled(False)
+        # self.on_config_update()
 
     def collect_config_from_gui_and_push_to_teigen(self):
         self.collect_config_from_gui()
@@ -426,7 +429,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         # t.setColumnCount(3)
         t.show()
 
-        p.sigStateChanged.connect(self._parameters_changed)
+        p.sigTreeStateChanged.connect(self._parameters_changed)
         p.param('Batch processing', 'Run batch').sigActivated.connect(self.run_batch)
 
         # how to add button
