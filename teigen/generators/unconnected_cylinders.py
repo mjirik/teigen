@@ -254,7 +254,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             actual_volume_fraction = object_volume / self.area_volume
 
             statusbar_text = str(self.iterations) + " Vv " + str(actual_volume_fraction)
-            self.progress_callback(self, progress, statusbar_text=statusbar_text)
+            if self.progress_callback is not None:
+                self.progress_callback(self, progress, statusbar_text=statusbar_text)
             # print progress
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
