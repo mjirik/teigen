@@ -110,7 +110,7 @@ class Teigen():
 
     def get_default_config(self):
 
-        config = {}
+        config = collections.OrderedDict()
         # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
 
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution",
@@ -151,6 +151,10 @@ class Teigen():
             "aposteriori_measurement": False,
             "aposteriori_measurement_multiplier": 1.0,
             "note": ""
+        }
+
+        config["measurement"] = {
+            "polygon_radius_selection_method": "inscribed"
         }
         return config
 
@@ -246,12 +250,12 @@ class Teigen():
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
-            radius_compensation_factor =  g3.regular_polygon_surface_equivalent_radius(resolution)
             tvg = TreeBuilder('vtk',
                               generator_params={
                                   "cylinder_resolution": resolution,
                                   "sphere_resolution": resolution,
-                                  "radius_compensation_factor": radius_compensation_factor
+                                  # "radius_compensation_factor": radius_compensation_factor
+                                  "polygon_radius_selection_method": self.config["measurement"]["polygon_radius_selection_method"]
                               })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)

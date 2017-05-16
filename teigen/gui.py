@@ -409,7 +409,8 @@ For saving into image stack use 'filename{:06d}.jpg'")
                     {'name': 'Run batch', 'type': 'action'},
                 ]),
             "Appearance": self.teigen.config["appearance"],
-            "Output": self.teigen.config["output"]
+            "Output": self.teigen.config["output"],
+            "Measurement": self.teigen.config["measurement"]
             # 'name': {'type': 'action'},
             # "dur": i5,
             # TODO add more lines here

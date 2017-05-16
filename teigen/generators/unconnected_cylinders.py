@@ -306,7 +306,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                 pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
                 pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
                 collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
-                print "rad len, p1, p2 ", radius, length, pt1, pt2
+                # print "rad len, p1, p2 ", radius, length, pt1, pt2
 
             else:
                 # normal run

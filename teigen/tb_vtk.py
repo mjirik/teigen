@@ -21,12 +21,17 @@ class TBVTK:
     """
 
     def __init__(self, gtree, cylinder_resolution=30, sphere_resolution=30,
-                 radius_compensation_factor=1.0):
+                 polygon_radius_selection_method="inscribed",
+                 cylinder_radius_compensation_factor=1.0,
+                 sphere_radius_compensation_factor=1.0
+                 ):
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
         # make comapatible with old system
-        self.radius_compensation_factor = radius_compensation_factor
+        self.polygon_radius_selection_method = polygon_radius_selection_method
+        self.cylinder_radius_compensation_factor = cylinder_radius_compensation_factor
+        self.sphere_radius_compensation_factor = sphere_radius_compensation_factor
         self.tree_data = gtree.tree_data
 
         self.tree_data_old = compatibility_processing(self.tree_data)
@@ -42,8 +47,9 @@ class TBVTK:
     def finish(self):
         # import ipdb; ipdb.set_trace()
         self.polyData = gen_tree(self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,
-                                 radius_compensation_factor=self.radius_compensation_factor
-                                 )
+                                 polygon_radius_selection_method=self.polygon_radius_selection_method,
+                                 cylinder_radius_compensation_factor=self.cylinder_radius_compensation_factor,
+                                 sphere_radius_compensation_factor=self.sphere_radius_compensation_factor)
         # import ipdb; ipdb.set_trace()
 
     def get_output(self):
@@ -149,15 +155,51 @@ def get_sphere(center, radius, resolution=10):
     source.Update()
     return source.GetOutput()
 
+def polygon_radius_compensation_factos(
+        polygon_radius_selection_method,
+        cylinder_radius_compensation_factor,
+        sphere_radius_compensation_factor,
+        cylinder_resolution,
+        sphere_resolution
+):
+
+    if polygon_radius_selection_method == "inscribed":
+        cylinder_radius_compensation_factor = 1.0
+        sphere_radius_compensation_factor = 1.0
+
+    elif polygon_radius_selection_method == "compensation factors":
+        pass
+
+    elif polygon_radius_selection_method == "cylinder surface":
+        from .. import geometry3d as g3
+        radius_compensation_factor =  g3.regular_polygon_surface_equivalent_radius(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
+
+    elif polygon_radius_selection_method == "cylinder volume":
+        from .. import geometry3d as g3
+        radius_compensation_factor =  g3.regular_polygon_volume_equivalent_radius(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
+
+    return cylinder_radius_compensation_factor, sphere_radius_compensation_factor
+
 
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
-             radius_compensation_factor=1.0):
+             polygon_radius_selection_method="inscribed",
+             cylinder_radius_compensation_factor=1.0,
+             sphere_radius_compensation_factor=1.0):
     """
     
-    :param tree_data: 
+    :param polygon_radius_selection_method:
+        "inscribed":
+        "compensation factors"
+        "cylinder volume"
+        "cylinder surface"
+    :param tree_data:
     :param cylinder_resolution: 
     :param sphere_resolution: 
-    :param radius_compensation_factor: is used to change radius of cylinder and spheres
+    :param cylinder_radius_compensation_factor: is used to change radius of cylinder and spheres
     :return: 
     """
     import vtk
@@ -165,6 +207,16 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     appended_data = None
     if vtk.VTK_MAJOR_VERSION > 5:
         pass
+    factors = polygon_radius_compensation_factos(
+        polygon_radius_selection_method,
+        cylinder_radius_compensation_factor,
+        sphere_radius_compensation_factor,
+        cylinder_resolution,
+        sphere_resolution
+    )
+
+    cylinder_radius_compensation_factor, sphere_radius_compensation_factor = factors
+
 
     # import ipdb; ipdb.set_trace()
     for br in tree_data:
@@ -174,13 +226,15 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         dbg_msg = "generating edge " + str(br["length"])
         logger.debug(dbg_msg)
         # print(dbg_msg)
-        radius = br['radius'] * radius_compensation_factor
+        radius = br['radius']
+        cylinder_radius = radius * cylinder_radius_compensation_factor
+        sphere_radius = radius * sphere_radius_compensation_factor
         cylinder = get_cylinder(br['upperVertex'],
                                 br['length'],
-                                radius,
+                                cylinder_radius,
                                 br['direction'],
                                 resolution=cylinder_resolution)
-        sphere1 = get_sphere(br['upperVertex'], radius, resolution=sphere_resolution)
+        sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
         uv = br['upperVertex']
         length = br["length"]
         direction = br["direction"]
