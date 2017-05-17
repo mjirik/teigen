@@ -167,20 +167,33 @@ def polygon_radius_compensation_factos(
         cylinder_radius_compensation_factor = 1.0
         sphere_radius_compensation_factor = 1.0
 
+    elif polygon_radius_selection_method == "circumscribed":
+        # from .. import geometry3d as g3
+        factor = circumscribed_polygon_radius(cylinder_resolution)
+        cylinder_radius_compensation_factor = factor
+        sphere_radius_compensation_factor = factor
+
     elif polygon_radius_selection_method == "compensation factors":
         pass
 
     elif polygon_radius_selection_method == "cylinder surface":
-        from .. import geometry3d as g3
-        radius_compensation_factor =  g3.regular_polygon_surface_equivalent_radius(cylinder_resolution)
+        # from .. import geometry3d as g3
+        radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
 
     elif polygon_radius_selection_method == "cylinder volume":
-        from .. import geometry3d as g3
-        radius_compensation_factor =  g3.regular_polygon_volume_equivalent_radius(cylinder_resolution)
+        # from .. import geometry3d as g3
+        radius_compensation_factor =  regular_polygon_surface_equivalent_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+
+    elif polygon_radius_selection_method == "average":
+        # from .. import geometry3d as g3
+        factor = circumscribed_polygon_radius(cylinder_resolution)
+        factor = (factor + 1.0) / 2.0
+        cylinder_radius_compensation_factor = factor
+        sphere_radius_compensation_factor = factor
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor
 
@@ -455,6 +468,64 @@ def vt2vtk_file(vessel_tree, outfile, text_label=None):
         writer.SetInput(polyData)
     writer.Write()
 
+
+# From  geometry3.py
+
+def circumscribed_polygon_radius(n, radius=1.0):
+    """ Get circumscribed polygon radius.
+
+    :param n: number of polygon elements
+    :param radius: radius of inscribed circle
+    :return: radius (distance from center to the corner) of polygon circumscribed to the
+     circle
+    """
+
+    theta = 2 * np.pi / n
+    radius_out = radius / np.cos(theta/2)
+
+    return radius_out
+
+def inscribed_polygon_radius(radius, n):
+    """
+
+    :param radius:
+    :return:
+    """
+    pass
+
+def regular_polygon_surface_equivalent_radius(n, radius=1.0):
+    """ Compute equivalent radius to obtain same surface as circle.
+
+    \theta = \frac{2 \pi}{n}
+
+    r_{eqs} = \sqrt{\frac{\theta r^2}{\sin{\theta}}}
+
+    :param radius: circle radius
+    :param n:  number of regular polygon segments
+    :return:  equivalent regular polynom surface
+    """
+
+    theta = 2 * np.pi / n
+
+    r = np.sqrt((theta * radius**2) / np.sin(theta))
+    return r
+
+def regular_polygon_perimeter_equivalent_radius(n, radius=1.0):
+    """ Compute equivalent radius to obtain same perimeter as circle.
+
+    \theta = \frac{2 \pi}{n}
+
+    r_{eqp} = \frac{\theta r}{2 \sin{\frac{\theta}}{2}}
+
+    :param radius: circle radius
+    :param n:  number of regular polygon segments
+    :return:  equivalent regular polynom surface
+    """
+
+    theta = 2 * np.pi / n
+
+    r = (theta * radius) / (2 * np.sin(theta/2.0))
+    return r
 
 def main():
     logger = logging.getLogger()

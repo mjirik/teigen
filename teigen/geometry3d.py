@@ -724,7 +724,21 @@ def point_and_plane_pose(plane_point, plane_orientation, points=None, xyz=None):
 
     return z_out
 
-def inscribed_radius(radius, n):
+def circumscribed_polygon_radius(n, radius=1.0):
+    """ Get circumscribed polygon radius.
+
+    :param n: number of polygon elements
+    :param radius: radius of inscribed circle
+    :return: radius (distance from center to the corner) of polygon circumscribed to the
+     circle
+    """
+
+    theta = 2 * np.pi / n
+    radius_out = radius / np.cos(theta/2)
+
+    return radius_out
+
+def inscribed_polygon_radius(radius, n):
         """ 
         
         :param radius: 
