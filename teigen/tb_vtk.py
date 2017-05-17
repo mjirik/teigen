@@ -197,12 +197,25 @@ def polygon_radius_compensation_factos(
 
 
     elif polygon_radius_selection_method == "cylinder volume + sphere compensation":
+        # analytically compensated cylinder + sphere compensate by measurement
         radius_compensation_factor =  regular_polygon_surface_equivalent_radius(cylinder_resolution)
 
         x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 1000]
         y = [0.99820681, 0.99990171, 1.00057384, 1.00090875,
              1.00086617, 1.00064401, 1.00046984, 1.00032942,
              1.00024186, 1.00014509, 1.00009627, 1.]
+        spl1 = InterpolatedUnivariateSpline(x, y)
+        radius_compensation_factor *= 1. / spl1(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
+
+    elif polygon_radius_selection_method == "cylinder surface + sphere compensation":
+        # analytically compensated cylinder + sphere compensate by measurement
+        radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
+        x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 100, 200]
+        y = [0.97522857799, 0.982858482408, 0.987423696432, 0.99239757445,
+             0.994910515802, 0.997261880581, 0.998292863128, 0.998929760493,
+             0.999266886531, 0.999594545757, 0.999743129653, 1.0, 1.0]
         spl1 = InterpolatedUnivariateSpline(x, y)
         radius_compensation_factor *= 1. / spl1(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
