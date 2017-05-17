@@ -10,7 +10,7 @@ import yaml
 import argparse
 import sys
 import numpy as np
-
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 # new interface
 
@@ -194,6 +194,19 @@ def polygon_radius_compensation_factos(
         factor = (factor + 1.0) / 2.0
         cylinder_radius_compensation_factor = factor
         sphere_radius_compensation_factor = factor
+
+
+    elif polygon_radius_selection_method == "cylinder volume + sphere compensation":
+        radius_compensation_factor =  regular_polygon_surface_equivalent_radius(cylinder_resolution)
+
+        x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 1000]
+        y = [0.99820681, 0.99990171, 1.00057384, 1.00090875,
+             1.00086617, 1.00064401, 1.00046984, 1.00032942,
+             1.00024186, 1.00014509, 1.00009627, 1.]
+        spl1 = InterpolatedUnivariateSpline(x, y)
+        radius_compensation_factor *= 1. / spl1(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor
 
