@@ -206,12 +206,12 @@ class TeigenWidget(QtGui.QWidget):
         # self.resize(600,700)
 
 
-        if self.teigen.polydata is not None:
+        if self.teigen.polydata_volume is not None:
             import imtools.show_segmentation_qt
             self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
 
             # self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
-            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata)
+            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata_volume)
             self.actual_subtab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
         self.ui_stats_shown = True
