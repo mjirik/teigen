@@ -50,17 +50,17 @@ class Teigen():
         self.loglevel = loglevel
 
         logger = logging.getLogger()
-        handler = logging.handlers.RotatingFileHandler(
+        self.filehandler = logging.handlers.RotatingFileHandler(
             op.expanduser(logfile),
             maxBytes=1000000,
             backupCount=9
         )
-        handler.setLevel(self.loglevel)
+        self.filehandler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
         self.formatter = logging.Formatter(
             '%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
-        handler.setFormatter(self.formatter)
-        logger.addHandler(handler)
+        self.filehandler.setFormatter(self.formatter)
+        logger.addHandler(self.filehandler)
 
         # streamhandler = logging.StreamHandler()
         # streamhandler.setFormatter(formatter)
@@ -104,6 +104,9 @@ class Teigen():
         self.stats_times = {}
         self.parameters_changed_before_save = True
         self.fig_3d_render_snapshot = None
+
+    def __del__(self):
+        self.filehandler.close()
 
     def use_default_config(self):
         self.config = self.get_default_config()
