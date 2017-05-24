@@ -23,8 +23,20 @@ class TBVTK:
     def __init__(self, gtree, cylinder_resolution=30, sphere_resolution=30,
                  polygon_radius_selection_method="inscribed",
                  cylinder_radius_compensation_factor=1.0,
-                 sphere_radius_compensation_factor=1.0
+                 sphere_radius_compensation_factor=1.0,
+                 tube_shape=True
                  ):
+        """
+
+        :param gtree:
+        :param cylinder_resolution:
+        :param sphere_resolution:
+        :param polygon_radius_selection_method:
+        :param cylinder_radius_compensation_factor:
+        :param sphere_radius_compensation_factor:
+        :param tube_shape: If true, the tube shape is generated.
+                Otherwise the cylinder shape is used.
+        """
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
@@ -37,6 +49,7 @@ class TBVTK:
         self.tree_data_old = compatibility_processing(self.tree_data)
         self.cylinder_resolution = cylinder_resolution
         self.sphere_resolution = sphere_resolution
+        self.tube_shape = tube_shape
 
     def add_cylinder(self, p1m, p2m, rad, id):
         """
@@ -46,10 +59,13 @@ class TBVTK:
 
     def finish(self):
         # import ipdb; ipdb.set_trace()
-        self.polyData = gen_tree(self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,
-                                 polygon_radius_selection_method=self.polygon_radius_selection_method,
-                                 cylinder_radius_compensation_factor=self.cylinder_radius_compensation_factor,
-                                 sphere_radius_compensation_factor=self.sphere_radius_compensation_factor)
+        self.polyData = gen_tree(
+            self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,
+            polygon_radius_selection_method=self.polygon_radius_selection_method,
+            cylinder_radius_compensation_factor=self.cylinder_radius_compensation_factor,
+            sphere_radius_compensation_factor=self.sphere_radius_compensation_factor,
+            tube_shape=self.tube_shape
+        )
         # import ipdb; ipdb.set_trace()
 
     def get_output(self):
@@ -233,7 +249,9 @@ def polygon_radius_compensation_factos(
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
              polygon_radius_selection_method="inscribed",
              cylinder_radius_compensation_factor=1.0,
-             sphere_radius_compensation_factor=1.0):
+             sphere_radius_compensation_factor=1.0,
+             tube_shape=True
+             ):
     """
     
     :param polygon_radius_selection_method:
@@ -279,7 +297,9 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
                                 cylinder_radius,
                                 br['direction'],
                                 resolution=cylinder_resolution)
-        sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
+
+        if tube_shape:
+            sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
         uv = br['upperVertex']
         length = br["length"]
         direction = br["direction"]
@@ -289,7 +309,8 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
             direction /= nm.linalg.norm(direction)
 
             lv = uv + direction * length
-            sphere2 = get_sphere(lv, radius, resolution=sphere_resolution)
+            if tube_shape:
+                sphere2 = get_sphere(lv, radius, resolution=sphere_resolution)
 
         if vtk.VTK_MAJOR_VERSION <= 5:
             appendFilter.AddInputConnection(cylinder.GetProducerPort())
@@ -306,24 +327,35 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
             boolean_operation2.SetOperationToUnion()
             boolean_operation3.SetOperationToUnion()
 
-            sphere1Tri.SetInputData(sphere1)
-            sphere1Tri.Update()
+
+            if tube_shape:
+                sphere1Tri.SetInputData(sphere1)
+                sphere1Tri.Update()
+
             if length > 0:
                 cylinderTri.SetInputData(cylinder)
                 cylinderTri.Update()
-                sphere2Tri.SetInputData(sphere2)
-                sphere2Tri.Update()
+                if tube_shape:
+                    sphere2Tri.SetInputData(sphere2)
+                    sphere2Tri.Update()
 
-                # booleanOperation.SetInputData(0, cyl)
-                boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
-                boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
-                boolean_operation1.Update()
-                boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
-                boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
-                # booleanOperation.SetInputData(2, sph2)
-                boolean_operation2.Update()
+                    # booleanOperation.SetInputData(0, cyl)
+                    boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+                    boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+                    boolean_operation1.Update()
+                    boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
+                    boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
+                    # booleanOperation.SetInputData(2, sph2)
+                    boolean_operation2.Update()
+                else:
+                    boolean_operation2 = cylinderTri
             else:
-                boolean_operation2 = sphere1Tri
+                if tube_shape:
+                    # length == 0 but no spheres
+                    # so we are generating just flat shape
+                    boolean_operation2 = cylinderTri
+                else:
+                    boolean_operation2 = sphere1Tri
 
             # this is simple version
             # appendFilter.AddInputData(boolean_operation2.GetOutput())

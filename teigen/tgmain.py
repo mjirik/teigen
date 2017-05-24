@@ -41,6 +41,7 @@ from . import geometry3d as g3
 
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
+CKEY_MEASUREMENT = "measurement"
 
 
 class Teigen():
@@ -159,6 +160,7 @@ class Teigen():
         config["measurement"] = {
             "polygon_radius_selection_method": "best",
             # "polygon_radius_selection_method": "inscribed"
+            "tube_shape": True,
         }
         return config
 
@@ -257,6 +259,7 @@ class Teigen():
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
             method  = self.config["measurement"]["polygon_radius_selection_method"]
+            tube_shape = self.config["measurement"]["tube_shape"]
 
             if method == "best":
                 method_vol = "cylinder volume + sphere compensation"
@@ -271,7 +274,8 @@ class Teigen():
                                   "cylinder_resolution": resolution,
                                   "sphere_resolution": resolution,
                                   # "radius_compensation_factor": radius_compensation_factor
-                                  "polygon_radius_selection_method": method_vol
+                                  "polygon_radius_selection_method": method_vol,
+                                  "tube_shape": tube_shape
                               })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
@@ -291,7 +295,8 @@ class Teigen():
                                       "cylinder_resolution": resolution,
                                       "sphere_resolution": resolution,
                                       # "radius_compensation_factor": radius_compensation_factor
-                                      "polygon_radius_selection_method": method_surf
+                                      "polygon_radius_selection_method": method_surf,
+                                      "tube_shape": tube_shape
                                   })
                 # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
                 # tvg.importFromYaml(yaml_path)
@@ -405,7 +410,7 @@ class Teigen():
         fn_base = self.get_fn_base()
         # config["filepattern"] = filepattern
 
-        self._numeric_measurement(fn_base)
+        self._aposteriori_numeric_measurement(fn_base)
         self.save_stats(fn_base)
         t1 = time.time()
 
@@ -528,7 +533,7 @@ class Teigen():
         }
         return dct
 
-    def _numeric_measurement(self, fn_base):
+    def _aposteriori_numeric_measurement(self, fn_base):
         # import numpy as np
         from tree import TreeBuilder
         measurement_multiplier = self.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
@@ -683,7 +688,8 @@ class Teigen():
             'voxelsize_mm': config["areasampling"]["voxelsize_mm"],
             'areasize_px': config["areasampling"]["areasize_px"],
             "intensity_profile_radius": config["postprocessing"]["intensity_profile_radius"],
-            "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"]
+            "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"],
+            "tube_shape": config["measurement"]["tube_shape"]
         }
 
     # def save_volume_to_file(self, filename):

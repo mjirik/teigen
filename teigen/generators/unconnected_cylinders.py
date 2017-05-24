@@ -69,12 +69,14 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  volume_fraction=0.1,
                  maximum_1000_iteration_number=10,
                  random_generator_seed=0,
-                 last_element_can_be_smaller=False
+                 last_element_can_be_smaller=False,
+                 tube_shape=True
                  ):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         intensity_profile: Dictionary type. Key is radius and value is required intensity.
+        @param tube_shape: create tube shape if true, otherwise create cylinders
         """
         # area_shape = [area_shape_z,area_shape_x, area_shape_y]
         # voxelsize_mm = [
@@ -137,6 +139,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.orientation_alpha_rad = orientation_alpha_rad
         self.orientation_beta_rad = orientation_beta_rad
         self.orientation_variance_rad = orientation_variance_rad
+        self.tube_shape = tube_shape
 
     def _add_cylinder_if_no_collision(self, pt1, pt2, radius,
                                       COLLISION_RADIUS=1.5  # higher then sqrt(2)
@@ -215,15 +218,16 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # line_nodes = g3.get_points_in_line_segment(pt1, pt2, radius)
         # self._cylinder_nodes.extend(line_nodes)
         length = np.linalg.norm(pt1 - pt2)
-        # if it is cylinder
-        # surf = 2 * np.pi * radius * (radius + length)
 
         # if it is tube (pill)
-        surf = g3.pill_surface(radius, length)
-        # cylinder
-        # volume =  np.pi * radius**2 * length
-        # tube
-        volume = g3.pill_volume(radius, length)
+        if self.tube_shape:
+            surf = g3.pill_surface(radius, length)
+            volume = g3.pill_volume(radius, length)
+        else:
+            # it is cylinder
+            surf = 2 * np.pi * radius * (radius + length)
+            volume =  np.pi * radius**2 * length
+
         vector = pt1 - pt2
 
         # TODO rename - add units
@@ -295,7 +299,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
 
-            volume = g3.pill_volume(radius, length)
+            if self.tube_shape:
+                volume = g3.pill_volume(radius, length)
+            else:
+                volume = g3.cylinder_volume(radius, length)
 
             planned_volume_is_too_much = ((
                                           self.actual_object_volume + volume) / self.area_volume) > self.requeseted_volume_fraction
