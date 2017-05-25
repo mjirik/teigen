@@ -200,7 +200,7 @@ def polygon_radius_compensation_factos(
 
     elif polygon_radius_selection_method == "cylinder volume":
         # from .. import geometry3d as g3
-        radius_compensation_factor =  regular_polygon_surface_equivalent_radius(cylinder_resolution)
+        radius_compensation_factor =  regular_polygon_area_equivalent_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
 
@@ -229,7 +229,9 @@ def polygon_radius_compensation_factos(
         # radius_compensation_factor *= 1. / spl1(cylinder_resolution)
         # cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = 1. / spl1(cylinder_resolution)
-        cylinder_radius_compensation_factor =  regular_polygon_surface_equivalent_radius(cylinder_resolution)
+        cylinder_radius_compensation_factor =  regular_polygon_area_equivalent_radius(cylinder_resolution)
+        # cylinder_radius_compensation_factor = 1.0
+        # sphere_radius_compensation_factor = 1.0
 
     elif polygon_radius_selection_method == "cylinder surface + sphere compensation":
         # analytically compensated cylinder + sphere compensate by measurement
@@ -242,6 +244,8 @@ def polygon_radius_compensation_factos(
         radius_compensation_factor *= 1. / spl1(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+    else:
+        logger.error("Unknown compensation method")
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor
 
@@ -268,8 +272,8 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
     appended_data = None
-    if vtk.VTK_MAJOR_VERSION > 5:
-        pass
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        logger.error("VTK 6 required")
     factors = polygon_radius_compensation_factos(
         polygon_radius_selection_method,
         cylinder_radius_compensation_factor,
@@ -290,19 +294,20 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         logger.debug(dbg_msg)
         # print(dbg_msg)
         radius = br['radius']
+        length = br["length"]
+        direction = br["direction"]
         cylinder_radius = radius * cylinder_radius_compensation_factor
         sphere_radius = radius * sphere_radius_compensation_factor
-        cylinder = get_cylinder(br['upperVertex'],
-                                br['length'],
-                                cylinder_radius,
-                                br['direction'],
-                                resolution=cylinder_resolution)
+        if length > 0:
+            cylinder = get_cylinder(br['upperVertex'],
+                                    br['length'],
+                                    cylinder_radius,
+                                    br['direction'],
+                                    resolution=cylinder_resolution)
 
         if tube_shape:
             sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
         uv = br['upperVertex']
-        length = br["length"]
-        direction = br["direction"]
         # length = nm.linalg.norm(direction)
         # print "obj ", uv, length
         if length > 0:
@@ -310,74 +315,68 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
 
             lv = uv + direction * length
             if tube_shape:
-                sphere2 = get_sphere(lv, radius, resolution=sphere_resolution)
+                sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
 
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            appendFilter.AddInputConnection(cylinder.GetProducerPort())
-            appendFilter.AddInputConnection(sphere1.GetProducerPort())
-            appendFilter.AddInputConnection(sphere2.GetProducerPort())
-        else:
-            cylinderTri = vtk.vtkTriangleFilter()
-            sphere1Tri = vtk.vtkTriangleFilter()
-            sphere2Tri = vtk.vtkTriangleFilter()
-            boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
-            boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
-            boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
-            boolean_operation1.SetOperationToUnion()
-            boolean_operation2.SetOperationToUnion()
-            boolean_operation3.SetOperationToUnion()
+        cylinderTri = vtk.vtkTriangleFilter()
+        sphere1Tri = vtk.vtkTriangleFilter()
+        sphere2Tri = vtk.vtkTriangleFilter()
+        boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation1.SetOperationToUnion()
+        boolean_operation2.SetOperationToUnion()
+        boolean_operation3.SetOperationToUnion()
 
 
+        if tube_shape:
+            sphere1Tri.SetInputData(sphere1)
+            sphere1Tri.Update()
+
+        if length > 0:
+            cylinderTri.SetInputData(cylinder)
+            cylinderTri.Update()
             if tube_shape:
-                sphere1Tri.SetInputData(sphere1)
-                sphere1Tri.Update()
+                sphere2Tri.SetInputData(sphere2)
+                sphere2Tri.Update()
 
-            if length > 0:
-                cylinderTri.SetInputData(cylinder)
-                cylinderTri.Update()
-                if tube_shape:
-                    sphere2Tri.SetInputData(sphere2)
-                    sphere2Tri.Update()
-
-                    # booleanOperation.SetInputData(0, cyl)
-                    boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
-                    boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
-                    boolean_operation1.Update()
-                    boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
-                    boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
-                    # booleanOperation.SetInputData(2, sph2)
-                    boolean_operation2.Update()
-                else:
-                    boolean_operation2 = cylinderTri
+                # booleanOperation.SetInputData(0, cyl)
+                boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+                boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+                boolean_operation1.Update()
+                boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
+                boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
+                # booleanOperation.SetInputData(2, sph2)
+                boolean_operation2.Update()
             else:
-                if tube_shape:
-                    # length == 0 but no spheres
-                    # so we are generating just flat shape
-                    boolean_operation2 = cylinderTri
-                else:
-                    boolean_operation2 = sphere1Tri
-
-            # this is simple version
-            # appendFilter.AddInputData(boolean_operation2.GetOutput())
-            # print "object connected, starting addind to general space " + str(br["length"])
-            if appended_data is None:
-                appended_data = boolean_operation2.GetOutput()
+                boolean_operation2 = cylinderTri
+        else:
+            if tube_shape:
+                # length == 0 but no spheres
+                # so we are generating just flat shape
+                boolean_operation2 = cylinderTri
             else:
-                boolean_operation3.SetInputData(0, appended_data)
-                boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
-                boolean_operation3.Update()
-                appended_data = boolean_operation3.GetOutput()
+                boolean_operation2 = sphere1Tri
+
+        # this is simple version
+        # appendFilter.AddInputData(boolean_operation2.GetOutput())
+        # print "object connected, starting addind to general space " + str(br["length"])
+        if appended_data is None:
+            appended_data = boolean_operation2.GetOutput()
+        else:
+            boolean_operation3.SetInputData(0, appended_data)
+            boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
+            boolean_operation3.Update()
+            appended_data = boolean_operation3.GetOutput()
 
     # import ipdb; ipdb.set_trace()
 
-    if vtk.VTK_MAJOR_VERSION > 5:
-        del (cylinderTri)
-        del (sphere1Tri)
-        del (sphere2Tri)
-        del (boolean_operation1)
-        del (boolean_operation2)
-        del (boolean_operation3)
-        pass
+
+    del (cylinderTri)
+    del (sphere1Tri)
+    del (sphere2Tri)
+    del (boolean_operation1)
+    del (boolean_operation2)
+    del (boolean_operation3)
     logger.debug("konec gen_tree()")
     # appendFilter.Update()
     # appended_data = appendFilter.GetOutput()
@@ -557,7 +556,7 @@ def inscribed_polygon_radius(radius, n):
     """
     pass
 
-def regular_polygon_surface_equivalent_radius(n, radius=1.0):
+def regular_polygon_area_equivalent_radius(n, radius=1.0):
     """ Compute equivalent radius to obtain same surface as circle.
 
     \theta = \frac{2 \pi}{n}

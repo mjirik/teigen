@@ -263,7 +263,7 @@ class GeometryTestCase(unittest.TestCase):
         expected_perimeter = 2 * np.pi*radius
 
         eq_radius_perimeter = g3.regular_polygon_perimeter_equivalent_radius(4, radius)
-        eq_radius_surface = g3.regular_polygon_surface_equivalent_radius(4, radius)
+        eq_radius_surface = g3.regular_polygon_area_equivalent_radius(4, radius)
 
         # eq_radius is
         perimeter = 4.0 * eq_radius_perimeter * 2**0.5

@@ -746,7 +746,7 @@ def inscribed_polygon_radius(radius, n):
         """
         pass
 
-def regular_polygon_surface_equivalent_radius(n, radius=1.0):
+def regular_polygon_area_equivalent_radius(n, radius=1.0):
     """ Compute equivalent radius to obtain same surface as circle.
     
     \theta = \frac{2 \pi}{n}
