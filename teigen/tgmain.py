@@ -73,7 +73,7 @@ class Teigen():
         logger.info("Starting Teigen")
 
         self.logfile = logfile
-        self.version = "0.2.21"
+        self.version = "0.2.22"
         self.data3d = None
         self.voxelsize_mm = None
         self.need_run = True
