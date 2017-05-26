@@ -289,33 +289,10 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     for br in tree_data:
         # import ipdb;
         # ipdb.set_trace()
+        something_to_add = True
 
         dbg_msg = "generating edge " + str(br["length"])
         logger.debug(dbg_msg)
-        # print(dbg_msg)
-        radius = br['radius']
-        length = br["length"]
-        direction = br["direction"]
-        cylinder_radius = radius * cylinder_radius_compensation_factor
-        sphere_radius = radius * sphere_radius_compensation_factor
-        if length > 0:
-            cylinder = get_cylinder(br['upperVertex'],
-                                    br['length'],
-                                    cylinder_radius,
-                                    br['direction'],
-                                    resolution=cylinder_resolution)
-
-        if tube_shape:
-            sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
-        uv = br['upperVertex']
-        # length = nm.linalg.norm(direction)
-        # print "obj ", uv, length
-        if length > 0:
-            direction /= nm.linalg.norm(direction)
-
-            lv = uv + direction * length
-            if tube_shape:
-                sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
 
         cylinderTri = vtk.vtkTriangleFilter()
         sphere1Tri = vtk.vtkTriangleFilter()
@@ -327,15 +304,32 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         boolean_operation2.SetOperationToUnion()
         boolean_operation3.SetOperationToUnion()
 
+        # print(dbg_msg)
+        radius = br['radius']
+        length = br["length"]
+        direction = br["direction"]
+        cylinder_radius = radius * cylinder_radius_compensation_factor
+        sphere_radius = radius * sphere_radius_compensation_factor
 
+        uv = br['upperVertex']
         if tube_shape:
+            sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
             sphere1Tri.SetInputData(sphere1)
             sphere1Tri.Update()
-
         if length > 0:
+            cylinder = get_cylinder(br['upperVertex'],
+                                    br['length'],
+                                    cylinder_radius,
+                                    br['direction'],
+                                    resolution=cylinder_resolution)
+
             cylinderTri.SetInputData(cylinder)
             cylinderTri.Update()
+            direction /= nm.linalg.norm(direction)
+
+            lv = uv + direction * length
             if tube_shape:
+                sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
                 sphere2Tri.SetInputData(sphere2)
                 sphere2Tri.Update()
 
@@ -351,22 +345,24 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
                 boolean_operation2 = cylinderTri
         else:
             if tube_shape:
+                boolean_operation2 = sphere1Tri
+            else:
                 # length == 0 but no spheres
                 # so we are generating just flat shape
-                boolean_operation2 = cylinderTri
-            else:
-                boolean_operation2 = sphere1Tri
+                # boolean_operation2 = cylinderTri
+                something_to_add = False
 
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
         # print "object connected, starting addind to general space " + str(br["length"])
-        if appended_data is None:
-            appended_data = boolean_operation2.GetOutput()
-        else:
-            boolean_operation3.SetInputData(0, appended_data)
-            boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
-            boolean_operation3.Update()
-            appended_data = boolean_operation3.GetOutput()
+        if something_to_add:
+            if appended_data is None:
+                appended_data = boolean_operation2.GetOutput()
+            else:
+                boolean_operation3.SetInputData(0, appended_data)
+                boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
+                boolean_operation3.Update()
+                appended_data = boolean_operation3.GetOutput()
 
     # import ipdb; ipdb.set_trace()
 
