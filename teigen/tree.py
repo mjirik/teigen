@@ -133,7 +133,10 @@ class TreeBuilder:
         return tree_output
 
     def _build_tree_per_segments(self):
-        progress_step = 1.0 / len(self.tree_data)
+        ln = len(self.tree_data)
+        if ln == 0:
+            ln = 1
+        progress_step = 1.0 / ln
         progress = 0.0
 
         for cyl_id in self.tree_data:

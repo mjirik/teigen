@@ -39,7 +39,7 @@ import io3d.misc
 import dictwidgetpg
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-from tgmain import CKEY_OUTPUT, CKEY_APPEARANCE, Teigen
+from tgmain import Teigen, CKEY_OUTPUT, CKEY_APPEARANCE, CKEY_MEASUREMENT
 from .teigendoc import teigendoc
 
 
@@ -86,6 +86,7 @@ class TeigenWidget(QtGui.QWidget):
         config["required_teigen_version"] = self.teigen.version
         config[CKEY_APPEARANCE] = area_cfg["Appearance"]
         config[CKEY_OUTPUT] = area_cfg["Output"]
+        config[CKEY_MEASUREMENT] = area_cfg["Measurement"]
         self.config = config
 
     def _parameters_changed(self, param, changes):
@@ -206,12 +207,12 @@ class TeigenWidget(QtGui.QWidget):
         # self.resize(600,700)
 
 
-        if self.teigen.polydata is not None:
+        if self.teigen.polydata_volume is not None:
             import imtools.show_segmentation_qt
             self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
 
             # self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
-            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata)
+            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata_volume)
             self.actual_subtab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
 
         self.ui_stats_shown = True
@@ -366,7 +367,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         postprocessing_params = self.teigen.config["postprocessing"]
 
-        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims"]
+        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims", "tube_shape"]
         self._ui_generators_tab_wg = QTabWidget()
         self._ui_generators_tab_wg.setMinimumWidth(400)
         self.mainLayout.addWidget(self._ui_generators_tab_wg, 0, 1, 1, 2)

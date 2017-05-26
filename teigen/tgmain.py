@@ -41,6 +41,7 @@ from . import geometry3d as g3
 
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
+CKEY_MEASUREMENT = "measurement"
 
 
 class Teigen():
@@ -50,17 +51,17 @@ class Teigen():
         self.loglevel = loglevel
 
         logger = logging.getLogger()
-        handler = logging.handlers.RotatingFileHandler(
+        self.filehandler = logging.handlers.RotatingFileHandler(
             op.expanduser(logfile),
             maxBytes=1000000,
             backupCount=9
         )
-        handler.setLevel(self.loglevel)
+        self.filehandler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
         self.formatter = logging.Formatter(
             '%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
-        handler.setFormatter(self.formatter)
-        logger.addHandler(handler)
+        self.filehandler.setFormatter(self.formatter)
+        logger.addHandler(self.filehandler)
 
         # streamhandler = logging.StreamHandler()
         # streamhandler.setFormatter(formatter)
@@ -99,11 +100,14 @@ class Teigen():
         self.progress_callback = None
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
         # 3D visualization data, works for some generators
-        self.polydata = None
+        self.polydata_volume = None
         self.dataframes = {}
         self.stats_times = {}
         self.parameters_changed_before_save = True
         self.fig_3d_render_snapshot = None
+
+    def __del__(self):
+        self.filehandler.close()
 
     def use_default_config(self):
         self.config = self.get_default_config()
@@ -154,7 +158,9 @@ class Teigen():
         }
 
         config["measurement"] = {
-            "polygon_radius_selection_method": "inscribed"
+            "polygon_radius_selection_method": "best",
+            # "polygon_radius_selection_method": "inscribed"
+            "tube_shape": True,
         }
         return config
 
@@ -217,7 +223,9 @@ class Teigen():
         self.gen.run()
 
         logger.debug("1D structure is generated")
-        self.polydata = self.__generate_vtk(self.temp_vtk_file)
+        pdatas = self.__generate_vtk(self.temp_vtk_file)
+        self.polydata_volume = pdatas[0]
+        self.polydata_surface = pdatas[1]
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
 
@@ -250,12 +258,24 @@ class Teigen():
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
+            method  = self.config["measurement"]["polygon_radius_selection_method"]
+            tube_shape = self.config["measurement"]["tube_shape"]
+
+            if method == "best":
+                method_vol = "cylinder volume + sphere compensation"
+                method_surf = "cylinder surface + sphere compensation"
+            else:
+                method_vol = method
+                method_surf = None
+
+            # build volume tree
             tvg = TreeBuilder('vtk',
                               generator_params={
                                   "cylinder_resolution": resolution,
                                   "sphere_resolution": resolution,
                                   # "radius_compensation_factor": radius_compensation_factor
-                                  "polygon_radius_selection_method": self.config["measurement"]["polygon_radius_selection_method"]
+                                  "polygon_radius_selection_method": method_vol,
+                                  "tube_shape": tube_shape
                               })
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
@@ -266,7 +286,32 @@ class Teigen():
             # tvg.show()
             # TODO control output
             tvg.saveToFile(vtk_file)
-            return tvg.generator.polyData
+            polydata_vol = tvg.generator.polyData
+
+            # build surface tree
+            if method_surf is not None:
+                tvg2 = TreeBuilder('vtk',
+                                  generator_params={
+                                      "cylinder_resolution": resolution,
+                                      "sphere_resolution": resolution,
+                                      # "radius_compensation_factor": radius_compensation_factor
+                                      "polygon_radius_selection_method": method_surf,
+                                      "tube_shape": tube_shape
+                                  })
+                # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
+                # tvg.importFromYaml(yaml_path)
+                tvg2.voxelsize_mm = self.voxelsize_mm
+                tvg2.shape = self.gen.areasize_px
+                tvg2.tree_data = self.gen.tree_data
+                output = tvg2.buildTree()  # noqa
+                polydata_surf = tvg2.generator.polyData
+                # tvg.show()
+                # TODO control output
+                # tvg.saveToFile(vtk_file)
+            else:
+                polydata_surf = None
+
+            return polydata_vol, polydata_surf
 
     def filepattern_fill_potential_series(self):
         import io3d.datawriter
@@ -365,7 +410,7 @@ class Teigen():
         fn_base = self.get_fn_base()
         # config["filepattern"] = filepattern
 
-        self._numeric_measurement(fn_base)
+        self._aposteriori_numeric_measurement(fn_base)
         self.save_stats(fn_base)
         t1 = time.time()
 
@@ -405,10 +450,10 @@ class Teigen():
         writer = vtk.vtkPolyDataWriter()
         writer.SetFileName(outputfile)
         try:
-            writer.SetInputData(self.polydata)
+            writer.SetInputData(self.polydata_volume)
         except:
             logger.warning("old vtk is used")
-            writer.SetInput(self.polydata)
+            writer.SetInput(self.polydata_volume)
         writer.Write()
 
     def postprocessing(
@@ -488,7 +533,7 @@ class Teigen():
         }
         return dct
 
-    def _numeric_measurement(self, fn_base):
+    def _aposteriori_numeric_measurement(self, fn_base):
         # import numpy as np
         from tree import TreeBuilder
         measurement_multiplier = self.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
@@ -570,9 +615,14 @@ class Teigen():
         import vtk
         mass = vtk.vtkMassProperties()
         # mass.SetInputData(object1Tri.GetOutput())
-        mass.SetInputData(self.polydata)
-        surf = mass.GetSurfaceArea()
+        mass.SetInputData(self.polydata_volume)
         vol = mass.GetVolume()
+        if self.polydata_surface is None:
+            surf = mass.GetSurfaceArea()
+        else:
+            mass = vtk.vtkMassProperties()
+            mass.SetInputData(self.polydata_surface)
+            surf = mass.GetSurfaceArea()
         dfoverallf["numeric volume [mm^3]"] = [vol]
         dfoverallf["numeric surface [mm^2]"] = [surf]
         self.dataframes["overall"] = dfoverallf
@@ -638,7 +688,8 @@ class Teigen():
             'voxelsize_mm': config["areasampling"]["voxelsize_mm"],
             'areasize_px': config["areasampling"]["areasize_px"],
             "intensity_profile_radius": config["postprocessing"]["intensity_profile_radius"],
-            "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"]
+            "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"],
+            "tube_shape": config["measurement"]["tube_shape"]
         }
 
     # def save_volume_to_file(self, filename):
