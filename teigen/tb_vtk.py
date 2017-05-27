@@ -150,6 +150,72 @@ def move_to_position(src, upper, direction):
     return tr2.GetOutput()
 
 
+def get_tube(radius, point, direction, length,
+             sphere_resolution, cylinder_resolution,
+             cylinder_radius_compensation_factor=1.0,
+             sphere_radius_compensation_factor=1.0,
+             tube_shape=True
+             ):
+
+    cylinder_radius = radius * cylinder_radius_compensation_factor
+    sphere_radius = radius * sphere_radius_compensation_factor
+
+    direction /= nm.linalg.norm(direction)
+    lv = point + direction * length
+
+    cylinderTri = vtk.vtkTriangleFilter()
+    sphere1Tri = vtk.vtkTriangleFilter()
+    sphere2Tri = vtk.vtkTriangleFilter()
+
+    cylinder = vtk.vtkCylinderSource()
+    cylinder.SetCenter((0, length/ 2, 0))
+    cylinder.SetHeight(length)
+    cylinder.SetRadius(cylinder_radius)
+    cylinder.SetResolution(cylinder_resolution)
+    cylinder.Update()
+    cylinderTri.SetInputData(cylinder.GetOutput())
+    cylinderTri.Update()
+
+    sphere1 = vtk.vtkSphereSource()
+    sphere1.SetPhiResolution(sphere_resolution)
+    sphere1.SetThetaResolution(sphere_resolution)
+    sphere1.SetCenter(0, 0, 0)
+    sphere1.SetRadius(sphere_radius)
+    sphere1.SetStartPhi(0)
+    sphere1.SetEndPhi(90)
+    sphere1.Update()
+    sphere1Tri.SetInputData(sphere1.GetOutput())
+    sphere1Tri.Update()
+
+    sphere2 = vtk.vtkSphereSource()
+    sphere2.SetPhiResolution(sphere_resolution)
+    sphere2.SetThetaResolution(sphere_resolution)
+    sphere2.SetCenter(0, length, 0)
+    sphere2.SetRadius(sphere_radius)
+    sphere2.SetStartPhi(90)
+    sphere2.SetEndPhi(180)
+    sphere2.Update()
+    sphere2Tri.SetInputData(sphere2.GetOutput())
+    sphere2Tri.Update()
+
+    boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
+    boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
+    boolean_operation1.SetOperationToUnion()
+    boolean_operation2.SetOperationToUnion()
+
+    # booleanOperation.SetInputData(0, cyl)
+    boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+    boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+    boolean_operation1.Update()
+    boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
+    boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
+    # booleanOperation.SetInputData(2, sph2)
+    boolean_operation2.Update()
+    # tube_in_base_position = boolean_operation2.GetOutput()
+
+    tube = move_to_position(boolean_operation2, point, direction)
+    return tube
+
 
 def get_cylinder(upper, height, radius,
                  direction,
@@ -303,10 +369,10 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         logger.debug(dbg_msg)
 
         tube = get_tube(radius, uv, direction, length,
-                        sphere_resolution, cylinder_resolution,
-                        cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
-                        sphere_radius_compensation_factor=sphere_radius_compensation_factor,
-                        tube_shape=tube_shape)
+                            sphere_resolution, cylinder_resolution,
+                            cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
+                            sphere_radius_compensation_factor=sphere_radius_compensation_factor,
+                            tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
         # print "object connected, starting addind to general space " + str(br["length"])
@@ -336,12 +402,25 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     # appended_data = appendFilter.GetOutput()
     return appended_data
 
-def get_tube(radius, uv, direction, length,
-             sphere_resolution, cylinder_resolution,
-             cylinder_radius_compensation_factor=1.0,
-             sphere_radius_compensation_factor=1.0,
-             tube_shape=True
-             ):
+def get_tube_old(radius, point, direction, length,
+                 sphere_resolution, cylinder_resolution,
+                 cylinder_radius_compensation_factor=1.0,
+                 sphere_radius_compensation_factor=1.0,
+                 tube_shape=True
+                 ):
+    """ Create a tube with ending half-spherese in Z axis.
+
+    :param radius:
+    :param point:
+    :param direction:
+    :param length:
+    :param sphere_resolution:
+    :param cylinder_resolution:
+    :param cylinder_radius_compensation_factor:
+    :param sphere_radius_compensation_factor:
+    :param tube_shape:
+    :return:
+    """
     cylinderTri = vtk.vtkTriangleFilter()
     sphere1Tri = vtk.vtkTriangleFilter()
     sphere2Tri = vtk.vtkTriangleFilter()
@@ -356,11 +435,11 @@ def get_tube(radius, uv, direction, length,
     retval = None
 
     if tube_shape:
-        sphere1 = get_sphere(uv, sphere_radius, resolution=sphere_resolution)
+        sphere1 = get_sphere(point, sphere_radius, resolution=sphere_resolution)
         sphere1Tri.SetInputData(sphere1)
         sphere1Tri.Update()
     if length > 0:
-        cylinder = get_cylinder(uv,
+        cylinder = get_cylinder(point,
                                 length,
                                 cylinder_radius,
                                 direction,
@@ -370,7 +449,7 @@ def get_tube(radius, uv, direction, length,
         cylinderTri.Update()
         direction /= nm.linalg.norm(direction)
 
-        lv = uv + direction * length
+        lv = point + direction * length
         if tube_shape:
             sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
             sphere2Tri.SetInputData(sphere2)
