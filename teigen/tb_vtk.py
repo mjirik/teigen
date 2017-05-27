@@ -95,11 +95,20 @@ class TBVTK:
 
 # old interface
 
-def move_to_position(src, upper, direction):
+def move_to_position(src, upper, direction, axis1=2, axis2=1):
+
+    # along axis 1 axis1=2, axis2=1
+
+    r1 = [0.0, 0.0, 0.0]
+    r2 = [0.0, 0.0, 0.0]
+
+    r1[axis1] = 1.0
+    r2[axis2] = 1.0
+
     rot1 = vtk.vtkTransform()
     fi = nm.arccos(direction[1])
 
-    rot1.RotateWXYZ(-nm.rad2deg(fi), 0.0, 0.0, 1.0)
+    rot1.RotateWXYZ(-nm.rad2deg(fi), r1[0], r1[1], r1[2])
     u = nm.abs(nm.sin(fi))
     rot2 = vtk.vtkTransform()
     if u > 1.0e-6:
@@ -117,7 +126,7 @@ def move_to_position(src, upper, direction):
         if direction[2] < 0:
             psi = 2 * nm.pi - psi
 
-        rot2.RotateWXYZ(-nm.rad2deg(psi), 0.0, 1.0, 0.0)
+        rot2.RotateWXYZ(-nm.rad2deg(psi), r2[0], r2[1], r2[2])
 
     tl = vtk.vtkTransform()
     tl.Translate(upper)
@@ -213,7 +222,7 @@ def get_tube(radius, point, direction, length,
     boolean_operation2.Update()
     # tube_in_base_position = boolean_operation2.GetOutput()
 
-    tube = move_to_position(boolean_operation2, point, direction)
+    tube = move_to_position(boolean_operation2, point, direction, 0, 2)
     return tube
 
 
