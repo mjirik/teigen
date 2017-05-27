@@ -95,18 +95,20 @@ class TBVTK:
 
 # old interface
 
-def move_to_position(src, upper, direction, axis1=2, axis2=1):
+def move_to_position(src, upper, direction, axis0=2, axis1=1, axis2=0):
 
     # along axis 1 axis1=2, axis2=1
 
     r1 = [0.0, 0.0, 0.0]
     r2 = [0.0, 0.0, 0.0]
 
-    r1[axis1] = 1.0
-    r2[axis2] = 1.0
+    r1[axis0] = 1.0
+    r2[axis1] = 1.0
+
+    print r1, r2
 
     rot1 = vtk.vtkTransform()
-    fi = nm.arccos(direction[1])
+    fi = nm.arccos(direction[axis1])
 
     rot1.RotateWXYZ(-nm.rad2deg(fi), r1[0], r1[1], r1[2])
     u = nm.abs(nm.sin(fi))
@@ -114,16 +116,16 @@ def move_to_position(src, upper, direction, axis1=2, axis2=1):
     if u > 1.0e-6:
 
         # sometimes d[0]/u little bit is over 1
-        d0_over_u = direction[0] / u
+        d0_over_u = direction[axis2] / u
         if d0_over_u > 1:
             psi = 0
         elif d0_over_u < -1:
             psi = 2 * nm.pi
         else:
-            psi = nm.arccos(direction[0] / u)
+            psi = nm.arccos(direction[axis2] / u)
 
-        logger.debug('d0 ' + str(direction[0]) + '  u ' + str(u) + ' psi ' + str(psi))
-        if direction[2] < 0:
+        # logger.debug('d0 ' + str(direction[axis2]) + '  u ' + str(u) + ' psi ' + str(psi))
+        if direction[axis0] < 0:
             psi = 2 * nm.pi - psi
 
         rot2.RotateWXYZ(-nm.rad2deg(psi), r2[0], r2[1], r2[2])
@@ -163,8 +165,14 @@ def get_tube(radius, point, direction, length,
              sphere_resolution, cylinder_resolution,
              cylinder_radius_compensation_factor=1.0,
              sphere_radius_compensation_factor=1.0,
-             tube_shape=True
+             tube_shape=True, axis=0
              ):
+    point1 = [0.0, 0.0, 0.0]
+    center = [0.0, 0.0, 0.0]
+    point2 = [0.0, 0.0, 0.0]
+
+    center[axis] = length / 2.0
+    point2[axis] = length
 
     cylinder_radius = radius * cylinder_radius_compensation_factor
     sphere_radius = radius * sphere_radius_compensation_factor
@@ -177,7 +185,7 @@ def get_tube(radius, point, direction, length,
     sphere2Tri = vtk.vtkTriangleFilter()
 
     cylinder = vtk.vtkCylinderSource()
-    cylinder.SetCenter((0, length/ 2, 0))
+    cylinder.SetCenter(center)
     cylinder.SetHeight(length)
     cylinder.SetRadius(cylinder_radius)
     cylinder.SetResolution(cylinder_resolution)
@@ -188,7 +196,7 @@ def get_tube(radius, point, direction, length,
     sphere1 = vtk.vtkSphereSource()
     sphere1.SetPhiResolution(sphere_resolution)
     sphere1.SetThetaResolution(sphere_resolution)
-    sphere1.SetCenter(0, 0, 0)
+    sphere1.SetCenter(point1)
     sphere1.SetRadius(sphere_radius)
     sphere1.SetStartPhi(0)
     sphere1.SetEndPhi(90)
@@ -199,7 +207,7 @@ def get_tube(radius, point, direction, length,
     sphere2 = vtk.vtkSphereSource()
     sphere2.SetPhiResolution(sphere_resolution)
     sphere2.SetThetaResolution(sphere_resolution)
-    sphere2.SetCenter(0, length, 0)
+    sphere2.SetCenter(point2)
     sphere2.SetRadius(sphere_radius)
     sphere2.SetStartPhi(90)
     sphere2.SetEndPhi(180)
@@ -222,7 +230,7 @@ def get_tube(radius, point, direction, length,
     boolean_operation2.Update()
     # tube_in_base_position = boolean_operation2.GetOutput()
 
-    tube = move_to_position(boolean_operation2, point, direction, 0, 2)
+    tube = move_to_position(boolean_operation2, point, direction, 1, 2)
     return tube
 
 
