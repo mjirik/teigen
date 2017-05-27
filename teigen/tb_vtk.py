@@ -95,18 +95,7 @@ class TBVTK:
 
 # old interface
 
-
-def get_cylinder(upper, height, radius,
-                 direction,
-                 resolution=10):
-    import vtk
-    src = vtk.vtkCylinderSource()
-    src.SetCenter((0, height / 2, 0))
-    # src.SetHeight(height + radius/2.0)
-    src.SetHeight(height)
-    src.SetRadius(radius)
-    src.SetResolution(resolution)
-
+def move_to_position(src, upper, direction):
     rot1 = vtk.vtkTransform()
     fi = nm.arccos(direction[1])
 
@@ -159,6 +148,20 @@ def get_cylinder(upper, height, radius,
     tr2.Update()
 
     return tr2.GetOutput()
+
+
+
+def get_cylinder(upper, height, radius,
+                 direction,
+                 resolution=10):
+    import vtk
+    src = vtk.vtkCylinderSource()
+    src.SetCenter((0, height / 2, 0))
+    # src.SetHeight(height + radius/2.0)
+    src.SetHeight(height)
+    src.SetRadius(radius)
+    src.SetResolution(resolution)
+    return move_to_position(src, upper, direction)
 
 
 def get_sphere(center, radius, resolution=10):
@@ -299,11 +302,11 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         dbg_msg = "generating edge with length: " + str(br["length"])
         logger.debug(dbg_msg)
 
-        tube = create_tube(radius, uv, direction, length,
-                sphere_resolution, cylinder_resolution,
-                cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
-                sphere_radius_compensation_factor=sphere_radius_compensation_factor,
-                tube_shape=tube_shape)
+        tube = get_tube(radius, uv, direction, length,
+                        sphere_resolution, cylinder_resolution,
+                        cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
+                        sphere_radius_compensation_factor=sphere_radius_compensation_factor,
+                        tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
         # print "object connected, starting addind to general space " + str(br["length"])
@@ -333,12 +336,12 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     # appended_data = appendFilter.GetOutput()
     return appended_data
 
-def create_tube(radius, uv, direction, length,
-                sphere_resolution, cylinder_resolution,
-                cylinder_radius_compensation_factor=1.0,
-                sphere_radius_compensation_factor=1.0,
-                tube_shape=True
-                ):
+def get_tube(radius, uv, direction, length,
+             sphere_resolution, cylinder_resolution,
+             cylinder_radius_compensation_factor=1.0,
+             sphere_radius_compensation_factor=1.0,
+             tube_shape=True
+             ):
     cylinderTri = vtk.vtkTriangleFilter()
     sphere1Tri = vtk.vtkTriangleFilter()
     sphere2Tri = vtk.vtkTriangleFilter()
