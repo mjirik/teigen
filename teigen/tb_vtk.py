@@ -10,6 +10,7 @@ import yaml
 import argparse
 import sys
 import numpy as np
+import vtk
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 # new interface
@@ -290,93 +291,113 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         # import ipdb;
         # ipdb.set_trace()
         something_to_add = True
-
-        dbg_msg = "generating edge " + str(br["length"])
-        logger.debug(dbg_msg)
-
-        cylinderTri = vtk.vtkTriangleFilter()
-        sphere1Tri = vtk.vtkTriangleFilter()
-        sphere2Tri = vtk.vtkTriangleFilter()
-        boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
-        boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
-        boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
-        boolean_operation1.SetOperationToUnion()
-        boolean_operation2.SetOperationToUnion()
-        boolean_operation3.SetOperationToUnion()
-
-        # print(dbg_msg)
         radius = br['radius']
         length = br["length"]
         direction = br["direction"]
-        cylinder_radius = radius * cylinder_radius_compensation_factor
-        sphere_radius = radius * sphere_radius_compensation_factor
-
         uv = br['upperVertex']
-        if tube_shape:
-            sphere1 = get_sphere(br['upperVertex'], sphere_radius, resolution=sphere_resolution)
-            sphere1Tri.SetInputData(sphere1)
-            sphere1Tri.Update()
-        if length > 0:
-            cylinder = get_cylinder(br['upperVertex'],
-                                    br['length'],
-                                    cylinder_radius,
-                                    br['direction'],
-                                    resolution=cylinder_resolution)
 
-            cylinderTri.SetInputData(cylinder)
-            cylinderTri.Update()
-            direction /= nm.linalg.norm(direction)
+        dbg_msg = "generating edge with length: " + str(br["length"])
+        logger.debug(dbg_msg)
 
-            lv = uv + direction * length
-            if tube_shape:
-                sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
-                sphere2Tri.SetInputData(sphere2)
-                sphere2Tri.Update()
-
-                # booleanOperation.SetInputData(0, cyl)
-                boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
-                boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
-                boolean_operation1.Update()
-                boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
-                boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
-                # booleanOperation.SetInputData(2, sph2)
-                boolean_operation2.Update()
-            else:
-                boolean_operation2 = cylinderTri
-        else:
-            if tube_shape:
-                boolean_operation2 = sphere1Tri
-            else:
-                # length == 0 but no spheres
-                # so we are generating just flat shape
-                # boolean_operation2 = cylinderTri
-                something_to_add = False
-
+        tube = create_tube(radius, uv, direction, length,
+                sphere_resolution, cylinder_resolution,
+                cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
+                sphere_radius_compensation_factor=sphere_radius_compensation_factor,
+                tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
         # print "object connected, starting addind to general space " + str(br["length"])
         if something_to_add:
             if appended_data is None:
-                appended_data = boolean_operation2.GetOutput()
+                #appended_data = boolean_operation2.GetOutput()
+                appended_data = tube
             else:
+                boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
+                boolean_operation3.SetOperationToUnion()
                 boolean_operation3.SetInputData(0, appended_data)
-                boolean_operation3.SetInputData(1, boolean_operation2.GetOutput())
+                boolean_operation3.SetInputData(1, tube)
                 boolean_operation3.Update()
                 appended_data = boolean_operation3.GetOutput()
 
     # import ipdb; ipdb.set_trace()
 
 
-    del (cylinderTri)
-    del (sphere1Tri)
-    del (sphere2Tri)
-    del (boolean_operation1)
-    del (boolean_operation2)
-    del (boolean_operation3)
+    # del (cylinderTri)
+    # del (sphere1Tri)
+    # del (sphere2Tri)
+    # del (boolean_operation1)
+    # del (boolean_operation2)
+    # del (boolean_operation3)
     logger.debug("konec gen_tree()")
     # appendFilter.Update()
     # appended_data = appendFilter.GetOutput()
     return appended_data
+
+def create_tube(radius, uv, direction, length,
+                sphere_resolution, cylinder_resolution,
+                cylinder_radius_compensation_factor=1.0,
+                sphere_radius_compensation_factor=1.0,
+                tube_shape=True
+                ):
+    cylinderTri = vtk.vtkTriangleFilter()
+    sphere1Tri = vtk.vtkTriangleFilter()
+    sphere2Tri = vtk.vtkTriangleFilter()
+    boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
+    boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
+    boolean_operation1.SetOperationToUnion()
+    boolean_operation2.SetOperationToUnion()
+
+    # print(dbg_msg)
+    cylinder_radius = radius * cylinder_radius_compensation_factor
+    sphere_radius = radius * sphere_radius_compensation_factor
+    retval = None
+
+    if tube_shape:
+        sphere1 = get_sphere(uv, sphere_radius, resolution=sphere_resolution)
+        sphere1Tri.SetInputData(sphere1)
+        sphere1Tri.Update()
+    if length > 0:
+        cylinder = get_cylinder(uv,
+                                length,
+                                cylinder_radius,
+                                direction,
+                                resolution=cylinder_resolution)
+
+        cylinderTri.SetInputData(cylinder)
+        cylinderTri.Update()
+        direction /= nm.linalg.norm(direction)
+
+        lv = uv + direction * length
+        if tube_shape:
+            sphere2 = get_sphere(lv, sphere_radius, resolution=sphere_resolution)
+            sphere2Tri.SetInputData(sphere2)
+            sphere2Tri.Update()
+
+            # booleanOperation.SetInputData(0, cyl)
+            boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+            boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+            boolean_operation1.Update()
+            boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
+            boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
+            # booleanOperation.SetInputData(2, sph2)
+            boolean_operation2.Update()
+        else:
+            boolean_operation2 = cylinderTri
+
+        retval = boolean_operation2.GetOutput()
+    else:
+        if tube_shape:
+            boolean_operation2 = sphere1Tri
+            retval = boolean_operation2.GetOutput()
+        else:
+            # length == 0 but no spheres
+            # so we are generating just flat shape
+            # boolean_operation2 = cylinderTri
+
+            # return empty space
+            retval = vtk.vtkTriangleFilter().GetOutput()
+            # something_to_add = False
+    return retval
 
 
 def gen_tree_old(tree_data):
