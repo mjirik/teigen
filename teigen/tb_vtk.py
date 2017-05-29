@@ -198,9 +198,10 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         center=point1,
         radius=sphere_radius,
         start_phi=0,
-        end_phi=120,
-        axis=0
+        end_phi=90,
+        axis=1
     )
+    sphere1.Update()
 
     sphere1Tri.SetInputData(sphere1.GetOutput())
     sphere1Tri.Update()
@@ -259,7 +260,8 @@ def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=Non
     sphere = vtk.vtkSphereSource()
     sphere.SetPhiResolution(resolution)
     sphere.SetThetaResolution(resolution)
-    sphere.SetCenter(center[0], center[1], center[2])
+    # sphere.SetCenter(center[0], center[1], center[2])
+    sphere.SetCenter(.0, .0, .0)
     sphere.SetRadius(radius)
     if start_phi is not None:
         sphere.SetStartPhi(start_phi)
@@ -270,11 +272,20 @@ def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=Non
         rot1 = vtk.vtkTransform()
         rot1.RotateWXYZ(90, 1, 0, 0)
 
-        tr1a = vtk.vtkTransformFilter()
+        tr1 = vtk.vtkTransformFilter()
         # tr1a.SetInputConnection(src.GetOutputPort())
-        tr1a.SetInputConnection(sphere.GetOutputPort())
-        tr1a.SetTransform(rot1)
-        sphere = tr1a
+        tr1.SetInputConnection(sphere.GetOutputPort())
+        tr1.SetTransform(rot1)
+        sphere = tr1
+        sphere.Update()
+
+    translate = vtk.vtkTransform()
+    translate.Translate(center)
+
+    tr2 = vtk.vtkTransformFilter()
+    tr2.SetInputConnection(sphere.GetOutputPort())
+    tr2.SetTransform(translate)
+    sphere = tr2
     return sphere
 
 def polygon_radius_compensation_factos(
