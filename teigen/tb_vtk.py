@@ -161,11 +161,12 @@ def move_to_position(src, upper, direction, axis0=2, axis1=1, axis2=0):
     return tr2.GetOutput()
 
 
-def get_tube(radius, point, direction, length,
-             sphere_resolution, cylinder_resolution,
+def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
+             direction=[0.0, 0.0, 1.0], length=1.0,
+             sphere_resolution=10, cylinder_resolution=10,
              cylinder_radius_compensation_factor=1.0,
              sphere_radius_compensation_factor=1.0,
-             tube_shape=True, axis=0
+             tube_shape=True, axis=1
              ):
     point1 = [0.0, 0.0, 0.0]
     center = [0.0, 0.0, 0.0]
@@ -193,26 +194,26 @@ def get_tube(radius, point, direction, length,
     cylinderTri.SetInputData(cylinder.GetOutput())
     cylinderTri.Update()
 
-    sphere1 = vtk.vtkSphereSource()
-    sphere1.SetPhiResolution(sphere_resolution)
-    sphere1.SetThetaResolution(sphere_resolution)
-    sphere1.SetCenter(point1)
-    sphere1.SetRadius(sphere_radius)
-    sphere1.SetStartPhi(0)
-    sphere1.SetEndPhi(90)
-    sphere1.Update()
+    sphere1 = get_sphere_source(
+        center=point1,
+        radius=sphere_radius,
+        start_phi=0,
+        end_phi=120,
+        axis=0
+    )
+
     sphere1Tri.SetInputData(sphere1.GetOutput())
     sphere1Tri.Update()
 
-    sphere2 = vtk.vtkSphereSource()
-    sphere2.SetPhiResolution(sphere_resolution)
-    sphere2.SetThetaResolution(sphere_resolution)
-    sphere2.SetCenter(point2)
-    sphere2.SetRadius(sphere_radius)
-    sphere2.SetStartPhi(90)
-    sphere2.SetEndPhi(180)
-    sphere2.Update()
-    sphere2Tri.SetInputData(sphere2.GetOutput())
+    sphere2 = get_sphere(
+        center=point2,
+        radius=sphere_radius,
+        start_phi=90,
+        end_phi=180,
+        axis=0
+
+    )
+    sphere2Tri.SetInputData(sphere2)
     sphere2Tri.Update()
 
     boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
@@ -247,16 +248,34 @@ def get_cylinder(upper, height, radius,
     return move_to_position(src, upper, direction)
 
 
-def get_sphere(center, radius, resolution=10):
+def get_sphere(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
+    sph = get_sphere_source(center, radius, resolution, start_phi, end_phi, axis)
+    sph.Update()
+    return sph.GetOutput()
+
+def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
     # create source
     import vtk
-    source = vtk.vtkSphereSource()
-    source.SetPhiResolution(resolution)
-    source.SetThetaResolution(resolution)
-    source.SetCenter(center[0], center[1], center[2])
-    source.SetRadius(radius)
-    source.Update()
-    return source.GetOutput()
+    sphere = vtk.vtkSphereSource()
+    sphere.SetPhiResolution(resolution)
+    sphere.SetThetaResolution(resolution)
+    sphere.SetCenter(center[0], center[1], center[2])
+    sphere.SetRadius(radius)
+    if start_phi is not None:
+        sphere.SetStartPhi(start_phi)
+    if end_phi is not None:
+        sphere.SetEndPhi(end_phi)
+
+    if axis==1:
+        rot1 = vtk.vtkTransform()
+        rot1.RotateWXYZ(90, 1, 0, 0)
+
+        tr1a = vtk.vtkTransformFilter()
+        # tr1a.SetInputConnection(src.GetOutputPort())
+        tr1a.SetInputConnection(sphere.GetOutputPort())
+        tr1a.SetTransform(rot1)
+        sphere = tr1a
+    return sphere
 
 def polygon_radius_compensation_factos(
         polygon_radius_selection_method,
