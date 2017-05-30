@@ -158,7 +158,8 @@ def move_to_position(src, upper, direction, axis0=2, axis1=1, axis2=0):
 
     tr2.Update()
 
-    return tr2.GetOutput()
+    return tr2
+    # return tr2.GetOutput()
 
 
 def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
@@ -194,24 +195,27 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinderTri.SetInputData(cylinder.GetOutput())
     cylinderTri.Update()
 
-    sphere1 = get_sphere_source(
+    sphere1 = get_sphere(
         center=point1,
         radius=sphere_radius,
+        resolution=sphere_resolution,
         start_phi=0,
-        end_phi=90,
+        #end_phi=90,
+        end_phi=180,
         axis=1
     )
-    sphere1.Update()
+    # sphere1.Update()
 
-    sphere1Tri.SetInputData(sphere1.GetOutput())
+    sphere1Tri.SetInputData(sphere1)
     sphere1Tri.Update()
 
     sphere2 = get_sphere(
         center=point2,
         radius=sphere_radius,
-        start_phi=90,
+        resolution=sphere_resolution,
+        start_phi=0,
         end_phi=180,
-        axis=0
+        axis=1
 
     )
     sphere2Tri.SetInputData(sphere2)
@@ -233,7 +237,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     # tube_in_base_position = boolean_operation2.GetOutput()
 
     tube = move_to_position(boolean_operation2, point, direction, 1, 2)
-    return tube
+    return tube.GetOutput()
 
 
 def get_cylinder(upper, height, radius,
@@ -246,13 +250,13 @@ def get_cylinder(upper, height, radius,
     src.SetHeight(height)
     src.SetRadius(radius)
     src.SetResolution(resolution)
-    return move_to_position(src, upper, direction)
+    return move_to_position(src, upper, direction).GetOutput()
 
 
 def get_sphere(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
     sph = get_sphere_source(center, radius, resolution, start_phi, end_phi, axis)
-    sph.Update()
-    return sph.GetOutput()
+    #sph.Update()
+    return sph
 
 def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
     # create source
@@ -268,25 +272,36 @@ def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=Non
     if end_phi is not None:
         sphere.SetEndPhi(end_phi)
 
-    if axis==1:
+    if axis == 0:
+        translate = vtk.vtkTransform()
+        translate.Translate(center)
+
+        tr2 = vtk.vtkTransformFilter()
+        tr2.SetInputConnection(sphere.GetOutputPort())
+        tr2.SetTransform(translate)
+        sphere = tr2
+
+    if axis == 1:
+        print "axis 1"
+        #sphere = move_to_position(sphere, center, [1., 1., 0.])
+
         rot1 = vtk.vtkTransform()
         rot1.RotateWXYZ(90, 1, 0, 0)
+        translate = vtk.vtkTransform()
+        translate.Translate(center)
 
         tr1 = vtk.vtkTransformFilter()
         # tr1a.SetInputConnection(src.GetOutputPort())
         tr1.SetInputConnection(sphere.GetOutputPort())
         tr1.SetTransform(rot1)
-        sphere = tr1
-        sphere.Update()
+        tr1.Update()
 
-    translate = vtk.vtkTransform()
-    translate.Translate(center)
-
-    tr2 = vtk.vtkTransformFilter()
-    tr2.SetInputConnection(sphere.GetOutputPort())
-    tr2.SetTransform(translate)
-    sphere = tr2
-    return sphere
+        tr2 = vtk.vtkTransformFilter()
+        tr2.SetInputConnection(tr1.GetOutputPort())
+        tr2.SetTransform(translate)
+        sphere = tr2
+    sphere.Update()
+    return sphere.GetOutput()
 
 def polygon_radius_compensation_factos(
         polygon_radius_selection_method,
@@ -415,6 +430,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         dbg_msg = "generating edge with length: " + str(br["length"])
         logger.debug(dbg_msg)
 
+        # tube = get_tube_old(radius, uv, direction, length,
         tube = get_tube(radius, uv, direction, length,
                             sphere_resolution, cylinder_resolution,
                             cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
