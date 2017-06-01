@@ -179,6 +179,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinder_radius = radius * cylinder_radius_compensation_factor
     sphere_radius = radius * sphere_radius_compensation_factor
 
+    print "radius ",  cylinder_radius_compensation_factor, sphere_radius_compensation_factor
+
     direction /= nm.linalg.norm(direction)
     lv = point + direction * length
 
@@ -282,7 +284,6 @@ def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=Non
         sphere = tr2
 
     if axis == 1:
-        print "axis 1"
         #sphere = move_to_position(sphere, center, [1., 1., 0.])
 
         rot1 = vtk.vtkTransform()
@@ -347,12 +348,13 @@ def polygon_radius_compensation_factos(
     elif polygon_radius_selection_method == "cylinder volume + sphere compensation":
         # analytically compensated cylinder + sphere compensate by measurement
 
-        x = [6, 7, 8, 10, 12, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 46, 50, 100, 200]
-        y = [0.907761069989, 0.933196213162, 0.949394505649, 0.968085936432, 0.978051435286,
-            0.987801062653, 0.990399429011, 0.99224803231, 0.993609871041, 0.994641988211,
-            0.995442810978, 0.996076647961, 0.996586890825, 0.997348551083, 0.997881034775,
-            0.998267843958, 0.998557648375, 0.998780367897, 1.0, 1.0]
-
+        # x = [6, 7, 8, 10, 12, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 46, 50, 100, 200]
+        # y = [0.907761069989, 0.933196213162, 0.949394505649, 0.968085936432, 0.978051435286,
+        #     0.987801062653, 0.990399429011, 0.99224803231, 0.993609871041, 0.994641988211,
+        #     0.995442810978, 0.996076647961, 0.996586890825, 0.997348551083, 0.997881034775,
+        #     0.998267843958, 0.998557648375, 0.998780367897, 1.0, 1.0]
+        x = [6, 8, 10, 12, 14, 17, 21, 23, 29, 31, 39, 46, 50, 60, 70, 80, 90, 100, 150, 200]
+        y = [0.907761087455, 0.949394472294, 0.968085949491, 0.978051451209, 0.983984947219, 0.989216674476, 0.992978216638, 0.994159974337, 0.996345087831, 0.996805451193, 0.997989063564, 0.998557649514, 0.998780374797, 0.999154602003, 0.999379702886, 0.999525551526, 0.999625411186, 0.999696768773, 0.999865478984, 1.0]
         # x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 1000]
         # y = [0.99820681, 0.99990171, 1.00057384, 1.00090875,
         #      1.00086617, 1.00064401, 1.00046984, 1.00032942,
@@ -364,6 +366,21 @@ def polygon_radius_compensation_factos(
         cylinder_radius_compensation_factor =  regular_polygon_area_equivalent_radius(cylinder_resolution)
         # cylinder_radius_compensation_factor = 1.0
         # sphere_radius_compensation_factor = 1.0
+
+    elif polygon_radius_selection_method == "cylinder surface + sphere compensation polygn perimeter equivalent":
+        # analytically compensated cylinder + sphere compensate by measurement
+        radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
+        x = [6, 8, 10, 12, 14, 17, 21, 23, 29, 31, 39, 46, 50, 60, 70, 80, 90, 100, 150, 200]
+        y = [0.975228602567, 0.987423714247, 0.992397574304, 0.994910516827, 0.996355306056, 0.997593221093, 0.998459193066, 0.998726453568, 0.999213600518, 0.999314918173, 0.999572948543, 0.999695445089, 0.999743138504, 0.99982282109, 0.999870450728, 0.999901168474, 0.999922129169, 0.999937063217, 0.999972213153, 1.0]
+
+        #x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 100, 200]
+        #y = [0.97522857799, 0.982858482408, 0.987423696432, 0.99239757445,
+        #     0.994910515802, 0.997261880581, 0.998292863128, 0.998929760493,
+        #     0.999266886531, 0.999594545757, 0.999743129653, 1.0, 1.0]
+        spl1 = InterpolatedUnivariateSpline(x, y)
+        radius_compensation_factor *= 1. / spl1(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
 
     elif polygon_radius_selection_method == "cylinder surface + sphere compensation":
         # analytically compensated cylinder + sphere compensate by measurement
@@ -415,6 +432,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     )
 
     cylinder_radius_compensation_factor, sphere_radius_compensation_factor = factors
+    print "factors ", factors
 
 
     # import ipdb; ipdb.set_trace()
@@ -431,7 +449,10 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         logger.debug(dbg_msg)
 
         # tube = get_tube_old(radius, uv, direction, length,
-        tube = get_tube(radius, uv, direction, length,
+        if length == 0:
+            tube = get_sphere(uv, radius * sphere_radius_compensation_factor, sphere_resolution)
+        else:
+            tube = get_tube(radius, uv, direction, length,
                             sphere_resolution, cylinder_resolution,
                             cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
                             sphere_radius_compensation_factor=sphere_radius_compensation_factor,
