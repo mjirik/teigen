@@ -102,7 +102,10 @@ class Teigen():
         # 3D visualization data, works for some generators
         self.polydata_volume = None
         self.dataframes = {}
-        self.stats_times = {}
+        self.stats_times = {
+
+            "datetime": [datetime.datetime.now()]
+        }
         self.parameters_changed_before_save = True
         self.fig_3d_render_snapshot = None
 
@@ -178,10 +181,11 @@ class Teigen():
         self.config = dili.recursive_update(self.config, config)
         self.parameters_changed_before_save = True
 
-    def run(self):
-        import time
+    def step1(self):
 
-        t0 = time.time()
+        t0 = datetime.datetime.now()
+        logger.info("step1_init_datetime" + str(t0))
+        self.stats_times["step1_init_datetime"] = [t0]
         config = copy.deepcopy(self.config)
         # filepattern = config["filepattern"]
         # if "filepattern_series_number" in config.keys():
@@ -222,6 +226,7 @@ class Teigen():
         # import ipdb; ipdb.set_trace()
         self.gen.run()
 
+        t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
         pdatas = self.__generate_vtk(self.temp_vtk_file)
         self.polydata_volume = pdatas[0]
@@ -229,13 +234,19 @@ class Teigen():
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
 
-        self.prepare_stats()
+        t2 = datetime.datetime.now()
+        self.stats_times["step1_generate_time_s"] = [(t1 - t0).total_seconds()]
+        self.stats_times["step1_generate_vtk_time_s"] = [(t2 - t1).total_seconds()]
+        self.stats_times["step1_total_time_s"] = [(t2 - t0).total_seconds()]
+        self.time_run = t2 - t0
+        # self.prepare_stats()
         one_row_filename = self.config["output"]["one_row_filename"]
         if one_row_filename != "":
+            # self.prepare_stats()
             self.save_stats_to_row(one_row_filename)
+        else:
+            self.prepare_stats()
 
-        t1 = time.time()
-        self.time_run = t1 - t0
         logger.info("time: " + str(self.time_run))
         self.need_run = False
         self.parameters_changed_before_save = False
@@ -400,19 +411,18 @@ class Teigen():
 
     def step2(self):
         if self.parameters_changed_before_save:
-            self.run()
+            self.step1()
         # TODO split save_volume and save_parameters
         self.save_parameters()
         self.save_log()
         import io3d.misc
-        import time
-        t0 = time.time()
+        t0 = datetime.datetime.now()
         fn_base = self.get_fn_base()
         # config["filepattern"] = filepattern
 
         self._aposteriori_numeric_measurement(fn_base)
         self.save_stats(fn_base)
-        t1 = time.time()
+        t1 = datetime.datetime.now()
 
         self.save_surface_to_file(fn_base + "_surface.vtk")
         logger.debug("before volume generate " + str(t1 - t0))
@@ -426,16 +436,18 @@ class Teigen():
             data3d = self.postprocessing(**postprocessing_params)
             self.gen.data3d = data3d
         # self.gen.saveVolumeToFile(self.config["filepattern"])
-        t2 = time.time()
+        t2 = datetime.datetime.now()
         logger.debug("before volume save " + str(t2 - t0))
         self.gen.saveVolumeToFile(self.filepattern_fill_series())
-        t3 = time.time()
+        t3 = datetime.datetime.now()
         logger.info("time before volume generate: " + str(t1 - t0))
         logger.info("time before volume save: " + str(t2 - t0))
         logger.info("time after volume save: " + str(t3 - t0))
-        self.stats_times["numeric_measurement_time_s"] = [t1 - t0]
-        self.stats_times["generate_volume_time_s"] = [t2 - t1]
-        self.stats_times["save_volume_time_s"] = [t3 - t2]
+        self.stats_times["step2_init_datetime"] = [t3]
+        self.stats_times["step2_numeric_measurement_time_s"] = [(t1 - t0).total_seconds()]
+        self.stats_times["step2_generate_volume_time_s"] = [(t2 - t1).total_seconds()]
+        self.stats_times["step2_save_volume_time_s"] = [(t3 - t2).total_seconds()]
+        self.stats_times["step2_total_time_s"] = [(t3).total_seconds()]
 
         # self.memoryhandler.flush()
 
@@ -627,9 +639,10 @@ class Teigen():
         dfoverallf["numeric surface [mm^2]"] = [surf]
         self.dataframes["overall"] = dfoverallf
 
-        tm = datetime.datetime.now().isoformat()
-        note_df = pd.DataFrame({"datetime": [tm]})
-        self.dataframes["additional_info"] = note_df
+        st = self.stats_times
+        note_df = pd.DataFrame([st], columns=st.keys())
+
+        self.dataframes["processing_info"] = note_df
 
     def save_stats(self, fn_base):
         import pandas as pd
@@ -654,24 +667,42 @@ class Teigen():
             s = traceback.format_exc()
             logger.warning(s)
 
+    def config_to_row(self):
+        """ Put input configuration into one row.
+
+        :return:
+        """
+        config = self.config
+        config_fl = dili.flatten_dict(config, join=lambda a, b: a + ' ' + b)
+        config_fl = dict(config_fl)
+        return config_fl
+
+
     def save_stats_to_row(self, filename, note=""):
+        """ Save stats to row
+
+        :param filename:
+        :param note:
+        :return:
+        """
+        self.prepare_stats()
         import pandas as pd
         filename = op.expanduser(filename)
         dfo = self.dataframes["overall"]
         dfd = self.dataframes["density"]
-        dfi = self.dataframes["additional_info"]
+        dfi = self.dataframes["processing_info"]
 
-        config = self.config
-        config_fl = dili.flatten_dict(config, join=lambda a, b: a + ' ' + b)
-        config_fl = dict(config_fl)
 
         # values must be a list for dataframe
-        new_values = []
-        for val in config_fl.values():
-            new_values.append([val])
+        # new_values = []
+        # for val in config_fl.values():
+        #     new_values.append([val])
 
-        config_fl_li = dict(zip(config_fl.keys(), new_values))
-        config_df = pd.DataFrame(config_fl_li)
+        # config_fl_li = dict(zip(config_fl.keys(), new_values))
+        # config_df = pd.DataFrame(config_fl_li)
+        config_fl = self.config_to_row()
+
+        config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
         # import ipdb; ipdb.set_trace()
         dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
 
@@ -712,7 +743,7 @@ class Teigen():
             self.update_config(**default_config)
             self.update_config(**params)
 
-            self.run()
+            self.step1()
             self.step2()
 
 
@@ -804,7 +835,7 @@ def new_main(
         if parameterfile is not None:
             params = io3d.misc.obj_from_file(parameterfile)
             tg.update_config(**params)
-        tg.run()
+        tg.step1()
         # tg.run(**params)
         tg.step2()
     else:
@@ -874,7 +905,7 @@ def main():
         if args.parameterfile is not None:
             params = io3d.misc.obj_from_file(args.parameterfile)
             tg.update_config(**params)
-        tg.run()
+        tg.step1()
         # tg.run(**params)
         tg.step2()
     else:

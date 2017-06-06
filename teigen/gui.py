@@ -104,7 +104,7 @@ class TeigenWidget(QtGui.QWidget):
         self.collect_config_from_gui_and_push_to_teigen()
 
         # self.config = new_cfg
-        self.teigen.run()
+        self.teigen.step1()
 
     def _ui_show_potential_output_path(self):
         fn = self.teigen.filepattern_fill_potential_series()

@@ -213,6 +213,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
 
     sphere2 = get_sphere(
         center=point2,
+        # radius= 1. - (cylinder_radius - sphere_radius),
         radius=sphere_radius,
         resolution=sphere_resolution,
         start_phi=0,
@@ -315,12 +316,16 @@ def polygon_radius_compensation_factos(
     if polygon_radius_selection_method == "inscribed":
         cylinder_radius_compensation_factor = 1.0
         sphere_radius_compensation_factor = 1.0
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "circumscribed":
         # from .. import geometry3d as g3
         factor = circumscribed_polygon_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = factor
         sphere_radius_compensation_factor = factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "compensation factors":
         pass
@@ -330,12 +335,16 @@ def polygon_radius_compensation_factos(
         radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "cylinder volume":
         # from .. import geometry3d as g3
         radius_compensation_factor =  regular_polygon_area_equivalent_radius(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "average":
         # from .. import geometry3d as g3
@@ -343,6 +352,8 @@ def polygon_radius_compensation_factos(
         factor = (factor + 1.0) / 2.0
         cylinder_radius_compensation_factor = factor
         sphere_radius_compensation_factor = factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
 
     elif polygon_radius_selection_method == "cylinder volume + sphere compensation":
@@ -364,6 +375,8 @@ def polygon_radius_compensation_factos(
         # cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = 1. / spl1(cylinder_resolution)
         cylinder_radius_compensation_factor =  regular_polygon_area_equivalent_radius(cylinder_resolution)
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
         # cylinder_radius_compensation_factor = 1.0
         # sphere_radius_compensation_factor = 1.0
 
@@ -381,6 +394,8 @@ def polygon_radius_compensation_factos(
         radius_compensation_factor *= 1. / spl1(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "cylinder surface + sphere compensation":
         # analytically compensated cylinder + sphere compensate by measurement
@@ -393,10 +408,35 @@ def polygon_radius_compensation_factos(
         radius_compensation_factor *= 1. / spl1(cylinder_resolution)
         cylinder_radius_compensation_factor = radius_compensation_factor
         sphere_radius_compensation_factor = radius_compensation_factor
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
+
+    elif polygon_radius_selection_method == "cylinder surface + sphere compensation + joint":
+        # sphere like objects
+        # analytically compensated cylinder + sphere compensate by measurement
+        radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
+        x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 100, 200]
+        y = [0.97522857799, 0.982858482408, 0.987423696432, 0.99239757445,
+             0.994910515802, 0.997261880581, 0.998292863128, 0.998929760493,
+             0.999266886531, 0.999594545757, 0.999743129653, 1.0, 1.0]
+        spl1 = InterpolatedUnivariateSpline(x, y)
+        radius_compensation_factor *= 1. / spl1(cylinder_resolution)
+        cylinder_radius_compensation_factor = radius_compensation_factor
+        sphere_radius_compensation_factor = radius_compensation_factor
+
+        # long objects
+        # analytically compensated cylinder + sphere compensate by measurement
+        radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
+        x = [6, 8, 10, 12, 16, 18, 20, 22, 26, 29, 33, 37, 42, 100, 200]
+        y = [0.868491038036, 0.930734501628, 0.957118271516, 0.969229258189, 0.983939714778, 0.986159525166, 0.990680841143, 0.991986941042, 0.994813132295, 0.995235630724, 0.99633325877, 0.997090867513, 0.997631260904, 1.0, 1.0]
+        spl1 = InterpolatedUnivariateSpline(x, y)
+        radius_compensation_factor *= 1. / spl1(cylinder_resolution)
+        cylinder_radius_compensation_factor_long = radius_compensation_factor
+        sphere_radius_compensation_factor_long = radius_compensation_factor
     else:
         logger.error("Unknown compensation method")
 
-    return cylinder_radius_compensation_factor, sphere_radius_compensation_factor
+    return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
 
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
@@ -431,7 +471,8 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         sphere_resolution
     )
 
-    cylinder_radius_compensation_factor, sphere_radius_compensation_factor = factors
+    cylinder_radius_compensation_factor, sphere_radius_compensation_factor,\
+    cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long = factors
     print "factors ", factors
 
 
@@ -454,8 +495,8 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         else:
             tube = get_tube(radius, uv, direction, length,
                             sphere_resolution, cylinder_resolution,
-                            cylinder_radius_compensation_factor=cylinder_radius_compensation_factor,
-                            sphere_radius_compensation_factor=sphere_radius_compensation_factor,
+                            cylinder_radius_compensation_factor=cylinder_radius_compensation_factor_long,
+                            sphere_radius_compensation_factor=sphere_radius_compensation_factor_long,
                             tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())

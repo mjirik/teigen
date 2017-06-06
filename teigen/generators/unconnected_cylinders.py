@@ -497,7 +497,7 @@ python src/tb_volume.py -i ./tests/hist_stats_test.yaml'
     #     gen_vtk_tree.vt2vtk_file(args.inputfile, args.outputfile)
     #     return
     cylgen = CylinderGenerator()
-    cylgen.run()
+    cylgen.step1()
 
     # tg = TreeBuilder(generator_class, generator_params)
     # tg.importFromYaml(args.inputfile)

@@ -64,7 +64,7 @@ class MyTestCase(unittest.TestCase):
             }
         }
         tg.update_config(**conf)
-        tg.run()
+        tg.step1()
 
     @attr('interactive')
     def test_teigen_big(self):
@@ -87,7 +87,7 @@ class MyTestCase(unittest.TestCase):
             }
         }
         tg.update_config(**conf)
-        tg.run()
+        tg.step1()
         tg.step2()
 
         # def test_teigen_small(self):
