@@ -447,7 +447,7 @@ class Teigen():
         self.stats_times["step2_numeric_measurement_time_s"] = [(t1 - t0).total_seconds()]
         self.stats_times["step2_generate_volume_time_s"] = [(t2 - t1).total_seconds()]
         self.stats_times["step2_save_volume_time_s"] = [(t3 - t2).total_seconds()]
-        self.stats_times["step2_total_time_s"] = [(t3).total_seconds()]
+        self.stats_times["step2_total_time_s"] = [(t3 - t0).total_seconds()]
 
         # self.memoryhandler.flush()
 
@@ -676,6 +676,12 @@ class Teigen():
         config_fl = dili.flatten_dict(config, join=lambda a, b: a + ' ' + b)
         config_fl = dict(config_fl)
         return config_fl
+
+    def config_to_row_dataframe(self):
+        config_fl = self.config_to_row()
+        config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
+        return config_df
+
 
 
     def save_stats_to_row(self, filename, note=""):
