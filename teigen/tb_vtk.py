@@ -179,7 +179,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinder_radius = radius * cylinder_radius_compensation_factor
     sphere_radius = radius * sphere_radius_compensation_factor
 
-    print "radius ",  cylinder_radius_compensation_factor, sphere_radius_compensation_factor
+    # print "radius ",  cylinder_radius_compensation_factor, sphere_radius_compensation_factor
 
     direction /= nm.linalg.norm(direction)
     lv = point + direction * length
@@ -328,6 +328,8 @@ def polygon_radius_compensation_factos(
         sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
     elif polygon_radius_selection_method == "compensation factors":
+        cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
+        sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
         pass
 
     elif polygon_radius_selection_method == "cylinder surface":
@@ -356,7 +358,7 @@ def polygon_radius_compensation_factos(
         sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
 
-    elif polygon_radius_selection_method == "cylinder volume + sphere compensation":
+    elif polygon_radius_selection_method == "cylinder volume + sphere error":
         # analytically compensated cylinder + sphere compensate by measurement
 
         # x = [6, 7, 8, 10, 12, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 46, 50, 100, 200]
@@ -380,7 +382,7 @@ def polygon_radius_compensation_factos(
         # cylinder_radius_compensation_factor = 1.0
         # sphere_radius_compensation_factor = 1.0
 
-    elif polygon_radius_selection_method == "cylinder surface + sphere compensation polygn perimeter equivalent":
+    elif polygon_radius_selection_method == "cylinder surface + sphere error polygon perimeter equivalent":
         # analytically compensated cylinder + sphere compensate by measurement
         radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
         x = [6, 8, 10, 12, 14, 17, 21, 23, 29, 31, 39, 46, 50, 60, 70, 80, 90, 100, 150, 200]
@@ -397,7 +399,7 @@ def polygon_radius_compensation_factos(
         cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
         sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
-    elif polygon_radius_selection_method == "cylinder surface + sphere compensation":
+    elif polygon_radius_selection_method == "cylinder surface + sphere error":
         # analytically compensated cylinder + sphere compensate by measurement
         radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
         x = [6, 7, 8, 10, 12, 16, 20, 25, 30, 40, 50, 100, 200]
@@ -411,7 +413,7 @@ def polygon_radius_compensation_factos(
         cylinder_radius_compensation_factor_long = cylinder_radius_compensation_factor
         sphere_radius_compensation_factor_long = sphere_radius_compensation_factor
 
-    elif polygon_radius_selection_method == "cylinder surface + sphere compensation + joint":
+    elif polygon_radius_selection_method == "cylinder surface + sphere error + join error":
         # sphere like objects
         # analytically compensated cylinder + sphere compensate by measurement
         radius_compensation_factor =  regular_polygon_perimeter_equivalent_radius(cylinder_resolution)
@@ -434,7 +436,7 @@ def polygon_radius_compensation_factos(
         cylinder_radius_compensation_factor_long = radius_compensation_factor
         sphere_radius_compensation_factor_long = radius_compensation_factor
     else:
-        logger.error("Unknown compensation method")
+        logger.error("Unknown compensation method '{}'".format(polygon_radius_selection_method))
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
