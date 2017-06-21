@@ -273,8 +273,8 @@ class Teigen():
             tube_shape = self.config["measurement"]["tube_shape"]
 
             if method == "best":
-                method_vol = "cylinder volume + sphere compensation"
-                method_surf = "cylinder surface + sphere compensation"
+                method_vol = "cylinder volume + sphere error"
+                method_surf = "cylinder surface + sphere error + join error"
             else:
                 method_vol = method
                 method_surf = None
