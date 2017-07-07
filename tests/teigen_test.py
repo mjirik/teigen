@@ -30,6 +30,49 @@ class MyTestCase(unittest.TestCase):
         cw.show()
         app.exec_()
 
+    @attr('interactive')
+    def test_teigen_gui_interactive_with_parameters(self):
+        """
+        reproduces undetected colision bug
+        :return:
+        """
+        import os.path as op
+        params = None
+        # params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
+        params = {
+            "generator_id": 3,
+            "areasampling": {
+                "voxelsize_mm": [1., 1., 1.],
+                "areasize_px": [20, 20, 20],
+                "areasize_mm": [20, 20, 20],
+            },
+            "postprocessing": {
+                "measurement_resolution": 15,
+                "measurement_multiplier": -1,
+                "add_noise": False
+            },
+            "generators": {
+                "Unconnected tubes": {
+                    "element_number": 3,
+                    "random_generator_seed": 110,
+                    "radius_distribution_mean": 15,
+                    "radius_distribution_maximum": 20,
+                    "orientation_anisotropic": False,
+                }
+            }
+        }
+        # tg.update_config(**conf)
+
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        # from teigen.dictwidgetqt import DictWidget
+        import teigen
+        import teigen.geometry3d
+        import teigen.gui
+        app = QApplication(sys.argv)
+        cw = teigen.gui.TeigenWidget(use_default_config=True, config=params)
+        cw.show()
+        app.exec_()
     # def test_teigen_gui(self):
     #     import PyQt4
     #     from PyQt4.QtGui import QApplication, QFileDialog
@@ -48,6 +91,7 @@ class MyTestCase(unittest.TestCase):
         import teigen.gui
         tg = teigen.gui.Teigen()
         conf = {
+            "generator_id": 3,
             "areasampling": {
                 "voxelsize_mm": [1., 1., 1.],
                 "areasize_px": [110, 120, 130],

@@ -204,6 +204,50 @@ class VtkBooleanTestCase(unittest.TestCase):
         self.assertLess(err_surf, max_error)
         self.assertLess(err_vol, max_error)
 
+    def test_vtk_check_orientation(self):
+        import teigen.geometry3d as g3
+        pt1 = np.asarray([4.22, 8.56, 9.39])
+        pt2 = np.asarray([3.24, 9.46, 2.83])
+        height = np.linalg.norm(pt1 - pt2)
+
+        direction=(pt1 - pt2) / height
+
+        radius = 2.53
+        input1 = teigen.tb_vtk.get_cylinder(pt1,
+                                            height=height,
+                                            radius=radius,
+                                            direction=direction,
+                                            resolution=25
+                                            )
+        bounds1 = input1.GetBounds()
+        object1Tri = vtk.vtkTriangleFilter()
+        object1Tri.SetInputData(input1)
+        object1Tri.Update()
+        mass = vtk.vtkMassProperties()
+        mass.SetInputData(object1Tri.GetOutput())
+        bounds0 = object1Tri.GetOutput().GetBounds()
+
+        surf = mass.GetSurfaceArea()
+        vol = mass.GetVolume()
+
+        surf_analytic = g3.cylinder_surface(radius, height)
+        vol_analytic = g3.cylinder_volume(radius, height)
+        err_surf = np.abs(surf_analytic - surf) / surf_analytic
+        err_vol = np.abs(vol_analytic - vol) / vol_analytic
+        # print surf, surf_analytic, err_surf
+        # print vol, vol_analytic, err_vol
+
+        input2 = teigen.tb_vtk.get_tube(point=pt1,
+                                        length=height,
+                                        radius=radius,
+                                        direction=direction,
+                                        sphere_resolution=25,
+                                        cylinder_resolution=25
+                                        )
+        bounds2 = input2.GetBounds()
+        max_error = 0.05
+        self.assertLess(err_surf, max_error)
+        self.assertLess(err_vol, max_error)
 
 if __name__ == '__main__':
     unittest.main()
