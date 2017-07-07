@@ -197,6 +197,13 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinderTri.SetInputData(cylinder.GetOutput())
     cylinderTri.Update()
 
+    # make ladder even
+    if sphere_resolution % 2 == 0:
+        phi_resolution = sphere_resolution + 1
+    else:
+        phi_resolution = sphere_resolution
+
+
     sphere1 = get_sphere(
         center=point1,
         radius=sphere_radius,
@@ -204,7 +211,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         start_phi=0,
         #end_phi=90,
         end_phi=180,
-        axis=1
+        axis=1,
+        phi_resolution=phi_resolution
     )
     # sphere1.Update()
 
@@ -218,7 +226,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         resolution=sphere_resolution,
         start_phi=0,
         end_phi=180,
-        axis=1
+        axis=1,
+        phi_resolution=phi_resolution
 
     )
     sphere2Tri.SetInputData(sphere2)
@@ -239,7 +248,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     boolean_operation2.Update()
     # tube_in_base_position = boolean_operation2.GetOutput()
 
-    tube = move_to_position(boolean_operation2, point, direction, 1, 2)
+    #tube = move_to_position(boolean_operation2, point, direction, 1, 2)
+    tube = move_to_position(boolean_operation2, point, direction, 2, 1, 0)
     return tube.GetOutput()
 
 
@@ -256,17 +266,21 @@ def get_cylinder(upper, height, radius,
     return move_to_position(src, upper, direction).GetOutput()
 
 
-def get_sphere(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
-    sph = get_sphere_source(center, radius, resolution, start_phi, end_phi, axis)
+def get_sphere(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0, **kwargs):
+    sph = get_sphere_source(center, radius, resolution, start_phi, end_phi, axis, **kwargs)
     #sph.Update()
     return sph
 
-def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0):
+def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0, theta_resolution=None, phi_resolution=None):
     # create source
+    if theta_resolution is None:
+        theta_resolution=resolution
+    if phi_resolution is None:
+        phi_resolution=resolution
     import vtk
     sphere = vtk.vtkSphereSource()
-    sphere.SetPhiResolution(resolution)
-    sphere.SetThetaResolution(resolution)
+    sphere.SetPhiResolution(phi_resolution)
+    sphere.SetThetaResolution(theta_resolution)
     # sphere.SetCenter(center[0], center[1], center[2])
     sphere.SetCenter(.0, .0, .0)
     sphere.SetRadius(radius)

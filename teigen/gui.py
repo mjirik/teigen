@@ -44,7 +44,7 @@ from .teigendoc import teigendoc
 
 
 class TeigenWidget(QtGui.QWidget):
-    def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log", config=None):
+    def __init__(self, ncols=2, qapp=None, logfile="~/teigen.log", config=None, use_default_config=False):
         super(TeigenWidget, self).__init__()
         self.logfile = logfile
         self.ncols = ncols
@@ -52,6 +52,8 @@ class TeigenWidget(QtGui.QWidget):
         self.figures = {}
         self.ui_stats_shown = False
         self.teigen = Teigen(logfile=self.logfile)
+        if use_default_config:
+            self.teigen.use_default_config()
         if config is not None:
             self.teigen.update_config(**config)
         self.version = self.teigen.version
