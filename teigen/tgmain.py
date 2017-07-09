@@ -427,11 +427,15 @@ class Teigen():
         self._aposteriori_numeric_measurement(fn_base)
         self.save_stats(fn_base)
         t1 = datetime.datetime.now()
+        self.save_1d_model_to_file(fn_base + "_vt.yaml")
 
         self.save_surface_to_file(fn_base + "_surface.vtk")
         logger.debug("before volume generate " + str(t1 - t0))
+
+        self.save_surface_to_file(fn_base + "_surface.vtk")
         # postprocessing
         skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
+
         if (not skip_vg) and ("generate_volume" in dir(self.gen)):
             # self.data3d = self.gen.generate_volume()
             self.data3d = self.gen.generate_volume(dtype="uint8")
@@ -440,6 +444,7 @@ class Teigen():
             data3d = self.postprocessing(**postprocessing_params)
             self.gen.data3d = data3d
         # self.gen.saveVolumeToFile(self.config["filepattern"])
+
         t2 = datetime.datetime.now()
         logger.debug("before volume save " + str(t2 - t0))
         self.gen.saveVolumeToFile(self.filepattern_fill_series())
@@ -455,6 +460,10 @@ class Teigen():
         self.stats_times["step2_finish_datetime"] = str(t3)
 
         # self.memoryhandler.flush()
+
+    def save_1d_model_to_file(self, outputfile):
+        io3d.misc.obj_to_file(self.gen.tree_data, outputfile)
+
 
     def save_surface_to_file(self, outputfile, lc_all="C"):
 
@@ -496,6 +505,7 @@ class Teigen():
             negative=False,
 
     ):
+        dt = self.data3d.dtype
         if gaussian_blur:
             sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm
 
@@ -504,7 +514,6 @@ class Teigen():
                 sigma=sigma_px)
 
         if add_noise:
-            dt = self.data3d.dtype
             noise = self.generate_noise()
             # noise = noise.astype(self.data3d.dtype)
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
