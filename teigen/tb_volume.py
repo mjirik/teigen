@@ -38,7 +38,7 @@ class TBVolume:
     """
 
     def __init__(self, gtree, dtype=np.int):
-        self.shape = gtree.shape
+        self.shape = np.asarray(gtree.shape, dtype=np.int)
         self.data3d = np.zeros(gtree.shape, dtype=dtype)
         self.voxelsize_mm = gtree.voxelsize_mm
         if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
