@@ -104,7 +104,7 @@ class Teigen():
         self.dataframes = {}
         self.stats_times = {
 
-            "datetime": [datetime.datetime.now()]
+            "datetime": str(datetime.datetime.now())
         }
         self.parameters_changed_before_save = True
         self.fig_3d_render_snapshot = None
@@ -185,7 +185,11 @@ class Teigen():
 
         t0 = datetime.datetime.now()
         logger.info("step1_init_datetime" + str(t0))
-        self.stats_times["step1_init_datetime"] = [str(t0)]
+        st0 = str(t0)
+        # print "st0 " + st0
+        # import ipdb
+        # ipdb.set_trace()
+        self.stats_times["step1_init_datetime"] = st0
         config = copy.deepcopy(self.config)
         # filepattern = config["filepattern"]
         # if "filepattern_series_number" in config.keys():
@@ -235,9 +239,9 @@ class Teigen():
         # import ipdb; ipdb.set_trace()
 
         t2 = datetime.datetime.now()
-        self.stats_times["step1_generate_time_s"] = [(t1 - t0).total_seconds()]
-        self.stats_times["step1_generate_vtk_time_s"] = [(t2 - t1).total_seconds()]
-        self.stats_times["step1_total_time_s"] = [(t2 - t0).total_seconds()]
+        self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
+        self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
+        self.stats_times["step1_total_time_s"] = (t2 - t0).total_seconds()
         self.time_run = t2 - t0
         # self.prepare_stats()
         one_row_filename = self.config["output"]["one_row_filename"]
@@ -443,12 +447,12 @@ class Teigen():
         logger.info("time before volume generate: " + str(t1 - t0))
         logger.info("time before volume save: " + str(t2 - t0))
         logger.info("time after volume save: " + str(t3 - t0))
-        self.stats_times["step2_init_datetime"] = [str(t0)]
-        self.stats_times["step2_numeric_measurement_time_s"] = [(t1 - t0).total_seconds()]
-        self.stats_times["step2_generate_volume_time_s"] = [(t2 - t1).total_seconds()]
-        self.stats_times["step2_save_volume_time_s"] = [(t3 - t2).total_seconds()]
-        self.stats_times["step2_total_time_s"] = [(t3 - t0).total_seconds()]
-        self.stats_times["step2_finish_datetime"] = [str(t3)]
+        self.stats_times["step2_init_datetime"] = str(t0)
+        self.stats_times["step2_numeric_measurement_time_s"] = (t1 - t0).total_seconds()
+        self.stats_times["step2_generate_volume_time_s"] = (t2 - t1).total_seconds()
+        self.stats_times["step2_save_volume_time_s"] = (t3 - t2).total_seconds()
+        self.stats_times["step2_total_time_s"] = (t3 - t0).total_seconds()
+        self.stats_times["step2_finish_datetime"] = str(t3)
 
         # self.memoryhandler.flush()
 
@@ -502,15 +506,18 @@ class Teigen():
         if add_noise:
             dt = self.data3d.dtype
             noise = self.generate_noise()
-            noise = noise.astype(self.data3d.dtype)
+            # noise = noise.astype(self.data3d.dtype)
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
-            self.data3d = (self.data3d + noise).astype(self.data3d.dtype)
+            self.data3d = self.data3d + noise
 
         if negative:
             self.data3d = 255 - self.data3d
 
         if limit_negative_intensities:
-            self.data3d[self.data3d < 0] = 0
+            #self.data3d[self.data3d < 0] = 0
+            limit_ndarray(self.data3d, minimum=0, maximum=255)
+
+        self.data3d = self.data3d.astype(dt)
         # self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
         # negative = self.config["postprocessing"]["negative"] = measurement_multiplier
 
@@ -641,7 +648,10 @@ class Teigen():
         self.dataframes["overall"] = dfoverallf
 
         st = self.stats_times
+        # print "st ", st
         note_df = pd.DataFrame([st], columns=st.keys())
+        # print note_df
+        # print note_df.to_dict()
 
         self.dataframes["processing_info"] = note_df
 
@@ -712,6 +722,9 @@ class Teigen():
         config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
         # import ipdb; ipdb.set_trace()
         dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
+        print ""
+        print "dfi ", dfi.to_dict()
+        print "dfout " , dfout.to_dict()
 
         if op.exists(filename):
             dfin = pd.read_csv(filename)
@@ -856,6 +869,10 @@ def new_main(
         cw.show()
         app.exec_()
 
+def limit_ndarray(data, minimum, maximum):
+    data[data < minimum] = minimum
+    data[data > maximum] = maximum
+    return data
 
 def main():
     logger = logging.getLogger()
