@@ -185,7 +185,7 @@ class Teigen():
 
         t0 = datetime.datetime.now()
         logger.info("step1_init_datetime" + str(t0))
-        self.stats_times["step1_init_datetime"] = [t0]
+        self.stats_times["step1_init_datetime"] = [str(t0)]
         config = copy.deepcopy(self.config)
         # filepattern = config["filepattern"]
         # if "filepattern_series_number" in config.keys():
@@ -443,11 +443,12 @@ class Teigen():
         logger.info("time before volume generate: " + str(t1 - t0))
         logger.info("time before volume save: " + str(t2 - t0))
         logger.info("time after volume save: " + str(t3 - t0))
-        self.stats_times["step2_init_datetime"] = [t3]
+        self.stats_times["step2_init_datetime"] = [str(t0)]
         self.stats_times["step2_numeric_measurement_time_s"] = [(t1 - t0).total_seconds()]
         self.stats_times["step2_generate_volume_time_s"] = [(t2 - t1).total_seconds()]
         self.stats_times["step2_save_volume_time_s"] = [(t3 - t2).total_seconds()]
         self.stats_times["step2_total_time_s"] = [(t3 - t0).total_seconds()]
+        self.stats_times["step2_finish_datetime"] = [str(t3)]
 
         # self.memoryhandler.flush()
 
