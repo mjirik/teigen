@@ -731,9 +731,6 @@ class Teigen():
         config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
         # import ipdb; ipdb.set_trace()
         dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
-        print ""
-        print "dfi ", dfi.to_dict()
-        print "dfout " , dfout.to_dict()
 
         if op.exists(filename):
             dfin = pd.read_csv(filename)
