@@ -548,7 +548,7 @@ class Teigen():
         ).astype(np.float16)
         mx = np.max(noise)
         noise = pparams["noise_amplitude"] * noise / mx
-        noise += pparams["noise_mean"]
+        noise = noise + pparams["noise_mean"]
         return noise
 
     def _config2generator_gensei_export(self, config):

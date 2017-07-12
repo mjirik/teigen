@@ -62,7 +62,7 @@ requirements:
     - gensei
     - pyqtgraph
     - git # kvuli instalaci gensei
-    - ndnoise >=0.0.9
+    - ndnoise >=0.0.10
     # - begins
     # - xlsxwriter
 
