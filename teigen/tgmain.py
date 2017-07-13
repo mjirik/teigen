@@ -36,6 +36,8 @@ import generators.unconnected_cylinders
 from imtools import dili
 import io3d.datawriter
 import io3d.misc
+import ndnoise
+import ndnoise.generator
 import dictwidgetqt
 from . import geometry3d as g3
 
@@ -492,9 +494,9 @@ class Teigen():
             limit_negative_intensities=True,
             noise_rng_seed=0,
             noise_exponent=0.0001,
-            noise_lambda_start=0.1,
-            noise_lambda_stop=3.0,
-            noise_amplitude=40.0,
+            noise_lambda0=0.1,
+            noise_lambda1=3.0,
+            noise_std=40.0,
             noise_mean=30.0,
             #            surface_measurement=False,
             #            measurement_multiplier=-1,
@@ -533,8 +535,6 @@ class Teigen():
         return self.data3d
 
     def generate_noise(self):
-        import ndnoise
-        import ndnoise.generator
         pparams = self.config["postprocessing"]
         # data3d = self.postprocessing(**postprocessing_params)
         noise = ndnoise.noises(
@@ -542,12 +542,20 @@ class Teigen():
             sample_spacing=self.gen.voxelsize_mm,
             exponent=pparams["noise_exponent"],
             random_generator_seed=pparams["noise_rng_seed"],
-            lambda_start=pparams["noise_lambda_start"],
-            lambda_stop=pparams["noise_lambda_stop"],
+            lambda_start=pparams["noise_lambda0"],
+            lambda_stop=pparams["noise_lambda1"],
 
         ).astype(np.float16)
         mx = np.max(noise)
-        noise = pparams["noise_amplitude"] * noise / mx
+        mxalt = np.mean(noise) + 1 * np.std(noise)
+        print "generate_noise()"
+        print type(mx)
+        print type(noise)
+        print type(pparams["noise_std"])
+        print type(pparams["noise_mean"])
+        print pparams["noise_mean"]
+        noise
+        noise = pparams["noise_std"] * noise / np.std(noise)
         noise = noise + pparams["noise_mean"]
         return noise
 

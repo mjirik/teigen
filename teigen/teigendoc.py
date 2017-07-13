@@ -83,7 +83,7 @@ noise_random_generator_seed<br></br>\
 exponent<br></br>\
 lambda_start<br></br>\
 lambda_stop<br></br>\
-noise_amplitude<br></br>\
+noise_std<br></br>\
 noise_mean<br></br>\
 surface_measurement<br></br>\
 measurement_multiplier<br></br>\
