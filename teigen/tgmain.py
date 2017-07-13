@@ -141,9 +141,9 @@ class Teigen():
         config["postprocessing"]["intensity_profile_intensity"] = [195, 190, 200, 30]
         # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
         config["areasampling"] = {
-            "voxelsize_mm": [1.0, 1.0, 1.0],
-            "areasize_mm": [110.0, 100.0, 100.0],
-            "areasize_px": [110, 100, 100]
+            "voxelsize_mm": [0.2, 0.2, 0.2],
+            "areasize_mm": [10.0, 10.0, 10.0],
+            "areasize_px": [50, 50, 50]
         }
         config["filepattern"] = "~/teigen_data/{seriesn:03d}/data{:06d}.jpg"
         # config['filepattern_series_number'] = series_number
@@ -493,9 +493,9 @@ class Teigen():
             # gaussian_noise_center=0.0,
             limit_negative_intensities=True,
             noise_rng_seed=0,
-            noise_exponent=0.0001,
-            noise_lambda0=0.1,
-            noise_lambda1=3.0,
+            noise_exponent=0.0,
+            noise_lambda0=0.02,
+            noise_lambda1=1.0,
             noise_std=40.0,
             noise_mean=30.0,
             #            surface_measurement=False,
@@ -537,15 +537,18 @@ class Teigen():
     def generate_noise(self):
         pparams = self.config["postprocessing"]
         # data3d = self.postprocessing(**postprocessing_params)
-        noise = ndnoise.noises(
+        noise_params = dict(
             shape=self.gen.areasize_px,
             sample_spacing=self.gen.voxelsize_mm,
             exponent=pparams["noise_exponent"],
             random_generator_seed=pparams["noise_rng_seed"],
-            lambda_start=pparams["noise_lambda0"],
-            lambda_stop=pparams["noise_lambda1"],
-
+            lambda0=pparams["noise_lambda0"],
+            lambda1=pparams["noise_lambda1"],
+        )
+        noise = ndnoise.noises(
+            **noise_params
         ).astype(np.float16)
+        print noise_params
         mx = np.max(noise)
         mxalt = np.mean(noise) + 1 * np.std(noise)
         # print "generate_noise()"
