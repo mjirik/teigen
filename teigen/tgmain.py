@@ -548,13 +548,13 @@ class Teigen():
         ).astype(np.float16)
         mx = np.max(noise)
         mxalt = np.mean(noise) + 1 * np.std(noise)
-        print "generate_noise()"
-        print type(mx)
-        print type(noise)
-        print type(pparams["noise_std"])
-        print type(pparams["noise_mean"])
-        print pparams["noise_mean"]
-        noise
+        # print "generate_noise()"
+        # print type(mx)
+        # print type(noise)
+        # print type(pparams["noise_std"])
+        # print type(pparams["noise_mean"])
+        # print pparams["noise_mean"]
+        # noise
         noise = pparams["noise_std"] * noise / np.std(noise)
         noise = noise + pparams["noise_mean"]
         return noise
