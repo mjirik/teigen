@@ -1,10 +1,10 @@
 package:
   name: teigen
-  version: "0.2.28"
+  version: "0.2.29"
 
 source:
 # this is used for build from git hub
-  git_rev: 0.2.28
+  git_rev: 0.2.29
   git_url: https://github.com/mjirik/teigen.git
 
 # this is used for pypi
