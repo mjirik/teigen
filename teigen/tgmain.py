@@ -536,10 +536,11 @@ class Teigen():
 
     def generate_noise(self):
         pparams = self.config["postprocessing"]
+        parea = self.config["areasampling"]
         # data3d = self.postprocessing(**postprocessing_params)
         noise_params = dict(
-            shape=self.gen.areasize_px,
-            sample_spacing=self.gen.voxelsize_mm,
+            shape=parea["areasize_px"],
+            sample_spacing=parea["voxelsize_mm"],
             exponent=pparams["noise_exponent"],
             random_generator_seed=pparams["noise_rng_seed"],
             lambda0=pparams["noise_lambda0"],
@@ -547,19 +548,22 @@ class Teigen():
         )
         noise = ndnoise.noises(
             **noise_params
-        ).astype(np.float16)
+        ) #.astype(np.float16)
         print noise_params
-        mx = np.max(noise)
-        mxalt = np.mean(noise) + 1 * np.std(noise)
-        # print "generate_noise()"
-        # print type(mx)
-        # print type(noise)
-        # print type(pparams["noise_std"])
-        # print type(pparams["noise_mean"])
-        # print pparams["noise_mean"]
-        # noise
+        print type(pparams["noise_std"])
+        print type(pparams["noise_mean"])
+        print type(noise)
+        print pparams["noise_mean"]
+
+        #.std(noise) noise
+        print "noise_std ", type(pparams["noise_std"]), pparams["noise_std"]
+
+        print "min max ", np.min(noise), np.max(noise)
+        print "mean std ", np.mean(noise), np.std(noise)
         noise = pparams["noise_std"] * noise / np.std(noise)
         noise = noise + pparams["noise_mean"]
+        print "min max ", np.min(noise), np.max(noise)
+        print "mean std ", np.mean(noise), np.std(noise)
         return noise
 
     def _config2generator_gensei_export(self, config):
