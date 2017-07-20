@@ -105,7 +105,7 @@ def move_to_position(src, upper, direction, axis0=2, axis1=1, axis2=0):
     r1[axis0] = 1.0
     r2[axis1] = 1.0
 
-    print r1, r2
+    #print r1, r2
 
     rot1 = vtk.vtkTransform()
     fi = nm.arccos(direction[axis1])
@@ -480,7 +480,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
 
     cylinder_radius_compensation_factor, sphere_radius_compensation_factor,\
     cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long = factors
-    print "factors ", factors
+    #print "factors ", factors
 
 
     # import ipdb; ipdb.set_trace()
