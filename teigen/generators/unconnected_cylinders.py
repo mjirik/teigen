@@ -309,12 +309,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             if planned_volume_is_too_much and self.last_element_can_be_smaller:
                 # just in case of last element and if is this feature enabled
                 radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
-                # print " final radius and length ", radius, length
                 # pokud je navrhovaný objem přílišný
                 pt1 = np.asarray(g3.translate(center, direction_vector, 0.5 * length))
                 pt2 = np.asarray(g3.translate(center, direction_vector, -0.5 * length))
                 collision = self._add_cylinder_if_no_collision(pt1, pt2, radius)
-                # print "rad len, p1, p2 ", radius, length, pt1, pt2
 
             else:
                 # normal run
@@ -355,12 +353,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
     def get_stats(self):
         # self.assertTrue(False)
-        # print "Surface: ", self.surface
         import pandas as pd
         df = pd.DataFrame(self.geometry_data)
         desc = df.describe()
 
-        # print desc
         return df
 
     def _make_cylinder_shorter(self, nodeA, nodeB, radius):  # , radius, cylinder_id):
