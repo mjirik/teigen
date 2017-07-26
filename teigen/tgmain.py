@@ -172,6 +172,10 @@ class Teigen():
     def update_config(self, **config):
         import io3d.misc
 
+        # make compatible to read yaml with config in "config" key
+        if "config" in config.keys():
+            config = config["config"]
+
         if "required_teigen_version" in config.keys():
             reqired_version = config["required_teigen_version"]
             if reqired_version != self.version:
@@ -395,28 +399,27 @@ class Teigen():
         self.config['filepattern_series_number'] = series_number
 
     def save_parameters(self, filename=None):
-        # if self.parameters_changed_before_save:
-        #     self.run()
-        # prepare path to save
 
-
-        fn_base = None
         if filename is None:
-            self.refresh_unoccupied_series_number()
-            # config_filepattern = self.get_config_file_pattern()
-            # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=config_filepattern)
-            # # series_number = io3d.datawriter.get_unoccupied_series_number(filepattern=self.config["filepattern"])
-            # self.config['filepattern_series_number'] = series_number
-
             fn_base = self.get_fn_base()
-
             dirname = op.dirname(fn_base)
             if not op.exists(dirname):
                 os.makedirs(dirname)
-            filename = fn_base + "_parameters.yaml"
+            filename = fn_base + "_config.yaml"
 
         io3d.misc.obj_to_file(self.config, filename=filename)
         return filename
+
+    def save_config_and_measurement(self, filename=None):
+        if filename is None:
+            fn_base = self.get_fn_base()
+            dirname = op.dirname(fn_base)
+            if not op.exists(dirname):
+                os.makedirs(dirname)
+            filename = fn_base + "_config_and_measurement.yaml"
+        config_and_measurement = self.get_config_and_measurement()
+
+        io3d.misc.obj_to_file(config_and_measurement, filename=filename)
 
     def save_log(self):
         fn_base = self.get_fn_base()
@@ -431,6 +434,7 @@ class Teigen():
         if self.parameters_changed_before_save:
             self.step1()
         # TODO split save_volume and save_parameters
+        self.refresh_unoccupied_series_number()
         self.save_parameters()
         self.save_log()
         import io3d.misc
@@ -473,11 +477,23 @@ class Teigen():
         self.stats_times["step2_total_time_s"] = (t3 - t0).total_seconds()
         self.stats_times["step2_finish_datetime"] = str(t3)
         self.stats_times["step2_finished"] = True
+        self.save_config_and_measurement()
 
+        one_row_filename = self.config["output"]["one_row_filename"]
+        if one_row_filename != "":
+            # self.prepare_stats()
+            self.save_stats_to_row(one_row_filename)
+        else:
+            self.prepare_stats()
         # self.memoryhandler.flush()
 
     def save_1d_model_to_file(self, outputfile):
-        io3d.misc.obj_to_file(self.gen.tree_data, outputfile)
+        tree = {
+            "voxelsize_mm": np.asarray(self.config["areasampling"]["voxelsize_mm"]).tolist(),
+            "voxelsize_px": np.asarray(self.config["areasampling"]["areasize_px"]).tolist(),
+            "Graph": {"0": self.gen.tree_data}
+        }
+        io3d.misc.obj_to_file(tree, outputfile)
 
 
     def save_surface_to_file(self, outputfile, lc_all="C"):
@@ -692,6 +708,17 @@ class Teigen():
 
         self.dataframes["processing_info"] = note_df
 
+    def load_config(self, filename):
+        """ Load config from file.
+
+        :param filename:
+        :return:
+        """
+
+        params = io3d.misc.obj_from_file(filename=filename)
+        self.use_default_config()
+        self.update_config(**params)
+
     def save_stats(self, fn_base):
         import pandas as pd
 
@@ -733,9 +760,9 @@ class Teigen():
     def get_config_and_measurement(self):
         self.prepare_stats()
         import pandas as pd
-        dfo = self.dataframes["overall"].to_dict(orient="records")
-        dfd = self.dataframes["density"].to_dict(orient="records")
-        dfi = self.dataframes["processing_info"].to_dict(orient="records")
+        dfo = self.dataframes["overall"].to_dict(orient="records")[0]
+        dfd = self.dataframes["density"].to_dict(orient="records")[0]
+        dfi = self.dataframes["processing_info"].to_dict(orient="records")[0]
 
         dfo.update(dfd)
         data_structured = {
