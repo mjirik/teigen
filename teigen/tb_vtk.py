@@ -166,7 +166,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
              sphere_resolution=10, cylinder_resolution=10,
              cylinder_radius_compensation_factor=1.0,
              sphere_radius_compensation_factor=1.0,
-             tube_shape=True, axis=1
+             tube_shape=True, axis=1,
+             make_ladder_even=True
              ):
     point1 = [0.0, 0.0, 0.0]
     center = [0.0, 0.0, 0.0]
@@ -195,10 +196,11 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinderTri.Update()
 
     # make ladder even
-    if sphere_resolution % 2 == 0:
-        phi_resolution = sphere_resolution + 1
-    else:
-        phi_resolution = sphere_resolution
+    if make_ladder_even:
+        if sphere_resolution % 2 == 0:
+            phi_resolution = sphere_resolution + 1
+        else:
+            phi_resolution = sphere_resolution
 
 
     sphere1 = get_sphere(
@@ -450,17 +452,17 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
              tube_shape=True
              ):
     """
-    
+
     :param polygon_radius_selection_method:
         "inscribed":
         "compensation factors"
         "cylinder volume"
         "cylinder surface"
     :param tree_data:
-    :param cylinder_resolution: 
-    :param sphere_resolution: 
+    :param cylinder_resolution:
+    :param sphere_resolution:
     :param cylinder_radius_compensation_factor: is used to change radius of cylinder and spheres
-    :return: 
+    :return:
     """
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
