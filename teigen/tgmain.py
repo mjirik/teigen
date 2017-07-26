@@ -204,6 +204,16 @@ class Teigen():
 
         id = config.pop('generator_id')
 
+        # if id is not nuber but name of generator
+        if type(id) == str:
+            for i in range(len(self.generators_names)):
+                if id == self.generators_names[i]:
+                    id = i
+                    break
+
+        if type(id) == str:
+            logger.error("Unknown generator name: " + id)
+
         # area_dct = config["areasampling"]
         # area_cfg = self._cfg_export_fcn[id](area_dct)
 
@@ -244,6 +254,8 @@ class Teigen():
         self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
         self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
         self.stats_times["step1_total_time_s"] = (t2 - t0).total_seconds()
+        self.stats_times["step1_finished"] = True
+        self.stats_times["step2_finished"] = False
         self.time_run = t2 - t0
         # self.prepare_stats()
         one_row_filename = self.config["output"]["one_row_filename"]
@@ -460,6 +472,7 @@ class Teigen():
         self.stats_times["step2_save_volume_time_s"] = (t3 - t2).total_seconds()
         self.stats_times["step2_total_time_s"] = (t3 - t0).total_seconds()
         self.stats_times["step2_finish_datetime"] = str(t3)
+        self.stats_times["step2_finished"] = True
 
         # self.memoryhandler.flush()
 
@@ -702,7 +715,7 @@ class Teigen():
             s = traceback.format_exc()
             logger.warning(s)
 
-    def config_to_row(self):
+    def get_flatten_config(self):
         """ Put input configuration into one row.
 
         :return:
@@ -713,11 +726,28 @@ class Teigen():
         return config_fl
 
     def config_to_row_dataframe(self):
-        config_fl = self.config_to_row()
+        config_fl = self.get_flatten_config()
         config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
         return config_df
 
+    def get_config_and_measurement(self):
+        self.prepare_stats()
+        import pandas as pd
+        dfo = self.dataframes["overall"].to_dict(orient="records")
+        dfd = self.dataframes["density"].to_dict(orient="records")
+        dfi = self.dataframes["processing_info"].to_dict(orient="records")
 
+        dfo.update(dfd)
+        data_structured = {
+            "measurement": dfo,
+            "processing_info": dfi,
+            "config": self.config
+        }
+        return data_structured
+
+    def get_flatten_config_and_measurement(self):
+        import imtools.dili
+        return imtools.dili.flatten_dict_join_keys(self.get_config_and_measurement(), " ")
 
     def save_stats_to_row(self, filename, note=""):
         """ Save stats to row
@@ -727,26 +757,30 @@ class Teigen():
         :return:
         """
         self.prepare_stats()
-        import pandas as pd
         filename = op.expanduser(filename)
-        dfo = self.dataframes["overall"]
-        dfd = self.dataframes["density"]
-        dfi = self.dataframes["processing_info"]
 
+        import pandas as pd
+        # filename = op.expanduser(filename)
+        # dfo = self.dataframes["overall"]
+        # dfd = self.dataframes["density"]
+        # dfi = self.dataframes["processing_info"]
+        #
+        #
+        # # values must be a list for dataframe
+        # # new_values = []
+        # # for val in config_fl.values():
+        # #     new_values.append([val])
+        #
+        # # config_fl_li = dict(zip(config_fl.keys(), new_values))
+        # # config_df = pd.DataFrame(config_fl_li)
+        # config_fl = self.get_flatten_config()
+        #
+        # config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
+        # # import ipdb; ipdb.set_trace()
+        # dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
+        config_fl = self.get_flatten_config_and_measurement()
 
-        # values must be a list for dataframe
-        # new_values = []
-        # for val in config_fl.values():
-        #     new_values.append([val])
-
-        # config_fl_li = dict(zip(config_fl.keys(), new_values))
-        # config_df = pd.DataFrame(config_fl_li)
-        config_fl = self.config_to_row()
-
-        config_df = pd.DataFrame([config_fl], columns=config_fl.keys())
-        # import ipdb; ipdb.set_trace()
-        dfout = pd.concat([dfi, dfo, dfd, config_df], axis=1)
-
+        dfout = pd.DataFrame([config_fl], columns=config_fl.keys())
         if op.exists(filename):
             dfin = pd.read_csv(filename)
             dfout = pd.concat([dfin, dfout], axis=0)

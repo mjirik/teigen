@@ -246,6 +246,13 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             n_nearest=4,
             length_to_radius_ratio=4
     ):
+        self.generation_break_causes = {
+            "radius_maximum": 0,
+            "radius_minimum": 0,
+            "collision": 0,
+
+
+        }
         generated = False
         while not generated:
             self.iterations += 1
@@ -264,8 +271,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             # print progress
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
+                self.generation_break_causes["radius_maximum"] += 1
                 continue
             if radius < self.radius_minimum:
+                self.generation_break_causes["radius_minimum"] += 1
                 continue
             # pt1 = self.collision_model.get_random_point(radius=radius)
             # pt2 = self.collision_model.get_random_point(radius=radius)
@@ -329,9 +338,13 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
             if not collision:
                 generated = True
+            else:
+                self.generation_break_causes["collision"] += 1
 
         if generated:
             self.add_cylinder_to_stats(pt1, pt2, radius=radius)
+        # else:
+        #     print self.generation_break_causes
         return
 
     def pill_parameter_suggestion_for_last_object(self, first_radius, first_length):

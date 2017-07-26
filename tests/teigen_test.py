@@ -151,6 +151,37 @@ class MyTestCase(unittest.TestCase):
         #     tg.run()
         #     tg.save_volume()
 
+    def test_teigen_prepare_parameters_and_measurement(self):
+        """
+        Check string like generator_id
+        :return:
+        """
+        import teigen.gui
+        tg = teigen.gui.Teigen()
+        tg.use_default_config()
+        conf = {
+            "generator_id": "Unconnected tubes",
+            "areasampling": {
+                "voxelsize_mm": [1., 1., 1.],
+                "areasize_px": [110, 120, 130],
+                "areasize_mm": [110, 120, 130],
+            },
+            "postprocessing": {
+                "measurement_multiplier": -1,
+                "add_noise": False
+            },
+            "generators": {
+                "Unconnected tubes": {
+                    "element_number": 1
+                }
+            }
+        }
+        tg.update_config(**conf)
+        tg.step1()
+        params = tg.get_config_and_measurement()
+        print params
+
+
 
 if __name__ == '__main__':
     unittest.main()
