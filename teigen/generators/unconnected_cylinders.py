@@ -49,9 +49,9 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  # area_shape_x=100,
                  # area_shape_y=100,
                  element_number=-1,
-                 uniform_radius_distribution=True,
-                 normal_radius_distribution=False,
-                 fixed_radius_distribution=False,
+                 radius_distribution_uniform=False,
+                 radius_distribution_normal=True,
+                 radius_distribution_fixed=False,
                  radius_distribution_minimum=0.1,
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=1.0,
@@ -101,10 +101,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.radius_generator = _const
         self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
-        if uniform_radius_distribution:
+        if radius_distribution_uniform:
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
-        if normal_radius_distribution:
+        if radius_distribution_normal:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
         self.alow_overlap = allow_overlap

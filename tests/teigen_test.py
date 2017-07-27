@@ -167,7 +167,7 @@ class MyTestCase(unittest.TestCase):
                 "areasize_mm": [110, 120, 130],
             },
             "postprocessing": {
-                "measurement_multiplier": -1,
+                # "measurement_multiplier": -1,
                 "add_noise": False
             },
             "generators": {
@@ -179,6 +179,7 @@ class MyTestCase(unittest.TestCase):
         tg.update_config(**conf)
         tg.step1()
         params = tg.get_config_and_measurement()
+        tg.step2()
         print params
 
 
