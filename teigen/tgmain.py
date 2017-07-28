@@ -430,10 +430,21 @@ class Teigen():
         self.memoryhandler.flush()
         self.memoryhandler.flushLevel = self.loglevel
 
+    def generate_volume(self):
+        background_intensity=self.config["postprocessing"]["background_intensity"]
+        self.data3d = self.gen.generate_volume(dtype="uint8", background_intensity=background_intensity)
+        self.voxelsize_mm = self.gen.voxelsize_mm
+        postprocessing_params = self.config["postprocessing"]
+        data3d = self.postprocessing(**postprocessing_params)
+        self.gen.data3d = data3d
+
     def step2(self):
         if self.parameters_changed_before_save:
             self.step1()
         # TODO split save_volume and save_parameters
+        if len(self.gen.tree_data) == 0:
+            logger.error("No data generated. 1D skeleton is empty.")
+            return
         self.refresh_unoccupied_series_number()
         self.save_parameters()
         self.save_log()
@@ -454,18 +465,15 @@ class Teigen():
         # postprocessing
         skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
 
+        t2 = t1
         if (not skip_vg) and ("generate_volume" in dir(self.gen)):
             # self.data3d = self.gen.generate_volume()
-            self.data3d = self.gen.generate_volume(dtype="uint8")
-            self.voxelsize_mm = self.gen.voxelsize_mm
-            postprocessing_params = self.config["postprocessing"]
-            data3d = self.postprocessing(**postprocessing_params)
-            self.gen.data3d = data3d
+            self.generate_volume()
         # self.gen.saveVolumeToFile(self.config["filepattern"])
 
-        t2 = datetime.datetime.now()
-        logger.debug("before volume save " + str(t2 - t0))
-        self.gen.saveVolumeToFile(self.filepattern_fill_series())
+            t2 = datetime.datetime.now()
+            logger.debug("before volume save " + str(t2 - t0))
+            self.gen.saveVolumeToFile(self.filepattern_fill_series())
         t3 = datetime.datetime.now()
         logger.info("time before volume generate: " + str(t1 - t0))
         logger.info("time before volume save: " + str(t2 - t0))
@@ -535,6 +543,7 @@ class Teigen():
             intensity_profile_radius=[0.7, 1.0, 1.3],
             intensity_profile_intensity=[190, 200, 30],
             negative=False,
+            background_intensity=20
 
     ):
         dt = self.data3d.dtype

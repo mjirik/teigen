@@ -37,9 +37,9 @@ class TBVolume:
     Other similar generator is used for generating LAR outputs.
     """
 
-    def __init__(self, gtree, dtype=np.int):
+    def __init__(self, gtree, dtype=np.int, background_intensity=20):
         self.shape = np.asarray(gtree.shape, dtype=np.int)
-        self.data3d = np.zeros(self.shape, dtype=dtype)
+        self.data3d = (np.ones(self.shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
         self.voxelsize_mm = gtree.voxelsize_mm
         if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
             self.intensity_profile = gtree.intensity_profile

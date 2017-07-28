@@ -259,7 +259,7 @@ class TeigenWidget(QtGui.QWidget):
         measurement_multiplier = self.teigen.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
         surface_measurement = self.teigen.config[CKEY_OUTPUT]["aposteriori_measurement"]
         show_surface = self.teigen.config[CKEY_APPEARANCE]["show_aposteriori_surface"]
-        if surface_measurement and measurement_multiplier > 0 and show_surface:
+        if surface_measurement and (measurement_multiplier > 0) and show_surface:
             fig = plt.figure()
             self._surface_figure = fig
             self._surface_canvas = FigureCanvas(self._surface_figure)

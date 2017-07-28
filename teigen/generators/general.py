@@ -25,6 +25,8 @@ class GeneralGenerator(object):
         from ..tree import TreeBuilder
 
         self.tvgvol = TreeBuilder('vol', generator_params=kwargs)
+        print "GeneralGenerator"
+        print kwargs
         self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
         self.tvgvol.shape = self.areasize_px # [100, 100, 100]
         self.tvgvol.tree_data = self.tree_data

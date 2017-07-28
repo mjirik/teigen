@@ -166,7 +166,7 @@ class TreeBuilder:
                 # if self.use_lar:
                 #     self.generator.add_cylinder(p1m, p2m, rad, in)
             if self.segments_progress_callback is not None:
-                self.segments_progress_callback(progress_step)
+                self.segments_progress_callback(progress)
             progress += progress_step
         logger.debug("cylinders generated")
 
@@ -187,6 +187,8 @@ class TreeBuilder:
         return output
 
     def finish_progress_callback(self, progress, *args, **kwargs):
+        # if self.segments_progress_callback is not None:
+        #     self.segments_progress_callback(progress)
         print ("progess: " + str(progress))
         logger.debug(str(progress))
 

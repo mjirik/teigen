@@ -167,8 +167,18 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # radius = self.radius_maximum
         # for i, two_points in enumerate(vor3.ridge_points):
         # for i in range(self.element_number):
+        self.generation_break_causes = {
+            "radius_maximum": 0,
+            "radius_minimum": 0,
+            "collision": 0,
+            "radius_bigger_than_areasize": 0,
+            "length_bigger_than_areasize": 0,
+
+
+        }
         while not self.is_final_iteration():
             self.create_cylinder()
+        print (self.generation_break_causes)
         self.get_stats()
         self.data3d = None
 
@@ -246,13 +256,6 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             n_nearest=4,
             length_to_radius_ratio=4
     ):
-        self.generation_break_causes = {
-            "radius_maximum": 0,
-            "radius_minimum": 0,
-            "collision": 0,
-
-
-        }
         generated = False
         while not generated:
             self.iterations += 1
@@ -277,6 +280,9 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             if radius < self.radius_minimum:
                 self.generation_break_causes["radius_minimum"] += 1
                 continue
+            if (radius > (self.areasize_px * self.voxelsize_mm)).all():
+                self.generation_break_causes["radius_bigger_than_areasize"] += 1
+                continue
             # pt1 = self.collision_model.get_random_point(radius=radius)
             # pt2 = self.collision_model.get_random_point(radius=radius)
             # pt1 = np.random.random([3]) * self.areasize_px * self.voxelsize_mm
@@ -289,7 +295,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                 if self.iterations % 5:
                     # if self.collision_model.get_node_number() > n_nearest:
                     center = np.asarray(center)
-                    npts, indexes, lengtsh = self.collision_model.n_closest_end_points(center, n_nearest)
+                    npts, indexes, lengths = self.collision_model.n_closest_end_points(center, n_nearest)
                     center = np.mean(npts, axis=0)
 
             if self.orientation_anisotropic:
@@ -308,14 +314,17 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             # direction_vector = np.asarray([0, 2**-0.5, 2**-0.5])
             # direction_vector = np.asarray([0, 2, 0])
             length = self.length_generator(*self.length_generator_args)
+            if (length > (self.areasize_px * self.voxelsize_mm)).all():
+                self.generation_break_causes["length_bigger_than_areasize"] += 1
+                continue
 
             if self.tube_shape:
                 volume = g3.pill_volume(radius, length)
             else:
                 volume = g3.cylinder_volume(radius, length)
 
-            planned_volume_is_too_much = ((
-                                          self.actual_object_volume + volume) / self.area_volume) > self.requeseted_volume_fraction
+            planned_volume_is_too_much = \
+                (( self.actual_object_volume + volume) / self.area_volume) > self.requeseted_volume_fraction
             if planned_volume_is_too_much and self.last_element_can_be_smaller:
                 # just in case of last element and if is this feature enabled
                 radius, length = self.pill_parameter_suggestion_for_last_object(radius, length)
