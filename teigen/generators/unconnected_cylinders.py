@@ -105,7 +105,6 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
         if radius_distribution_normal:
-            import general
             self.radius_generator = general.random_normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
         self.alow_overlap = allow_overlap

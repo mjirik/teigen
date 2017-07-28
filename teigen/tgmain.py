@@ -488,10 +488,11 @@ class Teigen():
         # self.memoryhandler.flush()
 
     def save_1d_model_to_file(self, outputfile):
+        tree_data = dili.ndarray_to_list_in_structure(self.gen.tree_data)
         tree = {
             "voxelsize_mm": np.asarray(self.config["areasampling"]["voxelsize_mm"]).tolist(),
             "voxelsize_px": np.asarray(self.config["areasampling"]["areasize_px"]).tolist(),
-            "Graph": {"0": self.gen.tree_data}
+            "Graph": {"0": tree_data}
         }
         io3d.misc.obj_to_file(tree, outputfile)
 
