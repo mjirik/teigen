@@ -186,7 +186,7 @@ class DictWidget(QtGui.QWidget):
         return row, col
 
     def btn_accept(self):
-        print self.config_as_dict()
+        print ("btn_accept: " + str(self.config_as_dict()))
 
     def on_config_update(self):
         pass

@@ -177,13 +177,11 @@ class ListParameter(pTypes.GroupParameter):
             new_val.append(self.childs[i].value())
 
         self.setValue(new_val)
-        print new_val
 
     def valueChanged(self):
         new_val = self.value()
         for i in range(len(self.childs)):
             self.childs[i].setValue(new_val[i])
-        print new_val
 
 
 class AreaSamplingParameter(pTypes.GroupParameter):

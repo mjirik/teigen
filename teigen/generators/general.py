@@ -60,5 +60,4 @@ def random_normal(mean, scale, min=.0, **kwargs):
     if out < min:
         out = min
 
-    print out
     return out

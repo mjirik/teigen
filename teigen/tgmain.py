@@ -578,21 +578,8 @@ class Teigen():
         noise = ndnoise.noises(
             **noise_params
         ) #.astype(np.float16)
-        print noise_params
-        print type(pparams["noise_std"])
-        print type(pparams["noise_mean"])
-        print type(noise)
-        print pparams["noise_mean"]
-
-        #.std(noise) noise
-        print "noise_std ", type(pparams["noise_std"]), pparams["noise_std"]
-
-        print "min max ", np.min(noise), np.max(noise)
-        print "mean std ", np.mean(noise), np.std(noise)
         noise = pparams["noise_std"] * noise / np.std(noise)
         noise = noise + pparams["noise_mean"]
-        print "min max ", np.min(noise), np.max(noise)
-        print "mean std ", np.mean(noise), np.std(noise)
         return noise
 
     def _config2generator_gensei_export(self, config):

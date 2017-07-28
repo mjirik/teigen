@@ -22,9 +22,9 @@ generator_id:<br></br>\
 generators:<br></br>\
 - - - Cylinder generator<br></br>\
       - - [element_number<br></br>\
-        - [uniform_radius_distribution<br></br>\
-        - [normal_radius_distribution<br></br>\
-        - [fixed_radius_distribution<br></br>\
+        - [radius_distribution_uniform<br></br>\
+        - [radius_distribution_normal<br></br>\
+        - [radius_distribution_fixed<br></br>\
         - [radius_distribution_minimum<br></br>\
         - [radius_distribution_maximum<br></br>\
         - [radius_distribution_mean<br></br>\
@@ -40,9 +40,9 @@ generators:<br></br>\
   - - Cylinder continues<br></br>\
     - !!python/object/apply:collections.OrderedDict<br></br>\
       - - [element_number<br></br>\
-        - [uniform_radius_distribution<br></br>\
-        - [normal_radius_distribution<br></br>\
-        - [fixed_radius_distribution<br></br>\
+        - [radius_distribution_uniform<br></br>\
+        - [radius_distribution_normal<br></br>\
+        - [radius_distribution_fixed<br></br>\
         - [radius_distribution_minimum<br></br>\
         - [radius_distribution_maximum<br></br>\
         - [radius_distribution_mean<br></br>\
@@ -54,9 +54,9 @@ generators:<br></br>\
         - [random_generator_seed<br></br>\
   - - Unconnected cylinders: This generator produces objects in shape of cylinders of known length and radius. The cylinders end with hemispheres with the same radius attached to each end of the cylinders. If the cylinder length is set to zero, only the two endpoint hemispheres are generated, which results in generating a sphere. The objects do not interfere with each other.<br></br>\
 element_number: number of elements at which the generator stops generating further elements, even before reaching the expected volume fraction<br></br>\
-uniform_radius_distribution: all the values of radius within the given limits appear with the same probability<br></br>\
-normal_radius_distribution: the values of radius will be generated using the normal (Gaussian) parametric distribution<br></br>\
-fixed_radius_distribution: only the mean value of radius will be used<br></br>\
+radius_distribution_uniform: all the values of radius within the given limits appear with the same probability<br></br>\
+radius_distribution_normal: the values of radius will be generated using the normal (Gaussian) parametric distribution<br></br>\
+radius_distribution_fixed: only the mean value of radius will be used<br></br>\
 radius_distribution_minimum: the lower limit of the radius of cylinders that are to be generated<br></br>\
 radius_distribution_maximum: the upper limit of the radius of cylinders that are to be generated<br></br>\
 radius_distribution_mean: the mean or expectation of the normal (Gaussian) parametric distribution of the radius<br></br>\

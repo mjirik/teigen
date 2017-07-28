@@ -105,7 +105,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
         if radius_distribution_normal:
-            self.radius_generator = np.random.normal
+            import general
+            self.radius_generator = general.random_normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
         self.alow_overlap = allow_overlap
 
@@ -269,6 +270,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             if self.progress_callback is not None:
                 self.progress_callback(self, progress, statusbar_text=statusbar_text)
             # print progress
+            # print self.radius_generator_args
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
                 self.generation_break_causes["radius_maximum"] += 1

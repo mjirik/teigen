@@ -56,17 +56,13 @@ class CylindersWidget(QtGui.QWidget):
         self.ncols = ncols
 
         self.config = dictwidgetqt.get_default_args(cylinders.CylinderGenerator)
-        print "default args"
-        print self.config
         self.gen = None
         self.init_ui()
 
     def run(self):
-        print "generator args"
         new_cfg = self.configwg.config_as_dict()
         logger.debug(str(new_cfg))
         self.config = new_cfg
-        print self.config
         self.gen = cylinders.CylinderGenerator(**self.config)
         self.gen.run()
 
@@ -75,8 +71,6 @@ class CylindersWidget(QtGui.QWidget):
         from .. import tablewidget
 
         dfmerne = df[["length", "volume", "surface"]].sum() / self.gen.area_volume
-        print "merne"
-        print dfmerne
         dfmernef = dfmerne.to_frame().transpose()
         # dfmernef.insert(0, "", dfmernef.index)
         # import ipdb; ipdb.set_trace()

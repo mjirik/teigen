@@ -187,7 +187,7 @@ class TreeBuilder:
         return output
 
     def finish_progress_callback(self, progress, *args, **kwargs):
-        print progress
+        print ("progess: " + str(progress))
         logger.debug(str(progress))
 
     def saveToFile(self, *args, **kwargs):

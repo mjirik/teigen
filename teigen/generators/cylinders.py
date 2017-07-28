@@ -62,9 +62,9 @@ class CylinderGenerator(GeneralGenerator):
                  # area_shape_x=100,
                  # area_shape_y=100,
                  element_number=30,
-                 uniform_radius_distribution=True,
-                 normal_radius_distribution=False,
-                 fixed_radius_distribution=False,
+                 radius_distribution_uniform=True,
+                 radius_distribution_normal=False,
+                 radius_distribution_fixed=False,
                  radius_distribution_minimum=2.0,
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=5.0,
@@ -102,10 +102,10 @@ class CylinderGenerator(GeneralGenerator):
         self.radius_generator = _const
         self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
-        if uniform_radius_distribution:
+        if radius_distribution_uniform:
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]
-        if normal_radius_distribution:
+        if radius_distribution_normal:
             self.radius_generator = np.random.normal
             self.radius_generator_args = [radius_distribution_mean, radius_distribution_standard_deviation]
         # import ipdb; ipdb.set_trace()
@@ -276,7 +276,7 @@ class CylinderGenerator(GeneralGenerator):
         df = pd.DataFrame(self.geometry_data)
         desc = df.describe()
 
-        print desc
+        logger.debug("stats: " + str(desc))
         return df
 
     def _is_in_area(self, node, radius=None):

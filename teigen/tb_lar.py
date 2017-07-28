@@ -140,7 +140,6 @@ class TBLar:
         self.CV.append(joint)
         # for circle in joint:
         #     for vertex_id in circle:
-        #         print 'v id ', vertex_id
         #         self.V[vertex_id]
         # dom1D = INTERVALS(1)(32);
         # dom2D = TRIANGLE_DOMAIN(32, [[1,0,0],[0,1,0],[0,0,1]]);
