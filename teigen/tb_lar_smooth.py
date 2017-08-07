@@ -33,15 +33,18 @@ from splines import BEZIER, S1, S2, COONSPATCH
 
 import geometry3d as g3
 import interpolation_pyplasm as ip
+import tree
 
 
-class TBLarSmooth:
+class TBLarSmooth(tree.FiberSkeletBuilder):
     def __init__(self, gtree=None):
         """
         gtree is information about input data structure.
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
         # input of geometry and topology
+        # super(tree.FiberSkeletBuilder, self).__init__()
+        tree.FiberSkeletBuilder.__init__(self)
         self.V = []
         self.CV = []
         self.joints = {}

@@ -18,6 +18,7 @@ sys.path.append(os.path.join(path_to_script, "../extern/dicom2fem/src"))
 import argparse
 import numpy as np
 import scipy.ndimage
+import tree
 
 # import datareader
 
@@ -31,13 +32,16 @@ from vtk.util import numpy_support
 UNDERDEBUG = 8
 
 
-class TBVolume:
+class TBVolume(tree.FiberSkeletBuilder):
     """
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
 
     def __init__(self, gtree, dtype=np.int, background_intensity=20):
+
+        # super(tree.FiberSkeletBuilder, self).__init__()
+        tree.FiberSkeletBuilder.__init__(self)
         self.shape = np.asarray(gtree.shape, dtype=np.int)
         self.data3d = (np.ones(self.shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
         self.voxelsize_mm = gtree.voxelsize_mm

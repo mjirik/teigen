@@ -12,16 +12,20 @@ import sys
 import numpy as np
 import vtk
 from scipy.interpolate import InterpolatedUnivariateSpline
+import tree
 
 # new interface
 
-class TBVTK:
+
+class TBVTK(tree.FiberSkeletBuilder):
     """
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
     """
 
-    def __init__(self, gtree, cylinder_resolution=30, sphere_resolution=30,
+    def __init__(self,
+                 # gtree,
+                 cylinder_resolution=30, sphere_resolution=30,
                  polygon_radius_selection_method="inscribed",
                  cylinder_radius_compensation_factor=1.0,
                  sphere_radius_compensation_factor=1.0,
@@ -41,13 +45,14 @@ class TBVTK:
         # self.shape = gtree.shape
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
+        # super(tree.FiberSkeletBuilder, self).__init__()
+        tree.FiberSkeletBuilder.__init__(self)
         # make comapatible with old system
         self.polygon_radius_selection_method = polygon_radius_selection_method
         self.cylinder_radius_compensation_factor = cylinder_radius_compensation_factor
         self.sphere_radius_compensation_factor = sphere_radius_compensation_factor
-        self.tree_data = gtree.tree_data
+        #self.tree_data = gtree.tree_data
 
-        self.tree_data_old = compatibility_processing(self.tree_data)
         self.cylinder_resolution = cylinder_resolution
         self.sphere_resolution = sphere_resolution
         self.tube_shape = tube_shape
@@ -59,6 +64,7 @@ class TBVTK:
         pass
 
     def finish(self):
+        self.tree_data_old = compatibility_processing(self.tree_data)
         # import ipdb; ipdb.set_trace()
         self.polyData = gen_tree(
             self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,

@@ -287,7 +287,8 @@ class Teigen():
 
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
         vtk_file = op.expanduser(vtk_file)
-        from tree import TreeBuilder
+        # from tree import TreeBuilder
+        from tb_vtk import TBVTK
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
@@ -302,14 +303,12 @@ class Teigen():
                 method_surf = None
 
             # build volume tree
-            tvg = TreeBuilder('vtk',
-                              generator_params={
-                                  "cylinder_resolution": resolution,
-                                  "sphere_resolution": resolution,
-                                  # "radius_compensation_factor": radius_compensation_factor
-                                  "polygon_radius_selection_method": method_vol,
-                                  "tube_shape": tube_shape
-                              })
+            tvg = TBVTK(
+                cylinder_resolution=resolution,
+                sphere_resolution=resolution,
+                polygon_radius_selection_method=method_vol,
+                tube_shape=tube_shape
+            )
             # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
@@ -319,25 +318,24 @@ class Teigen():
             # tvg.show()
             # TODO control output
             tvg.saveToFile(vtk_file)
-            polydata_vol = tvg.generator.polyData
+            polydata_vol = tvg.polyData
 
             # build surface tree
             if method_surf is not None:
-                tvg2 = TreeBuilder('vtk',
-                                  generator_params={
-                                      "cylinder_resolution": resolution,
-                                      "sphere_resolution": resolution,
-                                      # "radius_compensation_factor": radius_compensation_factor
-                                      "polygon_radius_selection_method": method_surf,
-                                      "tube_shape": tube_shape
-                                  })
+                from tb_vtk import TBVTK
+                tvg2 = TBVTK(
+                    cylinder_resolution=resolution,
+                    sphere_resolution=resolution,
+                    polygon_radius_selection_method=method_surf,
+                    tube_shape=tube_shape
+                )
                 # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
                 # tvg.importFromYaml(yaml_path)
                 tvg2.voxelsize_mm = self.voxelsize_mm
                 tvg2.shape = self.gen.areasize_px
                 tvg2.tree_data = self.gen.tree_data
                 output = tvg2.buildTree()  # noqa
-                polydata_surf = tvg2.generator.polyData
+                polydata_surf = tvg2.polyData
                 # tvg.show()
                 # TODO control output
                 # tvg.saveToFile(vtk_file)
@@ -605,7 +603,7 @@ class Teigen():
 
     def _aposteriori_numeric_measurement(self, fn_base):
         # import numpy as np
-        from tree import TreeBuilder
+        from tb_volume import TBVolume
         measurement_multiplier = self.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
         surface_measurement = self.config[CKEY_OUTPUT]["aposteriori_measurement"]
 
@@ -617,7 +615,7 @@ class Teigen():
             self._numeric_surface_measurement_shape = shape
 
             shape = shape.astype(np.int)
-            tvgvol = TreeBuilder("vol")
+            tvgvol = TBVolume()
             tvgvol.voxelsize_mm = vxsz
             tvgvol.shape = shape
             tvgvol.tree_data = self.gen.tree_data

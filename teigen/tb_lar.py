@@ -21,6 +21,7 @@ from larcc import VIEW, MKPOL, AA, INTERVALS
 from splines import all
 # import mapper
 # from largrid import *
+import tree
 
 import geometry3d as g3
 
@@ -28,7 +29,7 @@ import geometry3d as g3
 # import warnings
 # warnings.filterwarnings('error')
 
-class TBLar:
+class TBLar(tree.FiberSkeletBuilder):
     def __init__(self, gtree=None,
                  endDistMultiplicator=1,
                  use_joints=True
@@ -38,6 +39,8 @@ class TBLar:
         endDistMultiplicator: make cylinder shorter by multiplication of radius
         """
         # input of geometry and topology
+        # super(tree.FiberSkeletBuilder, self).__init__()
+        tree.FiberSkeletBuilder.__init__(self)
         self.V = []
         self.CV = []
         self.joints = {}

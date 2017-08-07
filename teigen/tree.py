@@ -17,6 +17,188 @@ import argparse
 import datetime
 
 
+class FiberSkeletBuilder:
+    def __init__(self):
+        """
+        This function can be used as vessel_tree iterator. Just implement generator_class
+
+        :param generator_class: class with function add_cylinder(p1pix, p2pix, rad_mm) and get_output()
+        :param generator_params:
+        """
+        self.rawdata = None
+        self.tree_data = None
+        self.data3d = None
+        self.voxelsize_mm = [1, 1, 1]
+        self.shape = None
+        self.use_lar = False
+        self.tree_label = None
+        self.segments_progress_callback = self.finish_progress_callback
+        self.stop_processing = False
+
+        # if generator_class in ['vol', 'volume']:
+        #     import tb_volume
+        #     generator_class = tb_volume.TBVolume
+        # elif generator_class in ['lar']:
+        #     import tb_lar
+        #     generator_class = tb_lar.TBLar
+        # elif generator_class in ['vtk']:
+        #     import tb_vtk
+        #     generator_class = tb_vtk.TBVTK
+        # elif generator_class in ['kunes']:
+        #     import tb_lar_kunes
+        #     generator_class = tb_lar_kunes.TBLar
+        # elif generator_class in ['larsm']:
+        #     import tb_lar_smooth
+        #     generator_class = tb_lar_smooth.TBLarSmooth
+        # elif generator_class in ['lar_nojoints']:
+        #     import tb_lar
+        #     generator_class = tb_lar.TBLar
+        #     generator_params = {
+        #         'endDistMultiplicator': 0,
+        #         'use_joints': False
+        #     }
+        # self.generator_class = generator_class
+        # self.generator_params = generator_params
+
+    def fix_tree_structure(self, tree_raw_data):
+        """
+        Fix backward compatibility
+        :param tree_raw_data:
+        :return: fixed tree_raw_data
+        """
+        if 'graph' in tree_raw_data:
+            gr = tree_raw_data.pop('graph')
+            tree_raw_data['Graph'] = gr  # {'tree1':gr}
+
+        # if all keys in Graph a
+        if all([type(k) != str for k in tree_raw_data['Graph'].keys()]):
+            gr = tree_raw_data.pop('Graph')
+            tree_raw_data['Graph'] = {'tree1': gr}
+
+        # else:
+        #     tree_raw_data = tree_raw_data['Graph']
+        return tree_raw_data
+
+    def importFromYaml(self, filename):
+        import yaml
+        f = open(filename, 'rb')
+        rawdata = yaml.load(f)
+        f.close()
+        self.rawdata = self.fix_tree_structure(rawdata)
+
+        tkeys = self.rawdata['Graph'].keys()
+        if (self.tree_label is None) or (self.tree_label not in tkeys):
+            self.tree_label = tkeys[0]
+        self.tree_data = self.rawdata['Graph'][self.tree_label]
+
+    def add_segment_to_tree(self, pointA, pointB, radius, id=None):
+        """
+        Before generation this can be used to add new segment
+        :return:
+        """
+        if self.tree_data is None:
+            self.tree_data = {}
+
+        if id is None:
+            id = len(self.tree_data)
+
+        self.tree_data[id] = {
+            'nodeA_ZYX_mm': pointA,
+            'nodeB_ZYX_mm': pointB,
+            'radius_mm': radius
+        }
+
+    def buildTree(self):
+        """
+        | Funkce na vygenerování objemu stromu ze zadaných dat.
+        | Generates output by defined generator. If VolumeTreeGenerator is used, output is data3d.
+        """
+        # LAR init
+        if self.use_lar:
+            import lar_vessels
+            self.lv = lar_vessels.LarVessels()
+
+        # use generator init
+        # if self.generator_params is None:
+        #     self.generator = self.generator_class(self)
+        # else:
+        #     self.generator = self.generator_class(self, **self.generator_params)
+
+        tree_output = self._build_tree_per_segments()
+
+        logger.debug("before visualization - generateTree()")
+        if self.use_lar:
+            self.lv.show()
+
+        return tree_output
+
+    def _build_tree_per_segments(self):
+        ln = len(self.tree_data)
+        if ln == 0:
+            ln = 1
+        progress_step = 1.0 / ln
+        progress = 0.0
+
+        for cyl_id in self.tree_data:
+            if self.stop_processing:
+                break
+            logger.debug("CylinderId: " + str(cyl_id))
+            cyl_data = self.tree_data[cyl_id]
+
+            # try:
+            #     cyl_data = self.data['graph']['porta'][cyl_id]
+            # except:
+            #     cyl_data = self.data['Graph'][cyl_id]
+
+            # prvni a koncovy bod, v mm + radius v mm
+            try:
+                p1m = cyl_data['nodeA_ZYX_mm']  # souradnice ulozeny [Z,Y,X]
+                p2m = cyl_data['nodeB_ZYX_mm']
+                rad = cyl_data['radius_mm']
+                self.add_cylinder(p1m, p2m, rad, cyl_id)
+            except Exception, e:
+                # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
+
+                logger.error(
+                    "Segment id " + str(cyl_id) + ": error reading data from yaml!: " + str(e))
+                # return
+
+                # if self.use_lar:
+                #     self.generator.add_cylinder(p1m, p2m, rad, in)
+            if self.segments_progress_callback is not None:
+                self.segments_progress_callback(progress)
+            progress += progress_step
+        logger.debug("cylinders generated")
+
+        # import ipdb; ipdb.set_trace()
+        if "finish" in dir(self):
+            # generator could have finish() function
+            self.finish_progress_callback = self.finish_progress_callback
+            self.finish()
+            logger.debug("joints generated")
+        else:
+            import traceback
+            # logger.debug(traceback.format_exc())
+            logger.debug("no finish() function in tree constructor")
+        # import ipdb; ipdb.set_trace()
+
+        output = self.get_output()
+
+        return output
+
+    def finish_progress_callback(self, progress, *args, **kwargs):
+        # if self.segments_progress_callback is not None:
+        #     self.segments_progress_callback(progress)
+        print ("progess: " + str(progress))
+        logger.debug(str(progress))
+
+    def saveToFile(self, *args, **kwargs):
+        self.save(*args, **kwargs)
+
+
+    def stop(self):
+        self.stop_processing = True
+
 class TreeBuilder:
     def __init__(self, generator_class='volume', generator_params=None):
         """
@@ -200,64 +382,6 @@ class TreeBuilder:
 
     def stop(self):
         self.stop_processing = True
-
-        # def generateTree_vtk(self):
-        #     import vtk
-        #     from vtk.util import numpy_support
-        #     """
-        #     | Funkce na vygenerování objemu stromu ze zadaných dat.
-        #     | Veze pro generování pomocí VTK
-        #     | !!! funguje špatně -> vstupní data musí být pouze povrchové body, jinak generuje ve výstupních datech dutiny
-        #
-        #     """
-        #     # get vtkPolyData
-        #     tree_data = gen_vtk_tree.compatibility_processing(self.rawdata['Graph'])
-        #     polyData = gen_vtk_tree.gen_tree(tree_data)
-        #
-        #     polyData.GetBounds()
-        #     # bounds = polyData.GetBounds()
-        #
-        #     white_image = vtk.vtkImageData()
-        #     white_image.SetSpacing(self.voxelsize_mm)
-        #     white_image.SetDimensions(self.shape)
-        #     white_image.SetExtent(
-        #         [0, self.shape[0] - 1, 0, self.shape[1] - 1, 0, self.shape[2] - 1])
-        #     # origin = [(bounds[0] + self.shape[0])/2, (bounds[1] + self.shape[1])/2, (bounds[2] + self.shape[2])/2]
-        #     # white_image.SetOrigin(origin) #neni potreba?
-        #     # white_image.SetScalarTypeToUnsignedChar()
-        #     white_image.AllocateScalars()
-        #
-        #     # fill the image with foreground voxels: (still black until stecil)
-        #     inval = 255
-        #     outval = 0
-        #     count = white_image.GetNumberOfPoints()
-        #     for i in range(0, count):
-        #         white_image.GetPointData().GetScalars().SetTuple1(i, inval)
-        #
-        #     pol2stencil = vtk.vtkPolyDataToImageStencil()
-        #     pol2stencil.SetInput(polyData)
-        #
-        #     # pol2stencil.SetOutputOrigin(origin) # TOHLE BLBNE
-        #     pol2stencil.SetOutputSpacing(self.voxelsize_mm)
-        #     pol2stencil.SetOutputWholeExtent(white_image.GetExtent())
-        #     pol2stencil.Update()
-        #
-        #     imgstenc = vtk.vtkImageStencil()
-        #     imgstenc.SetInput(white_image)
-        #     imgstenc.SetStencil(pol2stencil.GetOutput())
-        #     imgstenc.ReverseStencilOff()
-        #     imgstenc.SetBackgroundValue(outval)
-        #     imgstenc.Update()
-        #
-        #     # VTK -> Numpy
-        #     vtk_img_data = imgstenc.GetOutput()
-        #     vtk_data = vtk_img_data.GetPointData().GetScalars()
-        #     numpy_data = numpy_support.vtk_to_numpy(vtk_data)
-        #     numpy_data = numpy_data.reshape(
-        #         self.shape[0], self.shape[1], self.shape[2])
-        #     numpy_data = numpy_data.transpose(2, 1, 0)
-        #
-        #     self.data3d = numpy_data
 
 
 def main():

@@ -23,12 +23,13 @@ from splines import all
 # from largrid import *
 
 import geometry3d as g3
+import tree
 
 
 # import warnings
 # warnings.filterwarnings('error')
 
-class TBLar:
+class TBLar(tree.FiberSkeletBuilder):
     """
     gtree is information about input data structure.
     endDistMultiplicator: move connected side of cylinders away from joint by multiplication of radius
@@ -39,6 +40,8 @@ class TBLar:
                  use_joints=True
                  ):
 
+        # super(tree.FiberSkeletBuilder, self).__init__()
+        tree.FiberSkeletBuilder.__init__(self)
         logger.debug('__init__:use_joints = ' + str(use_joints))
         logger.debug('__init__:endDistMultiplicator = ' + str(endDistMultiplicator))
 
