@@ -17,7 +17,7 @@ import argparse
 import datetime
 
 
-class FiberSkeletBuilder:
+class TubeSkeletonBuilder:
     def __init__(self):
         """
         This function can be used as vessel_tree iterator. Just implement generator_class
@@ -26,7 +26,7 @@ class FiberSkeletBuilder:
         :param generator_params:
         """
         self.rawdata = None
-        self.tree_data = None
+        self.tube_skeleton = None
         self.data3d = None
         self.voxelsize_mm = [1, 1, 1]
         self.shape = None
@@ -89,20 +89,20 @@ class FiberSkeletBuilder:
         tkeys = self.rawdata['Graph'].keys()
         if (self.tree_label is None) or (self.tree_label not in tkeys):
             self.tree_label = tkeys[0]
-        self.tree_data = self.rawdata['Graph'][self.tree_label]
+        self.tube_skeleton = self.rawdata['Graph'][self.tree_label]
 
     def add_segment_to_tree(self, pointA, pointB, radius, id=None):
         """
         Before generation this can be used to add new segment
         :return:
         """
-        if self.tree_data is None:
-            self.tree_data = {}
+        if self.tube_skeleton is None:
+            self.tube_skeleton = {}
 
         if id is None:
-            id = len(self.tree_data)
+            id = len(self.tube_skeleton)
 
-        self.tree_data[id] = {
+        self.tube_skeleton[id] = {
             'nodeA_ZYX_mm': pointA,
             'nodeB_ZYX_mm': pointB,
             'radius_mm': radius
@@ -133,17 +133,17 @@ class FiberSkeletBuilder:
         return tree_output
 
     def _build_tree_per_segments(self):
-        ln = len(self.tree_data)
+        ln = len(self.tube_skeleton)
         if ln == 0:
             ln = 1
         progress_step = 1.0 / ln
         progress = 0.0
 
-        for cyl_id in self.tree_data:
+        for cyl_id in self.tube_skeleton:
             if self.stop_processing:
                 break
             logger.debug("CylinderId: " + str(cyl_id))
-            cyl_data = self.tree_data[cyl_id]
+            cyl_data = self.tube_skeleton[cyl_id]
 
             # try:
             #     cyl_data = self.data['graph']['porta'][cyl_id]

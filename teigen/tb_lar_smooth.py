@@ -36,7 +36,7 @@ import interpolation_pyplasm as ip
 import tree
 
 
-class TBLarSmooth(tree.FiberSkeletBuilder):
+class TBLarSmooth(tree.TubeSkeletonBuilder):
     def __init__(self, gtree=None):
         """
         gtree is information about input data structure.
@@ -44,7 +44,7 @@ class TBLarSmooth(tree.FiberSkeletBuilder):
         """
         # input of geometry and topology
         # super(tree.FiberSkeletBuilder, self).__init__()
-        tree.FiberSkeletBuilder.__init__(self)
+        tree.TubeSkeletonBuilder.__init__(self)
         self.V = []
         self.CV = []
         self.joints = {}

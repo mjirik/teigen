@@ -398,8 +398,8 @@ For saving into image stack use 'filename{:06d}.jpg'")
         # layout.addRow("Address",QtGui.QLineEdit())
         # wgn.setLayout(layout)
         # self._ui_generators_tab_wg.addTab(wgn, "ahoj")
-
-        self._ui_generators_tab_wg.setCurrentIndex(teigen_config["generator_id"])
+        id = self.teigen.get_generator_id_by_name_or_number(teigen_config["generator_id"])
+        self._ui_generators_tab_wg.setCurrentIndex(id)
         # self.mainLayout.setColumnMinimumWidth(text_col, 500)
 
         # pyqtgraph experiments

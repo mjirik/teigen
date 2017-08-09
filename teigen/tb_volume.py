@@ -32,7 +32,7 @@ from vtk.util import numpy_support
 UNDERDEBUG = 8
 
 
-class TBVolume(tree.FiberSkeletBuilder):
+class TBVolume(tree.TubeSkeletonBuilder):
     """
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
@@ -41,7 +41,7 @@ class TBVolume(tree.FiberSkeletBuilder):
     def __init__(self, gtree, dtype=np.int, background_intensity=20):
 
         # super(tree.FiberSkeletBuilder, self).__init__()
-        tree.FiberSkeletBuilder.__init__(self)
+        tree.TubeSkeletonBuilder.__init__(self)
         self.shape = np.asarray(gtree.shape, dtype=np.int)
         self.data3d = (np.ones(self.shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
         self.voxelsize_mm = gtree.voxelsize_mm

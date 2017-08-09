@@ -29,7 +29,7 @@ import tree
 # import warnings
 # warnings.filterwarnings('error')
 
-class TBLar(tree.FiberSkeletBuilder):
+class TBLar(tree.TubeSkeletonBuilder):
     """
     gtree is information about input data structure.
     endDistMultiplicator: move connected side of cylinders away from joint by multiplication of radius
@@ -41,7 +41,7 @@ class TBLar(tree.FiberSkeletBuilder):
                  ):
 
         # super(tree.FiberSkeletBuilder, self).__init__()
-        tree.FiberSkeletBuilder.__init__(self)
+        tree.TubeSkeletonBuilder.__init__(self)
         logger.debug('__init__:use_joints = ' + str(use_joints))
         logger.debug('__init__:endDistMultiplicator = ' + str(endDistMultiplicator))
 

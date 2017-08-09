@@ -17,7 +17,7 @@ import tree
 # new interface
 
 
-class TBVTK(tree.FiberSkeletBuilder):
+class TBVTK(tree.TubeSkeletonBuilder):
     """
     This generator is called by generateTree() function as a general form.
     Other similar generator is used for generating LAR outputs.
@@ -46,7 +46,7 @@ class TBVTK(tree.FiberSkeletBuilder):
         # self.data3d = np.zeros(gtree.shape, dtype=np.int)
         # self.voxelsize_mm = gtree.voxelsize_mm
         # super(tree.FiberSkeletBuilder, self).__init__()
-        tree.FiberSkeletBuilder.__init__(self)
+        tree.TubeSkeletonBuilder.__init__(self)
         # make comapatible with old system
         self.polygon_radius_selection_method = polygon_radius_selection_method
         self.cylinder_radius_compensation_factor = cylinder_radius_compensation_factor
@@ -64,10 +64,10 @@ class TBVTK(tree.FiberSkeletBuilder):
         pass
 
     def finish(self):
-        self.tree_data_old = compatibility_processing(self.tree_data)
+        self.tube_skeleton_old = compatibility_processing(self.tube_skeleton)
         # import ipdb; ipdb.set_trace()
         self.polyData = gen_tree(
-            self.tree_data_old, self.cylinder_resolution, self.sphere_resolution,
+            self.tube_skeleton_old, self.cylinder_resolution, self.sphere_resolution,
             polygon_radius_selection_method=self.polygon_radius_selection_method,
             cylinder_radius_compensation_factor=self.cylinder_radius_compensation_factor,
             sphere_radius_compensation_factor=self.sphere_radius_compensation_factor,

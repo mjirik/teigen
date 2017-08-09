@@ -187,6 +187,21 @@ class Teigen():
         self.config = dili.recursive_update(self.config, config)
         self.parameters_changed_before_save = True
 
+    def get_generator_id_by_name_or_number(self, id):
+
+        # if id is not nuber but name of generator
+        if type(id) == str:
+            for i in range(len(self.generators_names)):
+                if id == self.generators_names[i]:
+                    id = i
+                    break
+
+        if type(id) == str:
+            logger.error("Unknown generator name: " + id)
+
+        return id
+
+
     def step1(self):
 
         t0 = datetime.datetime.now()
@@ -207,16 +222,7 @@ class Teigen():
         self.config_file_manager.save_init(self.config)
 
         id = config.pop('generator_id')
-
-        # if id is not nuber but name of generator
-        if type(id) == str:
-            for i in range(len(self.generators_names)):
-                if id == self.generators_names[i]:
-                    id = i
-                    break
-
-        if type(id) == str:
-            logger.error("Unknown generator name: " + id)
+        id = self.get_generator_id_by_name_or_number(id)
 
         # area_dct = config["areasampling"]
         # area_cfg = self._cfg_export_fcn[id](area_dct)
@@ -313,7 +319,7 @@ class Teigen():
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
             tvg.shape = self.gen.areasize_px
-            tvg.tree_data = self.gen.tree_data
+            tvg.tube_skeleton = self.gen.tree_data
             output = tvg.buildTree()  # noqa
             # tvg.show()
             # TODO control output
@@ -333,7 +339,7 @@ class Teigen():
                 # tvg.importFromYaml(yaml_path)
                 tvg2.voxelsize_mm = self.voxelsize_mm
                 tvg2.shape = self.gen.areasize_px
-                tvg2.tree_data = self.gen.tree_data
+                tvg2.tube_skeleton = self.gen.tree_data
                 output = tvg2.buildTree()  # noqa
                 polydata_surf = tvg2.polyData
                 # tvg.show()
@@ -618,7 +624,7 @@ class Teigen():
             tvgvol = TBVolume()
             tvgvol.voxelsize_mm = vxsz
             tvgvol.shape = shape
-            tvgvol.tree_data = self.gen.tree_data
+            tvgvol.tube_skeleton = self.gen.tree_data
 
             data3d = tvgvol.buildTree()
             import measurement
@@ -702,6 +708,12 @@ class Teigen():
         # print note_df.to_dict()
 
         self.dataframes["processing_info"] = note_df
+
+    def load_tube_skeleton(self, filename):
+        params = io3d.misc.obj_from_file(filename=filename)
+
+    def set_tube_skeleton(self, tube_skeleton):
+        self.tree
 
     def load_config(self, filename):
         """ Load config from file.
