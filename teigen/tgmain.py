@@ -110,6 +110,7 @@ class Teigen():
         }
         self.parameters_changed_before_save = True
         self.fig_3d_render_snapshot = None
+        self.tube_skeleton = {}
 
     def __del__(self):
         self.filehandler.close()
@@ -251,6 +252,7 @@ class Teigen():
         # print "1D structure generator started"
         # import ipdb; ipdb.set_trace()
         self.gen.run()
+        self.tube_skeleton = self.gen.tree_data
 
         t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
@@ -319,7 +321,7 @@ class Teigen():
             # tvg.importFromYaml(yaml_path)
             tvg.voxelsize_mm = self.voxelsize_mm
             tvg.shape = self.gen.areasize_px
-            tvg.tube_skeleton = self.gen.tree_data
+            tvg.tube_skeleton = self.tube_skeleton
             output = tvg.buildTree()  # noqa
             # tvg.show()
             # TODO control output
@@ -339,7 +341,7 @@ class Teigen():
                 # tvg.importFromYaml(yaml_path)
                 tvg2.voxelsize_mm = self.voxelsize_mm
                 tvg2.shape = self.gen.areasize_px
-                tvg2.tube_skeleton = self.gen.tree_data
+                tvg2.tube_skeleton = self.tube_skeleton
                 output = tvg2.buildTree()  # noqa
                 polydata_surf = tvg2.polyData
                 # tvg.show()
@@ -446,7 +448,7 @@ class Teigen():
         if self.parameters_changed_before_save:
             self.step1()
         # TODO split save_volume and save_parameters
-        if len(self.gen.tree_data) == 0:
+        if len(self.tube_skeleton) == 0:
             logger.error("No data generated. 1D skeleton is empty.")
             return
         self.refresh_unoccupied_series_number()
@@ -710,10 +712,21 @@ class Teigen():
         self.dataframes["processing_info"] = note_df
 
     def load_tube_skeleton(self, filename):
+        """ Load tube skeleton and remember it.
+
+        :param filename:
+        :return:
+        """
         params = io3d.misc.obj_from_file(filename=filename)
+        import tree
+        tube_skeleton = tree.read_tube_skeleton_from_yaml(filename)
+        self.set_tube_skeleton(tube_skeleton)
 
     def set_tube_skeleton(self, tube_skeleton):
-        self.tree
+        self.tube_skeleton = tube_skeleton
+
+    def get_tube_skeleton(self):
+        return self.tube_skeleton
 
     def load_config(self, filename):
         """ Load config from file.

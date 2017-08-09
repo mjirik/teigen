@@ -60,36 +60,14 @@ class TubeSkeletonBuilder:
         # self.generator_class = generator_class
         # self.generator_params = generator_params
 
-    def fix_tree_structure(self, tree_raw_data):
-        """
-        Fix backward compatibility
-        :param tree_raw_data:
-        :return: fixed tree_raw_data
-        """
-        if 'graph' in tree_raw_data:
-            gr = tree_raw_data.pop('graph')
-            tree_raw_data['Graph'] = gr  # {'tree1':gr}
-
-        # if all keys in Graph a
-        if all([type(k) != str for k in tree_raw_data['Graph'].keys()]):
-            gr = tree_raw_data.pop('Graph')
-            tree_raw_data['Graph'] = {'tree1': gr}
-
-        # else:
-        #     tree_raw_data = tree_raw_data['Graph']
-        return tree_raw_data
-
     def importFromYaml(self, filename):
-        import yaml
-        f = open(filename, 'rb')
-        rawdata = yaml.load(f)
-        f.close()
-        self.rawdata = self.fix_tree_structure(rawdata)
-
-        tkeys = self.rawdata['Graph'].keys()
-        if (self.tree_label is None) or (self.tree_label not in tkeys):
-            self.tree_label = tkeys[0]
-        self.tube_skeleton = self.rawdata['Graph'][self.tree_label]
+        tube_skeleton, rawdata = read_tube_skeleton_from_yaml(
+            filename=filename,
+            tree_label=self.tree_label,
+            return_rawdata=True
+        )
+        self.rawdata = rawdata
+        self.tube_skeleton = tube_skeleton
 
     def add_segment_to_tree(self, pointA, pointB, radius, id=None):
         """
@@ -382,6 +360,48 @@ class TreeBuilder:
 
     def stop(self):
         self.stop_processing = True
+
+def read_tube_skeleton_from_yaml(self, filename, tree_label=None, return_rawdata=False):
+    """ Get tube skeleton and raw data from yaml file.
+
+    :param self:
+    :param filename: yaml filename
+    :param tree_label: label of tree. The first tree is used if None.
+    :return:
+    """
+    import yaml
+    f = open(filename, 'rb')
+    rawdata = yaml.load(f)
+    f.close()
+    rawdataf = fix_tree_structure(rawdata)
+
+    tkeys = rawdataf['Graph'].keys()
+    if (tree_label is None) or (tree_label not in tkeys):
+        tree_label = tkeys[0]
+    tube_skeleton = rawdataf['Graph'][tree_label]
+    if return_rawdata:
+        return tube_skeleton, rawdataf
+    else:
+        return tube_skeleton
+
+def fix_tree_structure(tree_raw_data):
+    """
+    Fix backward compatibility
+    :param tree_raw_data:
+    :return: fixed tree_raw_data
+    """
+    if 'graph' in tree_raw_data:
+        gr = tree_raw_data.pop('graph')
+        tree_raw_data['Graph'] = gr  # {'tree1':gr}
+
+    # if all keys in Graph a
+    if all([type(k) != str for k in tree_raw_data['Graph'].keys()]):
+        gr = tree_raw_data.pop('Graph')
+        tree_raw_data['Graph'] = {'tree1': gr}
+
+    # else:
+    #     tree_raw_data = tree_raw_data['Graph']
+    return tree_raw_data
 
 
 def main():
