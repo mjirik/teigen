@@ -102,7 +102,7 @@ class TeigenWidget(QtGui.QWidget):
         self.collect_config_from_gui()
         self.teigen.update_config(**self.config)
 
-    def run(self):
+    def step1(self):
         self.collect_config_from_gui_and_push_to_teigen()
 
         # self.config = new_cfg
@@ -113,7 +113,7 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_output_path.setText(fn)
         logger.debug("output path refreshed " + fn)
 
-    def _show_stats(self):
+    def _show_stats_after_step1(self):
         to_rename = {
             "length": "length [mm]",
             "volume": "volume [mm^3]",
@@ -364,7 +364,7 @@ class TeigenWidget(QtGui.QWidget):
 
         loadTubeSkeletonAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
         loadTubeSkeletonAction.setShortcut('Ctrl+S')
-        loadTubeSkeletonAction.triggered.connect(self.btn_load_tube_skeleton)
+        loadTubeSkeletonAction.triggered.connect(self.btn_step1_by_load_tube_skeleton)
 
         self.toolbar = QToolBar("File")
         self.mainLayout.addWidget(self.toolbar, 6, 1, 1, 1)
@@ -479,14 +479,19 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.delete_wg(self._ui_btn_save)
         self.delete_wg(self._ui_btn_save_and_add_to_batch)
 
-    def btn_load_tube_skeleton(self):
+    def step1_by_load_tube_skeleton(self, filename):
+        self.collect_config_from_gui_and_push_to_teigen()
+        self.teigen.step1_by_load_tube_skeleton(filename)
+        self._show_stats_after_step1()
+        self._ui_btn_step2.setEnabled(True)
+
+    def btn_step1_by_load_tube_skeleton(self):
         fn = op.dirname(self.teigen.get_fn_base())
         filename = QFileDialog.getOpenFileName(self, 'Open config file',
                                                fn, "Config files (*.yaml)")
         if filename is not None:
             filename = str(filename)
-        self.teigen.step1_by_load_tube_skeleton(filename)
-        self._ui_btn_step2.setEnabled(True)
+        self.step1_by_load_tube_skeleton(filename=filename)
 
     def btn_load_config(self):
         self.load_config()
@@ -552,8 +557,8 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         logger.debug("btnRunStage1")
         # logger.debug(str(self.config))
-        self.run()
-        self._show_stats()
+        self.step1()
+        self._show_stats_after_step1()
         self.run_number += 1
         self._ui_btn_step2.setEnabled(True)
 
@@ -590,8 +595,8 @@ For saving into image stack use 'filename{:06d}.jpg'")
         # filename = str(filename)
 
         if self.teigen.need_run:
-            self.run()
-            self._show_stats()
+            self.step1()
+            self._show_stats_after_step1()
 
         # filename = op.join(self.ui_output_dir_widget.get_dir(), filename)
         filename = self.config["filepattern"]

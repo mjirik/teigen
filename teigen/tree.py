@@ -363,19 +363,29 @@ class TreeBuilder:
         self.stop_processing = True
 
 def parse_area_properties(rawdata):
-    area = {}
-    if "general" in rawdata.keys():
-        general = rawdata["general"]
+    def find_in_general_key(general):
+        area = {}
         if "voxelsize_mm" in general:
             area["voxelsize_mm"] = general["voxelsize_mm"]
         if "shape_px" in general:
             area["areasize_px"] = general["shape_px"]
         if "areasize_px" in general:
             area["areasize_px"] = general["areasize_px"]
-    if "voxelsize_mm" in general:
-        area["voxelsize_mm"] = general["voxelsize_mm"]
-    if "voxelsize_px" in general:
-        area["areasize_px"] = general["voxelsize_px"]
+        return area
+
+    area = {}
+    if "general" in rawdata.keys():
+        general = rawdata["general"]
+        area = find_in_general_key(general)
+    if "areasampling" in rawdata.keys():
+        general = rawdata["areasampling"]
+        area = find_in_general_key(general)
+
+    # compatibility with older paper data
+    if "voxelsize_mm" in rawdata.keys():
+        area["voxelsize_mm"] = rawdata["voxelsize_mm"]
+    if "voxelsize_px" in rawdata.keys():
+        area["areasize_px"] = rawdata["voxelsize_px"]
 
     area["areasize_mm"] = np.asarray(area["areasize_px"]) * np.asarray(area["voxelsize_mm"])
     return area

@@ -202,18 +202,10 @@ class Teigen():
 
         return id
 
-    def step1_by_load_tube_skeleton(self, filename):
-        self.load_tube_skeleton(filename=filename)
-        t0 = self._step1_init_generator()
-        # t0 = datetime.datetime.now()
-        # st0 = str(t0)
-        # logger.info("step1_init_datetime " + st0)
-        # self.stats_times["step1_init_datetime"] = st0
-        self._step1_deinit_save_stats(t0)
 
 
 
-    def _step1_init_generator(self):
+    def _step1_init_generator(self, tube_skeleton=None):
         t0 = datetime.datetime.now()
         logger.info("step1_init_datetime" + str(t0))
         st0 = str(t0)
@@ -245,14 +237,22 @@ class Teigen():
             self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0
             self.gen.OVERLAPS_ALOWED = True
         self.gen.progress_callback = self.progress_callback
+        if tube_skeleton is not None:
+            self.gen.tree_data = tube_skeleton
         return t0
 
-    def _step1_deinit_save_stats(self, t0, t1=None):
+    def _step1_deinit_save_stats(self, t0):
+        self.tube_skeleton = self.gen.tree_data
+
+        t1 = datetime.datetime.now()
+        logger.debug("1D structure is generated")
+        pdatas = self.__generate_vtk(self.temp_vtk_file)
+        self.polydata_volume = pdatas[0]
+        self.polydata_surface = pdatas[1]
         t2 = datetime.datetime.now()
         self.stats_times["step1_total_time_s"] = (t2 - t0).total_seconds()
-        if t1 is not None:
-            self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
-            self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
+        self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
+        self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
         self.stats_times["step1_finished"] = True
         self.stats_times["step2_finished"] = False
         self.time_run = t2 - t0
@@ -267,6 +267,15 @@ class Teigen():
         self.need_run = False
         self.parameters_changed_before_save = False
 
+    def step1_by_load_tube_skeleton(self, filename):
+        self.load_tube_skeleton(filename=filename)
+        t0 = self._step1_init_generator(self.tube_skeleton)
+        # t0 = datetime.datetime.now()
+        # st0 = str(t0)
+        # logger.info("step1_init_datetime " + st0)
+        # self.stats_times["step1_init_datetime"] = st0
+        self._step1_deinit_save_stats(t0)
+
     def step1(self):
         t0 = self._step1_init_generator()
 
@@ -275,18 +284,11 @@ class Teigen():
         logger.debug("1D structure generator started")
         # print "1D structure generator started"
         # import ipdb; ipdb.set_trace()
-        self.gen.run()
-        self.tube_skeleton = self.gen.tree_data
-
-        t1 = datetime.datetime.now()
-        logger.debug("1D structure is generated")
-        pdatas = self.__generate_vtk(self.temp_vtk_file)
-        self.polydata_volume = pdatas[0]
-        self.polydata_surface = pdatas[1]
+        self.gen.step1()
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
 
-        t2 = self._step1_deinit_save_stats(t0, t1)
+        self._step1_deinit_save_stats(t0)
         # self.prepare_stats()
 
 
