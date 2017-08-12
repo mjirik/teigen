@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 import PyQt4
 from PyQt4.QtGui import QLabel, \
     QPushButton, QGridLayout, QTabWidget, QStatusBar, \
-    QFileDialog
+    QFileDialog, QToolBar
 
 from tgmain import main
 
@@ -356,6 +356,21 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_btn_step2.clicked.connect(self.btnRunStep2)
         self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
+        # Toolbar
+        # exitAction = QtGui.QAction(QtGui.QIcon('exit24.png'), 'Exit', self)
+        exitAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.triggered.connect(QtGui.qApp.quit)
+
+        loadTubeSkeletonAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
+        loadTubeSkeletonAction.setShortcut('Ctrl+S')
+        loadTubeSkeletonAction.triggered.connect(self.btn_load_tube_skeleton)
+
+        self.toolbar = QToolBar("File")
+        self.mainLayout.addWidget(self.toolbar, 6, 1, 1, 1)
+        self.toolbar.addAction(exitAction)
+        self.toolbar.addAction(loadTubeSkeletonAction)
+
         self._ui_config_init()
 
     def _ui_config_init(self):
@@ -463,6 +478,15 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.delete_wg(self._ui_btn_step2)
         self.delete_wg(self._ui_btn_save)
         self.delete_wg(self._ui_btn_save_and_add_to_batch)
+
+    def btn_load_tube_skeleton(self):
+        fn = op.dirname(self.teigen.get_fn_base())
+        filename = QFileDialog.getOpenFileName(self, 'Open config file',
+                                               fn, "Config files (*.yaml)")
+        if filename is not None:
+            filename = str(filename)
+        self.teigen.step1_by_load_tube_skeleton(filename)
+        self._ui_btn_step2.setEnabled(True)
 
     def btn_load_config(self):
         self.load_config()

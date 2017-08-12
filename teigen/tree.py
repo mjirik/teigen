@@ -15,6 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 import argparse
 import datetime
+import numpy as np
 
 
 class TubeSkeletonBuilder:
@@ -361,7 +362,25 @@ class TreeBuilder:
     def stop(self):
         self.stop_processing = True
 
-def read_tube_skeleton_from_yaml(self, filename, tree_label=None, return_rawdata=False):
+def parse_area_properties(rawdata):
+    area = {}
+    if "general" in rawdata.keys():
+        general = rawdata["general"]
+        if "voxelsize_mm" in general:
+            area["voxelsize_mm"] = general["voxelsize_mm"]
+        if "shape_px" in general:
+            area["areasize_px"] = general["shape_px"]
+        if "areasize_px" in general:
+            area["areasize_px"] = general["areasize_px"]
+    if "voxelsize_mm" in general:
+        area["voxelsize_mm"] = general["voxelsize_mm"]
+    if "voxelsize_px" in general:
+        area["areasize_px"] = general["voxelsize_px"]
+
+    area["areasize_mm"] = np.asarray(area["areasize_px"]) * np.asarray(area["voxelsize_mm"])
+    return area
+
+def read_tube_skeleton_from_yaml(filename, tree_label=None, return_rawdata=False):
     """ Get tube skeleton and raw data from yaml file.
 
     :param self:

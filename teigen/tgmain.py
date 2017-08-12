@@ -202,24 +202,23 @@ class Teigen():
 
         return id
 
+    def step1_by_load_tube_skeleton(self, filename):
+        self.load_tube_skeleton(filename=filename)
+        t0 = self._step1_init_generator()
+        # t0 = datetime.datetime.now()
+        # st0 = str(t0)
+        # logger.info("step1_init_datetime " + st0)
+        # self.stats_times["step1_init_datetime"] = st0
+        self._step1_deinit_save_stats(t0)
 
-    def step1(self):
 
+
+    def _step1_init_generator(self):
         t0 = datetime.datetime.now()
         logger.info("step1_init_datetime" + str(t0))
         st0 = str(t0)
-        # print "st0 " + st0
-        # import ipdb
-        # ipdb.set_trace()
         self.stats_times["step1_init_datetime"] = st0
         config = copy.deepcopy(self.config)
-        # filepattern = config["filepattern"]
-        # if "filepattern_series_number" in config.keys():
-        #     series_number = config["filepattern_series_number"]
-        #     config['filepattern'] = io3d.datawriter.filepattern_fill_series_number(
-        #         filepattern,
-        #         series_number=series_number
-        #     )
         self.config_file_manager.save_init(self.config)
 
         id = config.pop('generator_id')
@@ -246,6 +245,31 @@ class Teigen():
             self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0
             self.gen.OVERLAPS_ALOWED = True
         self.gen.progress_callback = self.progress_callback
+        return t0
+
+    def _step1_deinit_save_stats(self, t0, t1=None):
+        t2 = datetime.datetime.now()
+        self.stats_times["step1_total_time_s"] = (t2 - t0).total_seconds()
+        if t1 is not None:
+            self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
+            self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
+        self.stats_times["step1_finished"] = True
+        self.stats_times["step2_finished"] = False
+        self.time_run = t2 - t0
+        # self.prepare_stats()
+        one_row_filename = self.config["output"]["one_row_filename"]
+        if one_row_filename != "":
+            # self.prepare_stats()
+            self.save_stats_to_row(one_row_filename)
+        else:
+            self.prepare_stats()
+        logger.info("time: " + str(self.time_run))
+        self.need_run = False
+        self.parameters_changed_before_save = False
+
+    def step1(self):
+        t0 = self._step1_init_generator()
+
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         logger.debug("1D structure generator started")
@@ -262,24 +286,9 @@ class Teigen():
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
 
-        t2 = datetime.datetime.now()
-        self.stats_times["step1_generate_time_s"] = (t1 - t0).total_seconds()
-        self.stats_times["step1_generate_vtk_time_s"] = (t2 - t1).total_seconds()
-        self.stats_times["step1_total_time_s"] = (t2 - t0).total_seconds()
-        self.stats_times["step1_finished"] = True
-        self.stats_times["step2_finished"] = False
-        self.time_run = t2 - t0
+        t2 = self._step1_deinit_save_stats(t0, t1)
         # self.prepare_stats()
-        one_row_filename = self.config["output"]["one_row_filename"]
-        if one_row_filename != "":
-            # self.prepare_stats()
-            self.save_stats_to_row(one_row_filename)
-        else:
-            self.prepare_stats()
 
-        logger.info("time: " + str(self.time_run))
-        self.need_run = False
-        self.parameters_changed_before_save = False
 
     def get_aposteriori_faces_and_vertices(self):
         """
@@ -652,6 +661,34 @@ class Teigen():
             surface = 0
         return surface
 
+    def get_stats(self):
+        """ Return volume, surface, length and radius information.
+
+        :return:
+        Using one of generators to compute statistics.
+        """
+        import generators.unconnected_cylinders as uncy
+        gen = uncy.UnconnectedCylinderGenerator(
+            areasize_px=self.config["areasampling"]["areasize_px"],
+            voxelsize_mm=self.config["areasampling"]["voxelsize_mm"],
+        )
+        gen.init_stats()
+        for id, element in self.tube_skeleton.items():
+            if (
+                                "nodeA_ZYX_mm" in element.keys() and
+                                "nodeB_ZYX_mm" in element.keys() and
+                                "radius_mm" in element.keys()
+            ):
+                nodeA = element["nodeA_ZYX_mm"]
+
+                nodeB = element["nodeB_ZYX_mm"]
+                radius = element["radius_mm"]
+                gen.add_cylinder_to_stats(nodeA, nodeB, radius)
+            else:
+                logger.warning("Missing key in element id (" +
+                               str(id) + "). Two point and radius are required")
+        return gen.get_stats()
+
     def prepare_stats(self):
         to_rename = {
             "length": "length [mm]",
@@ -666,7 +703,10 @@ class Teigen():
             # "radius": "radius [mm^-2]"
         }
 
-        df = self.gen.get_stats()
+        # this compute correct even in case we are using cylinders
+        # df = self.gen.get_stats()
+        # this works fine even if data are loaded from file
+        df = self.get_stats()
         self.dataframes["elements"] = df
 
         dfdescribe = df.describe()
@@ -711,6 +751,7 @@ class Teigen():
 
         self.dataframes["processing_info"] = note_df
 
+
     def load_tube_skeleton(self, filename):
         """ Load tube skeleton and remember it.
 
@@ -719,7 +760,13 @@ class Teigen():
         """
         params = io3d.misc.obj_from_file(filename=filename)
         import tree
-        tube_skeleton = tree.read_tube_skeleton_from_yaml(filename)
+        tube_skeleton, rawdata = tree.read_tube_skeleton_from_yaml(filename, return_rawdata=True)
+
+
+        area = tree.parse_area_properties(rawdata)
+
+        self.config["areasampling"].update(area)
+
         self.set_tube_skeleton(tube_skeleton)
 
     def set_tube_skeleton(self, tube_skeleton):

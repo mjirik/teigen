@@ -217,6 +217,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         }
 
     def add_cylinder_to_stats(self, pt1, pt2, radius):
+        pt1 = np.asarray(pt1)
+        pt2 = np.asarray(pt2)
         edge = {
             "nodeA_ZYX_mm": pt1,
             "nodeB_ZYX_mm": pt2,
@@ -378,7 +380,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         # self.assertTrue(False)
         import pandas as pd
         df = pd.DataFrame(self.geometry_data)
-        desc = df.describe()
+        # desc = df.describe()
 
         return df
 
