@@ -886,6 +886,10 @@ class Teigen():
         if op.exists(filename):
             dfin = pd.read_csv(filename)
             dfout = pd.concat([dfin, dfout], axis=0)
+        else:
+            dirname = op.dirname(filename)
+            if not op.exists(dirname):
+                os.makedirs(dirname)
 
         dfout.to_csv(filename, index=False)
         # import ipdb; ipdb.set_trace()
