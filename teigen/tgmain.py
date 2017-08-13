@@ -246,7 +246,9 @@ class Teigen():
 
         t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
+        print("before vtk generation")
         pdatas = self.__generate_vtk(self.temp_vtk_file)
+        print("generate vtk finished")
         self.polydata_volume = pdatas[0]
         self.polydata_surface = pdatas[1]
         t2 = datetime.datetime.now()
@@ -268,8 +270,12 @@ class Teigen():
         self.parameters_changed_before_save = False
 
     def step1_by_load_tube_skeleton(self, filename):
+        logger.debug("step1_by_loda_tube_skeleton")
         self.load_tube_skeleton(filename=filename)
+        logger.debug("tube skeleton loaded")
         t0 = self._step1_init_generator(self.tube_skeleton)
+        logger.debug("generator initiated")
+        print("generator initiated")
         # t0 = datetime.datetime.now()
         # st0 = str(t0)
         # logger.info("step1_init_datetime " + st0)
@@ -284,7 +290,7 @@ class Teigen():
         logger.debug("1D structure generator started")
         # print "1D structure generator started"
         # import ipdb; ipdb.set_trace()
-        self.gen.step1()
+        self.gen.run()
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
 

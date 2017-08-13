@@ -158,6 +158,7 @@ class MyTestCase(unittest.TestCase):
         Check string like generator_id
         :return:
         """
+        print "test prepare parameters and measurement"
         import teigen.gui
         tg = teigen.gui.Teigen()
         tg.use_default_config()
@@ -187,9 +188,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_teigen_read_tube_skeleton_from_file(self):
         """
-        Check string like generator_id
+        Read tube skeleton from file
         :return:
         """
+        print "test read tube skeleton from file"
         import teigen.gui
         tg = teigen.gui.Teigen()
         tg.use_default_config()
@@ -212,7 +214,8 @@ class MyTestCase(unittest.TestCase):
         }
         tg.update_config(**conf)
         tg.step1_by_load_tube_skeleton(
-            op.join(path_to_script, "vt_biodur.yaml" ))
+            op.join(path_to_script, "data_vt.yaml" ))
+            #op.join(path_to_script, "vt_biodur.yaml" ))
         params = tg.get_config_and_measurement()
         tg.step2()
         print params
