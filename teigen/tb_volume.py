@@ -38,15 +38,28 @@ class TBVolume(tree.TubeSkeletonBuilder):
     Other similar generator is used for generating LAR outputs.
     """
 
-    def __init__(self, gtree, dtype=np.int, background_intensity=20):
+    def __init__(self,
+                 **kwargs
+                 ):
 
         # super(tree.FiberSkeletBuilder, self).__init__()
         tree.TubeSkeletonBuilder.__init__(self)
-        self.shape = np.asarray(gtree.shape, dtype=np.int)
-        self.data3d = (np.ones(self.shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
-        self.voxelsize_mm = gtree.voxelsize_mm
-        if ("intensity_profile" in dir(gtree)) and (gtree.intensity_profile is not None):
-            self.intensity_profile = gtree.intensity_profile
+        self.init(**kwargs)
+
+    def init(self, tube_skeleton=None, shape=None, voxelsize_mm=None,
+             background_intensity=20, dtype=np.int, intensity_profile=None):
+
+        self.tube_skeleton = tube_skeleton
+        if shape is None:
+            shape = [100, 100, 100]
+        if voxelsize_mm is None:
+            voxelsize_mm = [1., 1., 1.]
+
+        self.shape = np.asarray(shape, dtype=np.int)
+        self.data3d = (np.ones(shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
+        self.voxelsize_mm = voxelsize_mm
+        if intensity_profile is not None:
+            self.intensity_profile = intensity_profile
         else:
             # self.intensity_profile = {1:200, 0.6: 100}
             self.intensity_profile = {1: 200}

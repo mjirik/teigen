@@ -22,14 +22,12 @@ class GeneralGenerator(object):
         self.data3d = None
 
     def generate_volume(self, *args, **kwargs):
-        from ..tree import TreeBuilder
+        from ..tb_volume import TBVolume
 
-        self.tvgvol = TreeBuilder('vol', generator_params=kwargs)
-        print "GeneralGenerator"
-        print kwargs
+        self.tvgvol = TBVolume(**kwargs)
         self.tvgvol.voxelsize_mm = self.voxelsize_mm # [1, 1, 1]
         self.tvgvol.shape = self.areasize_px # [100, 100, 100]
-        self.tvgvol.tree_data = self.tree_data
+        self.tvgvol.tube_skeleton = self.tree_data
         self.tvgvol.finish_progress_callback = self.progress_callback
         if self.intensity_profile is not None:
             self.tvgvol.intensity_profile = self.intensity_profile

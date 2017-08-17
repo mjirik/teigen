@@ -186,6 +186,8 @@ class Teigen():
         config = copy.deepcopy(config)
         # there can be stored more than our config. F.e. some GUI dict reconstruction information
         self.config = dili.recursive_update(self.config, config)
+        self.voxelsize_mm = np.asarray(self.config["areasampling"]["voxelsize_mm"])
+        self.areasize_px = np.asarray(self.config["areasampling"]["areasize_px"])
         self.parameters_changed_before_save = True
 
     def get_generator_id_by_name_or_number(self, id):
@@ -455,8 +457,11 @@ class Teigen():
 
     def generate_volume(self):
         background_intensity=self.config["postprocessing"]["background_intensity"]
-        self.data3d = self.gen.generate_volume(dtype="uint8", background_intensity=background_intensity)
-        self.voxelsize_mm = self.gen.voxelsize_mm
+        self.data3d = self.gen.generate_volume(
+            voxelsize_mm=self.config["areasampling"]["voxelsize_mm"],
+            shape=self.config["areasampling"]["areasize_px"],
+            tube_skeleton=self.tube_skeleton, dtype="uint8", background_intensity=background_intensity)
+        # self.voxelsize_mm = self.gen.voxelsize_mm
         postprocessing_params = self.config["postprocessing"]
         data3d = self.postprocessing(**postprocessing_params)
         self.gen.data3d = data3d
