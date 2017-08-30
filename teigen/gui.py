@@ -114,6 +114,7 @@ class TeigenWidget(QtGui.QWidget):
         logger.debug("output path refreshed " + fn)
 
     def _show_stats_after_step1(self):
+        logger.debug("show stats after step1 begin ")
         to_rename = {
             "length": "length [mm]",
             "volume": "volume [mm^3]",
@@ -148,6 +149,7 @@ class TeigenWidget(QtGui.QWidget):
 
         self.actual_subtab_wg = QTabWidget()
         self.stats_tab_wg.addTab(self.actual_subtab_wg, '' + run_number_alpha)
+        logger.debug("initiating canvas for graphs")
         if True:
             self.figure = plt.figure()
             self.canvas = FigureCanvas(self.figure)
@@ -177,6 +179,7 @@ class TeigenWidget(QtGui.QWidget):
         # TODO take care about redrawing
         # self.stats_tab_wg.addTab(self._wg_tab_merne, "Density table")
 
+        logger.debug("tabs initiatization")
         dfdescribe = self.teigen.dataframes["describe"]
         dfmerne = self.teigen.dataframes["density"]
         dfoverall = self.teigen.dataframes["overall"]
@@ -209,16 +212,28 @@ class TeigenWidget(QtGui.QWidget):
         # self.resize(600,700)
 
 
-        if self.teigen.polydata_volume is not None:
+        logger.debug("poly data visualization init")
+        if self.teigen.polydata_volume is not None and self.teigen.config[CKEY_APPEARANCE]["surface_3d_preview"]:
             import imtools.show_segmentation_qt
+            logger.debug("segmentation widget loading")
             self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
 
-            # self._wg_show_3d.add_vtk_file(op.expanduser(self.teigen.temp_vtk_file))
-            self._wg_show_3d.add_vtk_polydata(self.teigen.polydata_volume)
+            logger.debug("read polydata")
+            # TODO use again - unstability is not here
+            # this ted to be unstable
+            # self._wg_show_3d.add_vtk_polydata(self.teigen.polydata_volume)
+            # so we are using file way
+            temp_vtk_file = op.expanduser(self.teigen.temp_vtk_file)
+            self.teigen.save_surface_to_file(temp_vtk_file)
+            self._wg_show_3d.add_vtk_file(temp_vtk_file)
+            logger.debug("init new tab")
             self.actual_subtab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
+        else:
+            self._wg_show_3d = None
 
         self.ui_stats_shown = True
 
+        logger.debug("noise preview init")
         if (
                     self.teigen.config[CKEY_APPEARANCE]["noise_preview"] and
                     self.teigen.config["postprocessing"]["add_noise"]):
@@ -230,6 +245,7 @@ class TeigenWidget(QtGui.QWidget):
             plt.imshow(noise[0, :, :], cmap="gray")
             plt.colorbar()
 
+        logger.debug("show potential output path")
         self._ui_show_potential_output_path()
 
     def update_stats(self):
@@ -613,8 +629,9 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.figure.savefig(fn_base + "_" + "graph.eps")
 
         from PyQt4.QtGui import QPixmap
-        p = QPixmap.grabWidget(self._wg_show_3d.vtkWidget)
-        p.save(fn_base + "_snapshot.png", 'png')
+        if self._wg_show_3d is not None:
+            p = QPixmap.grabWidget(self._wg_show_3d.vtkWidget)
+            p.save(fn_base + "_snapshot.png", 'png')
 
         # self.teigen.gen.saveVolumeToFile(filename)
         self.update_stats()

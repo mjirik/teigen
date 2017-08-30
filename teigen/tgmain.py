@@ -155,6 +155,7 @@ class Teigen():
             "show_aposteriori_surface": True,
             "skip_volume_generation": False,
             "noise_preview": False,
+            "surface_3d_preview": False,
         }
         config["output"] = {
             "one_row_filename": "~/teigen_data/output_rows.csv",
@@ -297,6 +298,7 @@ class Teigen():
         # import ipdb; ipdb.set_trace()
 
         self._step1_deinit_save_stats(t0)
+        logger.debug("step1 finished")
         # self.prepare_stats()
 
 
@@ -321,6 +323,7 @@ class Teigen():
             resolution = self.config["postprocessing"]["measurement_resolution"]
             method  = self.config["measurement"]["polygon_radius_selection_method"]
             tube_shape = self.config["measurement"]["tube_shape"]
+            logger.debug("surface_tube_shape " + str(tube_shape))
 
             if method == "best":
                 method_vol = "cylinder volume + sphere error"
@@ -486,10 +489,10 @@ class Teigen():
         t1 = datetime.datetime.now()
         self.save_1d_model_to_file(fn_base + "_vt.yaml")
 
-        self.save_surface_to_file(fn_base + "_surface.vtk")
         logger.debug("before volume generate " + str(t1 - t0))
 
         self.save_surface_to_file(fn_base + "_surface.vtk")
+        #self.save_surface_to_file(fn_base + "_surface.vtk")
         # postprocessing
         skip_vg = self.config[CKEY_APPEARANCE]["skip_volume_generation"]
 

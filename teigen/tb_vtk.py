@@ -29,7 +29,8 @@ class TBVTK(tree.TubeSkeletonBuilder):
                  polygon_radius_selection_method="inscribed",
                  cylinder_radius_compensation_factor=1.0,
                  sphere_radius_compensation_factor=1.0,
-                 tube_shape=True
+                 # tube_shape=True
+                 tube_shape=False
                  ):
         """
 
@@ -55,6 +56,7 @@ class TBVTK(tree.TubeSkeletonBuilder):
 
         self.cylinder_resolution = cylinder_resolution
         self.sphere_resolution = sphere_resolution
+        logger.debug("tube shape " + str(tube_shape))
         self.tube_shape = tube_shape
 
     def add_cylinder(self, p1m, p2m, rad, id):
@@ -208,6 +210,9 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         else:
             phi_resolution = sphere_resolution
 
+    if not tube_shape:
+        tube = move_to_position(cylinderTri, point, direction, 2, 1, 0)
+        return tube.GetOutput()
 
     sphere1 = get_sphere(
         center=point1,

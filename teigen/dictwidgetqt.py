@@ -201,7 +201,7 @@ class DictWidget(QtGui.QWidget):
         dictionary = copy.copy(dictionary)
         for key, value in dictionary.iteritems():
             from PyQt4.QtCore import pyqtRemoveInputHook
-            pyqtRemoveInputHook()
+            #pyqtRemoveInputHook()
             # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
             # if type(key) == tuple:
             if type(key) == ComposedDictMetadata:
