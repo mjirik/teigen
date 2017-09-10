@@ -147,6 +147,7 @@ class Teigen():
             "areasize_px": [50, 50, 50]
         }
         config["filepattern"] = "~/teigen_data/{seriesn:03d}/data{:06d}.jpg"
+        config["filepattern_abspath"] = None
         # config['filepattern_series_number'] = series_number
         # self.config["voxelsize_mm"] = [1.0, 1.0, 1.0]
         # self.config["areasize_mm"] = [100.0, 100.0, 100.0]
@@ -156,7 +157,9 @@ class Teigen():
             "skip_volume_generation": False,
             "noise_preview": False,
             "surface_3d_preview": False,
+            "force_rewrite": False,
         }
+        # "force_rewrite"  if series number is used on output dir
         config["output"] = {
             "one_row_filename": "~/teigen_data/output_rows.csv",
             "aposteriori_measurement": False,
@@ -262,6 +265,7 @@ class Teigen():
         self.stats_times["step2_finished"] = False
         self.time_run = t2 - t0
         # self.prepare_stats()
+        self.config["filepattern_abspath"] = self.filepattern_fill_series()
         one_row_filename = self.config["output"]["one_row_filename"]
         if one_row_filename != "":
             # self.prepare_stats()
@@ -391,17 +395,15 @@ class Teigen():
         """
         import io3d.datawriter
         filepattern = self.config["filepattern"]
+        force_rewrite = self.config[CKEY_APPEARANCE]["force_rewrite"]
         # self.refresh_unoccupied_series_number()
-        if "filepattern_series_number" not in self.config.keys():
+        if force_rewrite and "filepattern_series_number" in self.config.keys():
+            pass
+        else:
             sn = io3d.datawriter.get_unoccupied_series_number(filepattern)
             self.config["filepattern_series_number"] = sn
 
         filepattern_series_number = self.config["filepattern_series_number"]
-
-        # filepattern = re.sub(r"({\s*slicen\s*:?.*})", r"", filepattern)
-        # filepattern = re.sub(r"({\s*slice_number\s*:?.*})", r"", filepattern)
-        # filepattern = re.sub(r"({\s*slicep\s*:?.*})", r"", filepattern)
-        # filepattern = re.sub(r"({\s*slice_position\s*:?.*})", r"", filepattern)
 
         filepattern = re.sub(r"({\s*})", r"", filepattern)
 
@@ -504,7 +506,7 @@ class Teigen():
 
             t2 = datetime.datetime.now()
             logger.debug("before volume save " + str(t2 - t0))
-            self.gen.saveVolumeToFile(self.filepattern_fill_series())
+            self.gen.saveVolumeToFile(self.config["filepattern_abspath"])
         t3 = datetime.datetime.now()
         logger.info("time before volume generate: " + str(t1 - t0))
         logger.info("time before volume save: " + str(t2 - t0))
@@ -797,7 +799,6 @@ class Teigen():
         :param filename:
         :return:
         """
-
         params = io3d.misc.obj_from_file(filename=filename)
         self.use_default_config()
         self.update_config(**params)

@@ -109,7 +109,9 @@ class TeigenWidget(QtGui.QWidget):
         self.teigen.step1()
 
     def _ui_show_potential_output_path(self):
-        fn = self.teigen.filepattern_fill_potential_series()
+        fn = self.teigen.config["filepattern_abspath"]
+        # if fn is None:
+        #     fn = self.teigen.filepattern_fill_potential_series()
         self._ui_output_path.setText(fn)
         logger.debug("output path refreshed " + fn)
 
@@ -216,7 +218,19 @@ class TeigenWidget(QtGui.QWidget):
         if self.teigen.polydata_volume is not None and self.teigen.config[CKEY_APPEARANCE]["surface_3d_preview"]:
             import imtools.show_segmentation_qt
             logger.debug("segmentation widget loading")
-            self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(None, show_load_button=False)
+            # test code
+            fn = op.expanduser("~/lisa_data/sample_data/liver-seg001.mhd"),
+            # datap = io3d.read(fn, dataplus_format=True)
+            import imtools.sample_data
+            datap = imtools.sample_data.donut()
+
+            segmentation = datap['segmentation']
+            voxelsize_mm = datap['voxelsize_mm']
+            self._wg_show_3d = imtools.show_segmentation_qt.ShowSegmentationWidget(
+                # datap["segmentation"],
+                # show_load_button=True
+            )
+            QtGui.QApplication.processEvents()
 
             logger.debug("read polydata")
             # TODO use again - unstability is not here
@@ -226,6 +240,9 @@ class TeigenWidget(QtGui.QWidget):
             temp_vtk_file = op.expanduser(self.teigen.temp_vtk_file)
             self.teigen.save_surface_to_file(temp_vtk_file)
             self._wg_show_3d.add_vtk_file(temp_vtk_file)
+
+            # test codee
+            # self._wg_show_3d.add_
             logger.debug("init new tab")
             self.actual_subtab_wg.addTab(self._wg_show_3d, "Visualization " + run_number_alpha)
         else:
@@ -356,7 +373,7 @@ class TeigenWidget(QtGui.QWidget):
         self._ui_output_path = QLabel(self)
         self._ui_output_path.setText("")
         self.mainLayout.addWidget(self._ui_output_path, 2, 1, 1, 2)  # , (gd_max_i / 2), text_col)
-        self._ui_show_potential_output_path()
+        # self._ui_show_potential_output_path()
 
         self.mainLayout.addLayout(self.configBarLayout, 3, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
@@ -618,8 +635,6 @@ For saving into image stack use 'filename{:06d}.jpg'")
         filename = self.config["filepattern"]
 
         # filename = iowidgetqt.str_format_old_to_new(filename)
-
-
 
         self.teigen.step2()
         fn_base, fn_ext = self.teigen.filepattern_split()
