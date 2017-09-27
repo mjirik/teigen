@@ -23,7 +23,7 @@ from PyQt4.QtGui import QLabel, \
 
 from tgmain import main
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 import os.path as op
 import copy
 import collections
@@ -355,54 +355,68 @@ class TeigenWidget(QtGui.QWidget):
 
         self.configBarLayout = QGridLayout(self)
 
-        self._ui_btn_load_config = QPushButton("Load params", self)
-        self._ui_btn_load_config.setToolTip("Load params from file with file dialog")
-        self._ui_btn_load_config.clicked.connect(self.btn_load_config)
-        self.configBarLayout.addWidget(self._ui_btn_load_config, 1, 3, 1, 1)  # , (gd_max_i / 2), text_col)
+        # Toolbar
+        self._ui_btn_load_config = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton), "Load params", self)
+        self._ui_btn_load_config.setToolTip("Load params from file with file dialog (Ctrl+L)")
+        self._ui_btn_load_config.setShortcut('Ctrl+L')
+        self._ui_btn_load_config.triggered.connect(self.btn_load_config)
+        # self.configBarLayout.addWidget(self._ui_btn_load_config, 1, 3, 1, 1)  # , (gd_max_i / 2), text_col)
 
-        self._ui_btn_save = QPushButton("Save parameters", self)
-        self._ui_btn_save.setToolTip("Save generator parameters")
-        self._ui_btn_save.clicked.connect(self.btn_save_parameters)
-        self.configBarLayout.addWidget(self._ui_btn_save, 1, 1, 1, 1)
+        self._ui_btn_save = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_DialogSaveButton), "Save parameters", self)
+        self._ui_btn_save.setToolTip("Save generator parameters (Ctrl+S)")
+        self._ui_btn_save.triggered.connect(self.btn_save_parameters)
+        self._ui_btn_save.setShortcut('Ctrl+S')
+        # self.configBarLayout.addWidget(self._ui_btn_save, 1, 1, 1, 1)
 
-        self._ui_btn_save_and_add_to_batch = QPushButton("Save parameters and add to batch", self)
-        self._ui_btn_save_and_add_to_batch.setToolTip("Save generator parameters and then add to batch")
-        self._ui_btn_save_and_add_to_batch.clicked.connect(self.btn_save_parameters_and_add_to_batch)
-        self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1)  # , (gd_max_i / 2), text_col)
+        self._ui_btn_save_and_add_to_batch = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_FileDialogDetailedView), "Save parameters and add to batch", self)
+        self._ui_btn_save_and_add_to_batch.setToolTip("Save generator parameters and then add to batch (Ctrl+B)")
+        self._ui_btn_save_and_add_to_batch.triggered.connect(self.btn_save_parameters_and_add_to_batch)
+        self._ui_btn_save_and_add_to_batch.setShortcut('Ctrl+B')
+        # self.configBarLayout.addWidget(self._ui_btn_save_and_add_to_batch, 1, 2, 1, 1)  # , (gd_max_i / 2), text_col)
 
+        # exitAction = QtGui.QAction(QtGui.QIcon('exit24.png'), 'Exit', self)
+        # self.exitAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
+        # self.exitAction.setShortcut('Ctrl+Q')
+        # self.exitAction.triggered.connect(QtGui.qApp.quit)
+
+        # loadTubeSkeletonAction = QtGui.QAction( QtCore.QCoreApplication.translate("ahoj"), 'Exit', self)
+        self.loadTubeSkeletonAction = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaSkipForward), "Load skeleton",  self)
+        self.loadTubeSkeletonAction.setShortcut('Ctrl+K')
+        self.loadTubeSkeletonAction.setToolTip('Make Step 1 by loading skeleton (Ctrl+K)')
+        self.loadTubeSkeletonAction.triggered.connect(self.btn_step1_by_load_tube_skeleton)
+
+        self.toolbar = QToolBar("File")
+        self.mainLayout.addWidget(self.toolbar, 3, 1, 1, 1)
+        self.toolbar.addAction(self._ui_btn_save)
+        self.toolbar.addAction(self._ui_btn_save_and_add_to_batch)
+        self.toolbar.addAction(self._ui_btn_load_config)
+        self.toolbar.addAction(self.loadTubeSkeletonAction)
+        # self.toolbar.addAction(self.exitAction)
         self._ui_output_path = QLabel(self)
         self._ui_output_path.setText("")
+
+
+
         self.mainLayout.addWidget(self._ui_output_path, 2, 1, 1, 2)  # , (gd_max_i / 2), text_col)
         # self._ui_show_potential_output_path()
 
         self.mainLayout.addLayout(self.configBarLayout, 3, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         self._ui_btn_step1 = QPushButton("Step 1 - Preview - Generate skeleton", self)
+        self._ui_btn_step1.setToolTip("Generate preview and skeleton (Ctrl+P)")
         self._ui_btn_step1.clicked.connect(self.btnRunStep1)
+        self._ui_btn_step1.setShortcut('Ctrl+P')
         self.mainLayout.addWidget(self._ui_btn_step1, 4, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
         # self.posprocessing_wg = dictwidgetqt.DictWidget(postprocessing_params)
         # self.mainLayout.addWidget(self.posprocessing_wg, 3, 1)
 
         self._ui_btn_step2 = QPushButton("Step 2 - Generate and save volumetric data", self)
-        self._ui_btn_step2.setToolTip("Save image slices and meta information")
+        self._ui_btn_step2.setToolTip("Save image slices and meta information (Ctrl+R)")
         self._ui_btn_step2.clicked.connect(self.btnRunStep2)
+        self._ui_btn_step2.setShortcut('Ctrl+R')
         self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
-        # Toolbar
-        # exitAction = QtGui.QAction(QtGui.QIcon('exit24.png'), 'Exit', self)
-        exitAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.triggered.connect(QtGui.qApp.quit)
-
-        loadTubeSkeletonAction = QtGui.QAction( self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton) , 'Exit', self)
-        loadTubeSkeletonAction.setShortcut('Ctrl+S')
-        loadTubeSkeletonAction.triggered.connect(self.btn_step1_by_load_tube_skeleton)
-
-        self.toolbar = QToolBar("File")
-        self.mainLayout.addWidget(self.toolbar, 6, 1, 1, 1)
-        self.toolbar.addAction(exitAction)
-        self.toolbar.addAction(loadTubeSkeletonAction)
 
         self._ui_config_init()
 
