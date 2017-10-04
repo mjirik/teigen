@@ -759,6 +759,9 @@ class Teigen():
             surf = mass.GetSurfaceArea()
         dfoverallf["numeric volume [mm^3]"] = [vol]
         dfoverallf["numeric surface [mm^2]"] = [surf]
+        dfoverallf["numeric volume fraction []"] = [vol/self.gen.area_volume]
+        dfoverallf["negative numeric volume fraction []"] = [1. - vol/self.gen.area_volume]
+        dfoverallf["negative numeric volume [mm^3]"] = [self.gen.area_volume - vol]
         self.dataframes["overall"] = dfoverallf
 
         st = self.stats_times
