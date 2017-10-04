@@ -610,6 +610,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self._ui_btn_step2.setEnabled(True)
 
     def btnStop(self):
+        self.teigen.stop()
         pass
 
     def btn_save_in_one_row(self):

@@ -178,11 +178,13 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         }
         while not self.is_final_iteration():
             self.create_cylinder()
-        print (self.generation_break_causes)
+        logger.info(self.generation_break_causes)
         self.get_stats()
         self.data3d = None
 
     def is_final_iteration(self):
+        if self.stop:
+            return True
         self.iterations += 1
         stats = self.get_stats()
 
@@ -203,6 +205,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             return False
 
     def init_stats(self):
+        self.stop = False
         self.iterations = 0
         self.actual_object_volume = 0
         self.requeseted_volume = self.requeseted_volume_fraction * self.area_volume

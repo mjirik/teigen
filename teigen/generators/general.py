@@ -20,6 +20,7 @@ class GeneralGenerator(object):
     def __init__(self):
 
         self.data3d = None
+        self.stop = False
 
     def generate_volume(self, *args, **kwargs):
         from ..tb_volume import TBVolume
@@ -50,6 +51,9 @@ class GeneralGenerator(object):
             # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
         }
         io3d.write(data, filename)
+
+    def stop(self):
+        self.stop = True
 
 
 def random_normal(mean, scale, min=.0, **kwargs):

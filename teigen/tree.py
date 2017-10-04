@@ -168,7 +168,7 @@ class TubeSkeletonBuilder:
     def finish_progress_callback(self, progress, *args, **kwargs):
         # if self.segments_progress_callback is not None:
         #     self.segments_progress_callback(progress)
-        print ("progess: " + str(progress))
+        print("progess: {}\r".format(str(progress)))
         logger.debug(str(progress))
 
     def saveToFile(self, *args, **kwargs):
@@ -350,7 +350,7 @@ class TreeBuilder:
     def finish_progress_callback(self, progress, *args, **kwargs):
         # if self.segments_progress_callback is not None:
         #     self.segments_progress_callback(progress)
-        print ("progess: " + str(progress))
+        print ("progess: {}\r".format(str(progress)))
         logger.debug(str(progress))
 
     def saveToFile(self, *args, **kwargs):

@@ -231,6 +231,7 @@ class Teigen():
 
         id = config.pop('generator_id')
         id = self.get_generator_id_by_name_or_number(id)
+        self.stop_flag = False
 
         # area_dct = config["areasampling"]
         # area_cfg = self._cfg_export_fcn[id](area_dct)
@@ -329,6 +330,7 @@ class Teigen():
         return base + "_parameters.yaml"
 
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
+        logger.info("generating vtk for surface and volume compensated objects")
         vtk_file = op.expanduser(vtk_file)
         # from tree import TreeBuilder
         from tb_vtk import TBVTK
@@ -347,6 +349,7 @@ class Teigen():
                 method_surf = None
 
             # build volume tree
+            logger.debug("vtk generation - volume compensated")
             tvg = TBVTK(
                 cylinder_resolution=resolution,
                 sphere_resolution=resolution,
@@ -366,6 +369,7 @@ class Teigen():
 
             # build surface tree
             if method_surf is not None:
+                logger.debug("vtk generation - surface compensated")
                 from tb_vtk import TBVTK
                 tvg2 = TBVTK(
                     cylinder_resolution=resolution,
@@ -387,6 +391,9 @@ class Teigen():
                 polydata_surf = None
 
             return polydata_vol, polydata_surf
+
+    def stop(self):
+        self.stop_flag = True
 
     def filepattern_fill_potential_series(self):
         import io3d.datawriter
