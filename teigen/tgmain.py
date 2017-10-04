@@ -53,6 +53,7 @@ class Teigen():
         self.loglevel = loglevel
 
         self.logger = logging.getLogger()
+        logging.basicConfig()
         self.filehandler = logging.handlers.RotatingFileHandler(
             op.expanduser(logfile),
             maxBytes=1000000,
