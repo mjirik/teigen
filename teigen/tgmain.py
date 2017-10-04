@@ -50,7 +50,7 @@ class Teigen():
     def __init__(self, logfile='~/tegen.log', loglevel=logging.DEBUG):
         self.config_file_manager = ConfigFileManager("teigen")
         self.config_file_manager.init_config_dir()
-        self.loglevel = loglevel
+        # self.loglevel = loglevel
 
         self.logger = logging.getLogger()
         logging.basicConfig()
@@ -59,19 +59,21 @@ class Teigen():
             maxBytes=1000000,
             backupCount=9
         )
-        self.filehandler.setLevel(self.loglevel)
+        # self.filehandler.setLevel(self.loglevel)
         # formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
         self.formatter = logging.Formatter(
             '%(asctime)s %(levelname)-8s %(name)-18s %(lineno)-5d %(funcName)-12s %(message)s')
         self.filehandler.setFormatter(self.formatter)
         logger.addHandler(self.filehandler)
 
-        # streamhandler = logging.StreamHandler()
-        # streamhandler.setFormatter(formatter)
         # self.memoryhandler = logging.handlers.MemoryHandler(1024*10, logging.DEBUG, streamhandler)
         self.memoryhandler = logging.handlers.MemoryHandler(1024 * 100)  # , logging.DEBUG, streamhandler)
-        self.memoryhandler.setLevel(self.loglevel)
-        logger.addHandler(self.memoryhandler)
+        # self.memoryhandler.setLevel(self.loglevel)
+
+        self.streamhandler = logging.StreamHandler()
+        self.streamhandler.setFormatter(self.formatter)
+
+        self.set_loglevel(loglevel)
 
         logger.info("Starting Teigen")
 
@@ -121,6 +123,7 @@ class Teigen():
         self.logger.setLevel(self.loglevel)
         self.filehandler.setLevel(self.loglevel)
         self.memoryhandler.setLevel(self.loglevel)
+        self.streamhandler.setLevel(self.loglevel)
 
     def use_default_config(self):
         self.config = self.get_default_config()

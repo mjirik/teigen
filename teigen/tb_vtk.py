@@ -452,6 +452,7 @@ def polygon_radius_compensation_factos(
 
     else:
         logger.error("Unknown compensation method '{}'".format(polygon_radius_selection_method))
+        print("Unknown compensation method '{}'".format(polygon_radius_selection_method))
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
