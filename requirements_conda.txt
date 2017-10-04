@@ -1,6 +1,6 @@
 vtk
 io3d >=1.1.18
-numpy
+numpy >=1.10
 scikit-image
 pyqt =4.11.*
 pyqtconfig

@@ -50,7 +50,7 @@ requirements:
 #    - collections
     - vtk 6.* # 7.* pad na windows
     - io3d >=1.1.27
-    - numpy
+    - numpy >=1.10
     - scikit-image
     - pyqt 4.11.*
     - pyqtconfig
