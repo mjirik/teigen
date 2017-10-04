@@ -52,7 +52,7 @@ class Teigen():
         self.config_file_manager.init_config_dir()
         self.loglevel = loglevel
 
-        logger = logging.getLogger()
+        self.logger = logging.getLogger()
         self.filehandler = logging.handlers.RotatingFileHandler(
             op.expanduser(logfile),
             maxBytes=1000000,
@@ -114,6 +114,12 @@ class Teigen():
 
     def __del__(self):
         self.filehandler.close()
+
+    def set_loglevel(self, loglevel):
+        self.loglevel = loglevel
+        self.logger.setLevel(self.loglevel)
+        self.filehandler.setLevel(self.loglevel)
+        self.memoryhandler.setLevel(self.loglevel)
 
     def use_default_config(self):
         self.config = self.get_default_config()
