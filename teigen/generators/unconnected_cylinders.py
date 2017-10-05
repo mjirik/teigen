@@ -180,6 +180,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             self.create_cylinder()
         logger.info(self.generation_break_causes)
         self.get_stats()
+        print(self.generation_break_causes)
         self.data3d = None
 
     def is_final_iteration(self):

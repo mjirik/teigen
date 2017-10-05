@@ -354,6 +354,10 @@ class TeigenWidget(QtGui.QWidget):
         self.progressBar.show()
 
         self.configBarLayout = QGridLayout(self)
+        self._ui_config_init()
+
+
+    def _ui_init_buttons(self):
 
         # Toolbar
         self._ui_btn_load_config = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton), "Load params", self)
@@ -418,10 +422,10 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(self._ui_btn_step2, 5, 1, 1, 2)  # , (gd_max_i / 2), text_col)
 
 
-        self._ui_config_init()
 
     def _ui_config_init(self):
 
+        self._ui_init_buttons()
         self.ui_output_dir_widget = iowidgetqt.SetDirWidget(
             self.teigen.config["filepattern"], "output directory")
         self.ui_output_dir_widget.setToolTip(
@@ -523,8 +527,9 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.delete_wg(self._ui_generators_tab_wg)
         self.delete_wg(self._ui_btn_step1)
         self.delete_wg(self._ui_btn_step2)
-        self.delete_wg(self._ui_btn_save)
-        self.delete_wg(self._ui_btn_save_and_add_to_batch)
+        self.delete_wg(self.toolbar)
+        # self.delete_wg(self._ui_btn_save_and_add_to_batch)
+        # self.delete_wg(self._ui_btn_save)
 
     def step1_by_load_tube_skeleton(self, filename):
         self.collect_config_from_gui_and_push_to_teigen()
