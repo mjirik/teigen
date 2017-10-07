@@ -1,3 +1,7 @@
+
+[![Build Status](https://travis-ci.org/mjirik/teigen.svg?branch=master)](https://travis-ci.org/mjirik/teigen)
+[![Coverage Status](https://coveralls.io/repos/github/mjirik/teigen/badge.svg?branch=master)](https://coveralls.io/github/mjirik/teigen?branch=master)
+
 # teigen
 Test Image Generator
 
