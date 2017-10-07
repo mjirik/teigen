@@ -803,6 +803,10 @@ def regular_polygon_area_equivalent_radius(n, radius=1.0):
 
     r_{eqS} = \sqrt{\frac{\theta r^2}{\sin{\theta}}}
 
+    simplier form:
+
+    r_{eqS} = \sqrt{\frac{2 \pi r^2}{n \sin{\frac{2 \pi}{n}}}}
+
     :param radius: circle radius
     :param n:  number of regular polygon segments
     :return:  equivalent regular polynom surface
@@ -819,6 +823,9 @@ def regular_polygon_perimeter_equivalent_radius(n, radius=1.0):
     \theta = \frac{2 \pi}{n}
 
     r_{eqP} = \frac{\theta r}{2 \sin{\frac{\theta}{2}}}
+
+    siplier form:
+    r_{eqP} = \frac{\pi r}{n \sin{\frac{\pi}{n}}}
 
     :param radius: circle radius
     :param n:  number of regular polygon segments

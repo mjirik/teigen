@@ -34,7 +34,7 @@ def cylinder_volume(radius, length=None, pt1=None, pt2=None):
     return vol
 
 
-def pill_surface(radius, length=None, pt1=None, pt2=None):
+def tube_surface(radius, length=None, pt1=None, pt2=None):
     if length is None:
         pt1 = np.asarray(pt1)
         pt2 = np.asarray(pt2)
@@ -43,7 +43,7 @@ def pill_surface(radius, length=None, pt1=None, pt2=None):
     return surf
 
 
-def pill_volume(radius, length=None, pt1=None, pt2=None):
+def tube_volume(radius, length=None, pt1=None, pt2=None):
     if length is None:
         pt1 = np.asarray(pt1)
         pt2 = np.asarray(pt2)
@@ -59,10 +59,8 @@ def sphere_volume(radius):
 def cylinder_volume(radius, length):
     return (np.pi * radius ** 2 * length)
 
-    return ((4. / 3.) * np.pi * radius ** 3)
 
-
-def pill_radius_from_volume(volume, length):
+def tube_radius_from_volume(volume, length):
     """
     Estimates pill radius based on volume
     :param volume:

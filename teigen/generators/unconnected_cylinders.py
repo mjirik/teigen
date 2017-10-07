@@ -237,8 +237,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
         # if it is tube (pill)
         if self.tube_shape:
-            surf = g3.pill_surface(radius, length)
-            volume = g3.pill_volume(radius, length)
+            surf = g3.tube_surface(radius, length)
+            volume = g3.tube_volume(radius, length)
         else:
             # it is cylinder
             surf = 2 * np.pi * radius * (radius + length)
@@ -325,7 +325,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                 continue
 
             if self.tube_shape:
-                volume = g3.pill_volume(radius, length)
+                volume = g3.tube_volume(radius, length)
             else:
                 volume = g3.cylinder_volume(radius, length)
 
@@ -365,7 +365,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
 
     def pill_parameter_suggestion_for_last_object(self, first_radius, first_length):
         length = first_length
-        radius = g3.pill_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
+        radius = g3.tube_radius_from_volume(self.actual_object_volume - self.requeseted_volume, length)
 
         # for alpha in np.linspace(1., 0., 10):
         #     length = alpha * first_length
