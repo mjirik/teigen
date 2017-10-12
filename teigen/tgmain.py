@@ -760,6 +760,7 @@ class Teigen():
         dfoverallf = dfoverall.to_frame().transpose().rename(columns=to_rename)
         dfoverallf["area volume [mm^3]"] = [self.gen.area_volume]
         dfoverallf["count []"] = [count]
+        dfoverallf["mean radius [mm]"] = df["radius"].mean()
 
 
         # surface and volume measurement
