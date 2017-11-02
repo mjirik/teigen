@@ -132,6 +132,20 @@ def from_pyqtgraph_struct(dct):
 
     return key, value
 
+def find_in_structure(structure, key=None, value=None):
+    if type(structure) == list:
+        for i in range(0, len(structure)):
+            find_in_structure(structure[i])
+
+    elif type(structure) == dict:
+        for keyi in structure:
+            if key is not None and key == keyi:
+                if structure[key] == value:
+                    return structure
+
+            fnd = find_in_structure()
+
+
 
 class ListParameter(pTypes.GroupParameter):
     """
@@ -288,6 +302,49 @@ class BatchFileProcessingParameter(pTypes.GroupParameter):
             dict(name="%i" % ((len(self.childs))), type='str', value=str(fname), removable=True, renamable=True))
 
 
+
+
+from collections import Mapping, Set, Sequence
+
+# dual python 2/3 compatability, inspired by the "six" library
+string_types = (str, unicode) if str is bytes else (str, bytes)
+iteritems = lambda mapping: getattr(mapping, 'iteritems', mapping.items)()
+
+def objwalk(obj, path=(), memo=None):
+    if memo is None:
+        memo = set()
+    iterator = None
+    if isinstance(obj, Mapping):
+        iterator = iteritems
+    elif isinstance(obj, (Sequence, Set)) and not isinstance(obj, string_types):
+        iterator = enumerate
+    if iterator:
+        if id(obj) not in memo:
+            memo.add(id(obj))
+            for path_component, value in iterator(obj):
+                for result in objwalk(value, path + (path_component,), memo):
+                    yield result
+            memo.remove(id(obj))
+    else:
+        yield path, obj
+
+def find_in_struct(structure, value):
+    for pth, obj in objwalk(structure):
+        #a.append([type(pth), pth])
+        if obj == value:
+            return pth, obj
+
+def pick_from_struct(structure, pth):
+    struct = structure
+    for pthi in pth:
+        struct = struct[pthi]
+    return struct
+
+def add_tip(struct, name, tip):
+    pth, objstr = find_in_struct(struct, name)
+    obj = pick_from_struct(struct, pth[:-1])
+    obj["tip"] = tip
+
 def main():
     logger = logging.getLogger()
 
@@ -329,6 +386,7 @@ def main():
     # cw = DictWidget(cfg, captions=captions)
     # cw.show()
     # app.exec_()
+
 
 
 if __name__ == "__main__":

@@ -490,7 +490,11 @@ For saving into image stack use 'filename{:06d}.jpg'")
             #     ])
         }
         gr_struct = dictwidgetpg.to_pyqtgraph_struct('params', input_params, opts={})
-        # gr_struct["children"].append(i5)
+        dictwidgetpg.add_tip(gr_struct, "noise_preview", "this is noise")
+        gr_struct["children"][1]['tip'] = "Apperance tip"
+        gr_struct["children"][2]['tip'] = "output tip"
+        gr_struct["children"][3]['tip'] = "post processing tip"
+        gr_struct["children"][4]['tip'] = "measurement"
         p = Parameter.create(**gr_struct)
 
         t = ParameterTree()
@@ -510,7 +514,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         self.mainLayout.addWidget(t, 0, 0, 5, 1)
         self.config_wg = t
-        self.config_wg.setToolTip(teigendoc)
+        # self.config_wg.setToolTip(teigendoc)
         self.area_sampling_params = p
         self.teigen.progress_callback = self._progressbar_update
         self._ui_btn_step2.setEnabled(False)
