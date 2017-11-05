@@ -147,7 +147,7 @@ class TeigenWidget(QtGui.QWidget):
         else:
 
             self.stats_tab_wg = QTabWidget()
-            self.mainLayout.addWidget(self.stats_tab_wg, 0, 3, 5, 2)
+            self.mainLayout.addWidget(self.stats_tab_wg, 0, 3, 6, 2)
 
         self.actual_subtab_wg = QTabWidget()
         self.stats_tab_wg.addTab(self.actual_subtab_wg, '' + run_number_alpha)
