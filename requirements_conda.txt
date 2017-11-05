@@ -1,14 +1,14 @@
 vtk
-io3d >=1.1.18
+io3d >=1.1.21
 numpy >=1.10
 scikit-image
 pyqt =4.11.*
 pyqtconfig
 pandas
 simpleitk
-imtools >=0.1.31
+imtools >=0.1.46
 gensei
 pyqtgraph
 xlsxwriter
 git # kvuli instalaci gensei
-ndnoise >=0.0.8
+ndnoise >=0.0.13
