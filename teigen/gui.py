@@ -360,6 +360,13 @@ class TeigenWidget(QtGui.QWidget):
     def _ui_init_buttons(self):
 
         # Toolbar
+        # Use default config
+        self._ui_btn_default_config = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_BrowserReload), "Reset parameters to default values", self)
+        self._ui_btn_default_config.setToolTip("Reset all parameters to default value (Ctrl+R)")
+        self._ui_btn_default_config.setShortcut('Ctrl+R')
+        self._ui_btn_default_config.triggered.connect(self.btn_use_default_config)
+
+        # Load
         self._ui_btn_load_config = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton), "Load params", self)
         self._ui_btn_load_config.setToolTip("Load params from file with file dialog (Ctrl+L)")
         self._ui_btn_load_config.setShortcut('Ctrl+L')
@@ -393,6 +400,7 @@ class TeigenWidget(QtGui.QWidget):
         self.mainLayout.addWidget(self.toolbar, 3, 1, 1, 1)
         self.toolbar.addAction(self._ui_btn_save)
         self.toolbar.addAction(self._ui_btn_save_and_add_to_batch)
+        self.toolbar.addAction(self._ui_btn_default_config)
         self.toolbar.addAction(self._ui_btn_load_config)
         self.toolbar.addAction(self.loadTubeSkeletonAction)
         # self.toolbar.addAction(self.exitAction)
@@ -512,7 +520,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         # i5.setWidget(1, b5)
         # t.addTopLevelItem(i5)
 
-        self.mainLayout.addWidget(t, 0, 0, 5, 1)
+        self.mainLayout.addWidget(t, 0, 0, 6, 1)
         self.config_wg = t
         # self.config_wg.setToolTip(teigendoc)
         self.area_sampling_params = p
@@ -551,6 +559,11 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
     def btn_load_config(self):
         self.load_config()
+
+    def btn_use_default_config(self):
+        self.teigen.use_default_config()
+        self._ui_config_deinit()
+        self._ui_config_init()
 
     def load_config(self, filename=None):
         """
