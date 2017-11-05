@@ -13,11 +13,14 @@ Test Image Generator
 
 [Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)
 
-# Outputs
-
 # Parameters
 
 python teigen.__main__ -p parameters.yaml
+
+# Sample output
+
+![unconnected](https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_22_unconnected_n400_paraview.png)
+
 
 # Paper datasets and figures
 
