@@ -38,11 +38,11 @@ Detailed description of paremeters can be found in
 
 # Sample output
 
-Uncoonected tubes with volume fraction 22 %. Number of elements is 335.
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_22_unconnected_n335_paraview.png" width="200">
+Uncoonected tubes with volume fraction 22 %. Number of elements is 335.
 
-Tubes with overlap. Volume fraction 48 %. Number of elements is 400.
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_48_overlap4_n400_paraview.png" width="200">
+Tubes with overlap. Volume fraction 48 %. Number of elements is 400.
 
-Porosities with no overlap. Volume fraction 89 %, number of elements is 400.
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_89_porosities_n400_paraview.png" width="200">
+Porosities with no overlap. Volume fraction 89 %, number of elements is 400.
