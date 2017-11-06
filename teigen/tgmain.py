@@ -84,24 +84,26 @@ class Teigen():
         self.need_run = True
         self.gen = None
         self.generators_classes = [
-            generators.cylinders.CylinderGenerator,
-            generators.gensei_wrapper.GenseiGenerator,
-            generators.cylinders.CylinderGenerator,
+            # generators.cylinders.CylinderGenerator,
+            # generators.gensei_wrapper.GenseiGenerator,
+            # generators.cylinders.CylinderGenerator,
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
         ]
         self.generators_names = [
-            "Voronoi tubes",
-            "Gensei",
-            "Continuous tubes",
+            # "Voronoi tubes",
+            # "Gensei",
+            # "Continuous tubes",
             "Unconnected tubes",
             "Connected tubes",
             "Porosity",
         ]
         self._cfg_export_fcn = [
+            # self._config2generator_general_export,
+            # self._config2generator_gensei_export,
+            # self._config2generator_general_export,
             self._config2generator_general_export,
-            self._config2generator_gensei_export,
             self._config2generator_general_export,
             self._config2generator_general_export,
         ]

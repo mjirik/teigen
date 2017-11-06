@@ -49,9 +49,10 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
                  # area_shape_x=100,
                  # area_shape_y=100,
                  element_number=-1,
-                 radius_distribution_uniform=False,
-                 radius_distribution_normal=True,
-                 radius_distribution_fixed=False,
+                 radius_distribution="normal",
+                 radius_distribution_uniform=None,
+                 radius_distribution_normal=None,
+                 radius_distribution_fixed=None,
                  radius_distribution_minimum=0.1,
                  radius_distribution_maximum=10.0,
                  radius_distribution_mean=1.0,
@@ -101,6 +102,21 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.radius_generator = _const
         self.radius_generator_args = [radius_distribution_mean]
         self.area_volume = np.prod(self.areasize_px * self.voxelsize_mm)
+        if radius_distribution_normal is not None:
+            logger.warning("Deprecated use of radius_distribution_normal. Use radius_distribution='normal'")
+        else:
+            if radius_distribution == "normal":
+                radius_distribution_normal = True
+                radius_distribution_fixed = False
+                radius_distribution_uniform = False
+            elif radius_distribution == "fixed":
+                radius_distribution_normal = False
+                radius_distribution_fixed = True
+                radius_distribution_uniform = False
+            elif radius_distribution == "uniform":
+                radius_distribution_normal = False
+                radius_distribution_fixed= False
+                radius_distribution_uniform = True
         if radius_distribution_uniform:
             self.radius_generator = np.random.uniform
             self.radius_generator_args = [radius_distribution_minimum, radius_distribution_maximum]

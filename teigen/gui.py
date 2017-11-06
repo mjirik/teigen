@@ -443,13 +443,20 @@ For saving into image stack use 'filename{:06d}.jpg'")
 
         postprocessing_params = self.teigen.config["postprocessing"]
 
-        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution", "n_slice", "dims", "tube_shape"]
+        hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px",
+                     "resolution", "n_slice", "dims", "tube_shape",
+                     "radius_distribution_normal", "radius_distribution_uniform",
+                     "radius_distribution_fixed"
+                     ]
         self._ui_generators_tab_wg = QTabWidget()
         self._ui_generators_tab_wg.setMinimumWidth(400)
         self.mainLayout.addWidget(self._ui_generators_tab_wg, 0, 1, 1, 2)
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
+        }
+        dropdownoboxes = {
+            "radius_distribution": ["normal", "fixed", "uniform"]
         }
 
         # list is pointer. It causes problems with temporary reconstruction information
@@ -463,6 +470,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
                 hide_keys=hide_keys,
                 captions=rename_captions_dict,
                 ncols=1,
+                dropdownboxes=dropdownoboxes,
             )
             self._ui_generator_widgets.append(wg)
             self._ui_generators_tab_wg.addTab(wg, generator_name)
