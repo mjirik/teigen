@@ -12,11 +12,11 @@ teigen_keysdoc = {
     "note": "Note is stored to the data. It can be used for experiment identification",
     "force_rewrite": "rewrite data on the hard-drive",
     "noise_exponent": "exponent that controls the ratio of the individual components to the wavelength",
+    "noise_lambda0": "Minimum and maximum noise wavelengths in millimeters",
     "noise_lambda1": "Minimum and maximum noise wavelengths in millimeters",
-    "noise_lambda2": "Minimum and maximum noise wavelengths in millimeters",
     "noise_std": "Standard deviation of noise intensity",
     "noise_mean": "Noise mean intensity",
-    "noise_rng_seed": "noise random generator seed",
+    "noise_rng_seed": "noise random generator seed"
 }
 
 teigendoc = "\
