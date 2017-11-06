@@ -345,6 +345,17 @@ def add_tip(struct, name, tip):
     obj = pick_from_struct(struct, pth[:-1])
     obj["tip"] = tip
 
+def add_tips(struct, names_tips):
+    """
+    :param struct:
+    :param names_tips:  dict with name of property and tip
+    :return:
+    """
+    for key in names_tips:
+        print("napoveda")
+        print(key)
+        add_tip(struct, key, names_tips[key])
+
 def main():
     logger = logging.getLogger()
 

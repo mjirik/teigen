@@ -40,7 +40,7 @@ import dictwidgetpg
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from tgmain import Teigen, CKEY_OUTPUT, CKEY_APPEARANCE, CKEY_MEASUREMENT
-from .teigendoc import teigendoc
+from .teigendoc import teigendoc, teigen_keysdoc
 
 
 class TeigenWidget(QtGui.QWidget):
@@ -507,6 +507,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         }
         gr_struct = dictwidgetpg.to_pyqtgraph_struct('params', input_params, opts={})
         dictwidgetpg.add_tip(gr_struct, "noise_preview", "this is noise")
+        dictwidgetpg.add_tips(gr_struct, teigen_keysdoc)
         gr_struct["children"][1]['tip'] = "Apperance tip"
         gr_struct["children"][2]['tip'] = "output tip"
         gr_struct["children"][3]['tip'] = "post processing tip"

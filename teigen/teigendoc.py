@@ -8,6 +8,11 @@ logger = logging.getLogger(__name__)
 
 import argparse
 
+teigen_keysdoc = {
+    "note": "Note is stored to the data. It can be used for experiment identification",
+    "force_rewrite": "rewrite data on the hard-drive"
+}
+
 teigendoc = "\
 Input settings<br></br>\
 appearance:<br></br>\
