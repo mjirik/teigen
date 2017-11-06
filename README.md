@@ -3,23 +3,25 @@
 [![Coverage Status](https://coveralls.io/repos/github/mjirik/teigen/badge.svg?branch=master)](https://coveralls.io/github/mjirik/teigen?branch=master)
 
 # teigen
-Test Image Generator
+Test Image Generator. The basic concept of the algorithm includes the definition of objects to generate, the generation of the framework of the fiber structure, the surface representation, the quantitative description, the volume representation, and finally the file storage.
+
+[user manual](https://github.com/mjirik/teigen/blob/master/user_manual.md)
 
 # Installation
 
+On Linux, OS X or Windows the conda system can be used:
+
     conda install -c mjirik -c simpleitk teigen
 
-## Windows
-
-[Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)
+Or you can use [Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)
 
 # Parameters
 
+
 python teigen.__main__ -p parameters.yaml
 
-
-
-
+Detailed description of paremeters can be found in 
+[user manual](https://github.com/mjirik/teigen/blob/master/user_manual.md)
 
 # Paper datasets and figures
 
