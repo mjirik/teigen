@@ -28,7 +28,7 @@ import os.path as op
 import copy
 
 from .. import dictwidgetqt, iowidgetqt
-import cylinders
+import unconnected_cylinders
 from imtools import dili
 
 from pyqtconfig import ConfigManager
@@ -56,7 +56,7 @@ class CylindersWidget(QtGui.QWidget):
         super(CylindersWidget, self).__init__()
         self.ncols = ncols
 
-        self.config = dili.get_default_args(cylinders.CylinderGenerator)
+        self.config = dili.get_default_args(unconnected_cylinders.UnconnectedCylinderGenerator)
         self.gen = None
         self.init_ui()
 

@@ -18,7 +18,7 @@ import argparse
 import PyQt4
 from PyQt4.QtGui import QLabel, \
     QPushButton, QApplication, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
-    QDoubleSpinBox
+    QDoubleSpinBox, QBoxLayout, QRadioButton, QWidget, QComboBox, QBoxLayout
 
 from PyQt4 import QtGui
 import sys
@@ -31,12 +31,17 @@ from pyqtconfig import ConfigManager
 class DictWidget(QtGui.QWidget):
     def __init__(self, config_in, ncols=2, captions=None, hide_keys=None,
                  horizontal=False, show_captions=True, accept_button=False,
-                 config_manager=None):
+                 config_manager=None, radiobuttons=None, dropdownboxes=None):
         """
 
         :param config_in:  dictionary
         :param ncols:
         :param captions:
+        :param radiobuttons: {"name_of_radiobutton": [
+                                 ["orig_caption_1", orig_caption_2],
+                                 default_value]
+                                 ]
+                            }
         """
         super(DictWidget, self).__init__()
         if captions is None:
@@ -50,6 +55,12 @@ class DictWidget(QtGui.QWidget):
         self.hide_keys = copy.copy(hide_keys)
         self.horizontal = horizontal
         self.show_captions = show_captions
+        if radiobuttons is None:
+            radiobuttons = {}
+        self.radiobuttons = radiobuttons
+        if dropdownboxes is None:
+            dropdownboxes = {}
+        self.dropdownboxes = dropdownboxes
 
         # hide also temp keys for lists and ndarrays
         # due to load default params
@@ -79,6 +90,10 @@ class DictWidget(QtGui.QWidget):
         self._tmp_composed_keys_list = []
         toappend = {}
         for key, value in cfg.iteritems():
+            if key in self.dropdownboxes.keys():
+                continue
+            if key in self.radiobuttons.keys():
+                continue
             if type(value) in (list, np.ndarray):
                 self._tmp_composed_keys_dict[key] = []
                 array = np.asarray(value)
@@ -91,6 +106,38 @@ class DictWidget(QtGui.QWidget):
                     key_array_i += 1
                     toappend[key_i] = val
         cfg.update(toappend)
+
+    def _create_dropdownbox(self, key, value):
+        # atomic_widget = QWidget()
+        row, col = self.__calculate_new_grid_position()
+        # layout = QBoxLayout(self.horizontal)
+        atomic_widget = QComboBox()
+        # atomic_widget.addItem("C")
+        # atomic_widget.addItem("C++")
+        values = self.dropdownboxes[key]
+        # values = self.dropdownboxes[key][0]
+        if value is not None and value in values:
+            # vali = atomic_widget.findText(value)
+            atomic_widget.findText(value)
+        atomic_widget.addItems(values)
+        # this does not work. I used findText()
+        # atomic_widget.setCurrentIndex(vali)
+        # layout.addWidget(cb)
+
+        # atomic_widget.setLayout(layout)
+        return atomic_widget
+
+    def _create_radiobutton(self, key, value):
+        atomic_widget = QWidget()
+        layout = QBoxLayout(self.horizontal)
+        for i, rbkey in enumerate(self.radiobuttons[key][0]):
+            b1 = QRadioButton("Button1")
+            if i == self.radiobuttons[key][1]:
+                b1.setChecked(True)
+            # b1.toggled.connect(lambda:self.btnstate(self.b1))
+            layout.addWidget(b1)
+        atomic_widget.setLayout(layout)
+        return atomic_widget
 
     def init_ui(self):
         # self.widgets = {}
@@ -145,7 +192,13 @@ class DictWidget(QtGui.QWidget):
         :return:
         """
 
-        if type(value) is int:
+        if key in self.dropdownboxes.keys():
+            atomic_widget = self._create_dropdownbox(key,value)
+            self.config.add_handler(key, atomic_widget)
+        elif key in self.radiobuttons.keys():
+            atomic_widget = self._create_radiobutton(key,value)
+            self.config.add_handler(key, atomic_widget)
+        elif type(value) is int:
             atomic_widget = QSpinBox()
             atomic_widget.setRange(-100000, 100000)
             self.config.add_handler(key, atomic_widget)

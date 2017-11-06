@@ -25,7 +25,7 @@ Detailed description of paremeters can be found in
 
 # Paper datasets and figures
 
-[All experiments setup](https://github.com/mjirik/teigen/blob/master/examples/paper_experiments_params.ipynb)
+[All experiment configuration](https://github.com/mjirik/teigen/blob/master/examples/paper_experiments_params.ipynb)
 
 [Run all experimerimens and generate all data](https://github.com/mjirik/teigen/blob/master/examples/paper_run_experiments.ipynb)
 
@@ -39,7 +39,7 @@ Detailed description of paremeters can be found in
 # Sample output
 
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_22_unconnected_n335_paraview.png" width="200">
-Uncoonected tubes with volume fraction 22 %. Number of elements is 335.
+Unconnected tubes with volume fraction 22 %. Number of elements is 335.
 
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_48_overlap4_n400_paraview.png" width="200">
 Tubes with overlap. Volume fraction 48 %. Number of elements is 400.

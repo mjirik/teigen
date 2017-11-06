@@ -64,11 +64,32 @@ class TubeTreeTest(unittest.TestCase):
         from PyQt4.QtGui import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
         app = QApplication(sys.argv)
-        cfg = {"bool": True, "int": 5, 'str': 'strdrr', 'vs': [1.0, 2.5, 7]}
+        cfg = {"bool": True, "int": 5, 'str': 'strdrr', 'vs': [1.0, 2.5, 7],
+               "radio": None, "dropdown": "two"}
         captions = {"int": "toto je int"}
-        cw = DictWidget(cfg, captions=captions)
+        radiobuttons = {"radio":[["one", "two"], 1]}
+        dropdownboxes = {"dropdown":["one", "two", "three", "nove"]}
+        cw = DictWidget(cfg, captions=captions,
+                        # radiobuttons=radiobuttons,
+                        dropdownboxes=dropdownboxes)
         cw.show()
         app.exec_()
+        uu = cw.config_as_dict()
+        print(uu)
+
+    @attr('interactive')
+    def test_qt_create_widget_from_generator(self):
+        import PyQt4
+        from PyQt4.QtGui import QApplication, QFileDialog
+        from teigen.dictwidgetqt import DictWidget
+        from teigen.generators.unconnected_cylinders import UnconnectedCylinderGenerator
+        from imtools import dili
+        dargs = dili.get_default_args(UnconnectedCylinderGenerator)
+        app = QApplication(sys.argv)
+        cw = DictWidget(dargs)
+        cw.show()
+        app.exec_()
+
 
     @attr('interactive')
     def test_qt_cylinderwidget(self):
