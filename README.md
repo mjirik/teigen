@@ -43,3 +43,5 @@ Uncoonected tubes with volume fraction 22 %. Number of elements is 335.
 
 Tubes with overlap. Volume fraction 48 %. Number of elements is 400.
 ![connected](https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_48_overlap4_n400_paraview.png)
+
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_89_porosities_n200_paraview.png" width="48">
