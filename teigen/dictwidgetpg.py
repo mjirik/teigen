@@ -352,8 +352,6 @@ def add_tips(struct, names_tips):
     :return:
     """
     for key in names_tips:
-        print("napoveda")
-        print(key)
         add_tip(struct, key, names_tips[key])
 
 def main():
