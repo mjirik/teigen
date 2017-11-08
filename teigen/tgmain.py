@@ -90,6 +90,7 @@ class Teigen():
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
             generators.unconnected_cylinders.UnconnectedCylinderGenerator,
+            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
         ]
         self.generators_names = [
             # "Voronoi tubes",
@@ -97,15 +98,17 @@ class Teigen():
             # "Continuous tubes",
             "Unconnected tubes",
             "Connected tubes",
-            "Porosity",
+            "Unconnected porosity",
+            "Connected porosity",
         ]
         self._cfg_export_fcn = [
             # self._config2generator_general_export,
             # self._config2generator_gensei_export,
             # self._config2generator_general_export,
-            self._config2generator_general_export,
-            self._config2generator_general_export,
-            self._config2generator_general_export,
+            self._config2generator_tubes_export,
+            self._config2generator_tubes_export,
+            self._config2generator_porosity_export,
+            self._config2generator_porosity_export,
         ]
         self.use_default_config()
         self.progress_callback = None
@@ -156,10 +159,10 @@ class Teigen():
             generator_params = dili.kick_from_dict(generator_params, hide_keys)
             config["generators"][generator_name] = generator_params
 
-        # config["generators"]["Unconnected tubes"]["allow_overlap"] = False
-        # config["generators"]["Connected tubes"]["allow_overlap"] = True
-        # config["generators"]["Unconnected porosity"]["allow_overlap"] = False
-        # config["generators"]["Connected porosity"]["allow_overlap"] = True
+        config["generators"]["Unconnected tubes"]["allow_overlap"] = False
+        config["generators"]["Connected tubes"]["allow_overlap"] = True
+        config["generators"]["Unconnected porosity"]["allow_overlap"] = False
+        config["generators"]["Connected porosity"]["allow_overlap"] = True
 
         # self.config["generator_id"] = self.generators_names[0]
         config["generator_id"] = 0
@@ -659,17 +662,6 @@ class Teigen():
         noise = noise + pparams["noise_mean"]
         return noise
 
-    def _config2generator_gensei_export(self, config):
-        asp = config["areasampling"]
-        vs_mm = np.asarray(asp["voxelsize_mm"])
-        resolution = 1.0 / vs_mm
-        dct = {
-            'dims': asp["areasize_mm"],
-            'n_slice': asp["areasize_px"][0],
-            'resolution': [resolution[1], resolution[2]]
-        }
-        return dct
-
     def _aposteriori_numeric_measurement(self, fn_base):
         # import numpy as np
         from tb_volume import TBVolume
@@ -950,6 +942,27 @@ class Teigen():
             "intensity_profile_intensity": config["postprocessing"]["intensity_profile_intensity"],
             "tube_shape": config["measurement"]["tube_shape"]
         }
+
+    def _config2generator_tubes_export(self, config):
+        config["postprocessing"]["negative"] = False
+        generator_config = self._config2generator_general_export(config)
+        return generator_config
+
+    def _config2generator_porosity_export(self, config):
+        config["postprocessing"]["negative"] = True
+        generator_config = self._config2generator_general_export(config)
+        return generator_config
+
+    def _config2generator_gensei_export(self, config):
+        asp = config["areasampling"]
+        vs_mm = np.asarray(asp["voxelsize_mm"])
+        resolution = 1.0 / vs_mm
+        dct = {
+            'dims': asp["areasize_mm"],
+            'n_slice': asp["areasize_px"][0],
+            'resolution': [resolution[1], resolution[2]]
+        }
+        return dct
 
     # def save_volume_to_file(self, filename):
     #

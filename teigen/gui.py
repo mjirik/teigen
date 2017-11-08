@@ -63,7 +63,6 @@ class TeigenWidget(QtGui.QWidget):
         self.init_ui()
 
     def collect_config_from_gui(self):
-        print "generator args"
         id = self._ui_generators_tab_wg.currentIndex()
         config = collections.OrderedDict()
         config["generators"] = collections.OrderedDict()
