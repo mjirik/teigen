@@ -135,6 +135,12 @@ class Teigen():
         self.config = self.get_default_config()
 
     def get_default_config(self):
+        """
+        Create default configuration.
+
+        Configuration is composed from
+        :return:
+        """
 
         config = collections.OrderedDict()
         # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
@@ -149,6 +155,11 @@ class Teigen():
             generator_params = dili.get_default_args(generator_cl)
             generator_params = dili.kick_from_dict(generator_params, hide_keys)
             config["generators"][generator_name] = generator_params
+
+        # config["generators"]["Unconnected tubes"]["allow_overlap"] = False
+        # config["generators"]["Connected tubes"]["allow_overlap"] = True
+        # config["generators"]["Unconnected porosity"]["allow_overlap"] = False
+        # config["generators"]["Connected porosity"]["allow_overlap"] = True
 
         # self.config["generator_id"] = self.generators_names[0]
         config["generator_id"] = 0
