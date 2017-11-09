@@ -50,7 +50,7 @@ Porosities with no overlap. Volume fraction 89 %, number of elements is 400.
 
 # Screenshots
 
-<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot1_400.png" width="400">
-<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot2" width="400">
-<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot3" width="400">
-<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot4" width="400">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot1_400.png" width="800">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot2.png" width="800">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot3.png" width="800">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot4.png" width="800">
