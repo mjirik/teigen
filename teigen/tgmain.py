@@ -616,6 +616,8 @@ class Teigen():
             background_intensity=20
 
     ):
+        # negative is removed because we want it hide. The tab widget is used to control this
+        # property
         dt = self.data3d.dtype
         if gaussian_blur:
             sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm

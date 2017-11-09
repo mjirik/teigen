@@ -445,11 +445,12 @@ For saving into image stack use 'filename{:06d}.jpg'")
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px",
                      "resolution", "n_slice", "dims", "tube_shape",
                      "radius_distribution_normal", "radius_distribution_uniform",
-                     "radius_distribution_fixed"
+                     "radius_distribution_fixed", "allow_overlap"
                      ]
         self._ui_generators_tab_wg = QTabWidget()
         self._ui_generators_tab_wg.setMinimumWidth(400)
         self.mainLayout.addWidget(self._ui_generators_tab_wg, 0, 1, 1, 2)
+        # l = QVBoxLayout(self)
 
         rename_captions_dict = {
             "voxelsize_mm": "voxel size [mm]",
@@ -472,7 +473,10 @@ For saving into image stack use 'filename{:06d}.jpg'")
                 dropdownboxes=dropdownoboxes,
             )
             self._ui_generator_widgets.append(wg)
-            self._ui_generators_tab_wg.addTab(wg, generator_name)
+            self._ui_generators_tab_wg.addTab(wg, generator_name.replace(" ", "\n"))
+            # self._ui_generators_tab_wg.
+
+        # l.addWidget(self._ui_generators_tab_wg)
         # wgn = QtGui.QWidget()
         # layout = QtGui.QFormLayout()
         # layout.addRow("Name", QtGui.QLineEdit())
