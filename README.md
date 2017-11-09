@@ -32,9 +32,9 @@ Detailed description of paremeters can be found in
 [Figures generator script](https://github.com/mjirik/teigen/blob/master/examples/paper_figures.ipynb)
 
 
-* [Dataset1](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset1.csv) was used for generating image stacks that were measured on the micro-CT console. 
-* [Dataset2](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset2.csv) was used for generating image stacks for comparing known surfaces and volumes with numerically estimated surfaces and volumes. 
-* [Dataset3](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset3.csv) was used for generating image stacks for estimating the sensitivity of the estimates upon various numbers of objects and resolution of the measurement.
+* [Dataset1](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset1.csv) table was used for measure on the micro-CT console. 
+* [Dataset2](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset2.csv) was used for comparing known surfaces and volumes with numerically estimated surfaces and volumes. 
+* [Dataset3](https://raw.githubusercontent.com/mjirik/teigen/master/data/Dataset3.csv) was used for estimating the sensitivity of the estimates upon various numbers of objects and resolution of the measurement.
 
 # Sample output
 
@@ -46,3 +46,11 @@ Tubes with overlap. Volume fraction 48 %. Number of elements is 400.
 
 <img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/teigen_volume_fraction_89_porosities_n400_paraview.png" width="200">
 Porosities with no overlap. Volume fraction 89 %, number of elements is 400.
+
+
+# Screenshots
+
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot1_400.png" width="400">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot2" width="400">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot3" width="400">
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot4" width="400">
