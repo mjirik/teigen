@@ -10,7 +10,9 @@ import numpy as np
 import skimage.measure
 
 
-def surface_measurement(volume, voxelsize, level=1.0, return_vertices_and_faces=False, **kwargs):
+def surface_measurement(volume, voxelsize, level=None, return_vertices_and_faces=False, **kwargs):
+    if level==None:
+        level = (np.max(volume) + np.min(volume)) * 0.5
     vertices, faces = skimage.measure.marching_cubes(volume, level=level, spacing=voxelsize)
     surface_area = skimage.measure.mesh_surface_area(verts=vertices, faces=faces)
 
