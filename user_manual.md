@@ -24,6 +24,10 @@ Third column show the outputs. The 3D visualization, graphs and tabels are displ
 
 # Parameters and input settings
 
+* Area sampling
+     * `voxelsize_mm` - size of x,y and z dimmension of voxel in milimeters
+     * `areasize_mm` - size of sample area in milimeters
+     * `areasize_px` - size of sample area in pixels (or voxels)
 * Appearance
      * `skip_volume_generation` - can be used if slice images are not required
      * `surface_3d_preview` - enable 3D preview
@@ -79,24 +83,24 @@ Third column show the outputs. The 3D visualization, graphs and tabels are displ
      * `last_element_can_be_smaller`: 
 
 
-# Outputs:
+# Outputs
 
-length [mm]: analytically computed total length of actually generated cylinders (i.e., the distance between the endpoints of the cylinder axis) within the ROI
-volume [mm^3]: analytically computed total volume of actually generated objects within the ROI; this includes both the volume of the cylinders and the volume of the hemispheres
-surface [mm^2]: analytically computed total surface of actually generated objects with the ROI; this includes both the surface of the cylinders and the surface of the hemispheres
-area volume [mm^3]: total volume of ROI
-count []: total number of objects actually generated within the ROI
-numeric volume [mm^2]: numerically computed total volume of actually generated objects within the ROI; this includes both the volume of the cylinders and the volume of the hemispheres; The calculation is based on surface triangulation of the parametrically defined objects. Cylinder and spheres primitives are connected into one object using vtkBooleanOperationPolyDataFilter (http://hdl.handle.net/10380/3262) and volume is measured using the vtkMassProperties.
-
-.  using the……..algorithm.   
-numeric surface [mm^2]: numerically computed total surface of actually generated objects within the ROI; this includes both the surface of the cylinders and the surface of the hemispheres; The calculation is based on surface triangulation of the parametrically defined objects using the……..algorithm. 
-length d. [mm^-2]: the length density of the actually generated cylinders i.e., the analytically computed length per volume of the ROI
-volume d. []: the volume density (or volume fraction) of the actually generated objects (including cylinders and hemispheres) i.e., the analytically computed volume per volume of the ROI
-surface d. [mm^-1]:  the surface density the actually generated objects (including cylinders and hemispheres) i.e., the analytically computed surface per volume of the ROI
-point1: Cartesian coordinates of the initial point of a vector representing the axis of the generated cylinder
-point2: Cartesian coordinates of the terminal point of a vector representing the axis of the generated cylinder
-radius: the radius of the actually generated cylinder and its corresponding hemisphere
-vector: triples of scalar components identifying the vector representing the axis of the generated cylinder
+Output measurement on screen or in `.yaml` or `.csv` file:
+* length [mm]: analytically computed total length of actually generated
+     cylinders (i.e., the distance between the endpoints of the cylinder axis) within the ROI
+* volume [mm^3]: analytically computed total volume of actually generated objects within the ROI; this includes both the volume of the cylinders and the volume of the hemispheres
+* surface [mm^2]: analytically computed total surface of actually generated objects with the ROI; this includes both the surface of the cylinders and the surface of the hemispheres
+* area volume [mm^3]: total volume of ROI
+* count []: total number of objects actually generated within the ROI
+* numeric volume [mm^2]: numerically computed total volume of actually generated objects within the ROI; this includes both the volume of the cylinders and the volume of the hemispheres; The calculation is based on surface triangulation of the parametrically defined objects. Cylinder and spheres primitives are connected into one object using vtkBooleanOperationPolyDataFilter (http://hdl.handle.net/10380/3262) and volume is measured using the vtkMassProperties. 
+* numeric surface [mm^2]: numerically computed total surface of actually generated objects within the ROI; this includes both the surface of the cylinders and the surface of the hemispheres; The calculation is based on surface triangulation of the parametrically defined objects using the……..algorithm. 
+* length d. [mm^-2]: the length density of the actually generated cylinders i.e., the analytically computed length per volume of the ROI
+* volume d. []: the volume density (or volume fraction) of the actually generated objects (including cylinders and hemispheres) i.e., the analytically computed volume per volume of the ROI
+* surface d. [mm^-1]:  the surface density the actually generated objects (including cylinders and hemispheres) i.e., the analytically computed surface per volume of the ROI
+* point1: Cartesian coordinates of the initial point of a vector representing the axis of the generated cylinder
+* point2: Cartesian coordinates of the terminal point of a vector representing the axis of the generated cylinder
+* radius: the radius of the actually generated cylinder and its corresponding hemisphere
+* vector: triples of scalar components identifying the vector representing the axis of the generated cylinder
 
 
 
