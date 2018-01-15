@@ -85,6 +85,16 @@ Third column show the outputs. The 3D visualization, graphs and tabels are displ
 
 # Outputs
 
+## Files
+
+There are several files stored into output directory groupped in fallowing groupes:
+* Image data - based on file extension the image data slices can be stored into the DICOM, JPG, PNG, TIFF and many other formats if image stack file format string ("{:06d}") is used.
+One file 3D image can be created with DICOM and TIFF file format if no image stack file format string is used.
+* Structured object data - are stored in `.yaml` file. Contain information about every piece of tube object in the image.
+* Table data - are stored in `.csv` and `.xml` files and contain input data, output measurement and overal tube object statistic.
+
+## Features and measurement
+
 Output measurement on screen or in `.yaml` or `.csv` file:
 * length [mm]: analytically computed total length of actually generated
      cylinders (i.e., the distance between the endpoints of the cylinder axis) within the ROI
