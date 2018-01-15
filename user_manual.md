@@ -1,13 +1,28 @@
+
+
+    
+
+
 # Algorithm
 The basic concept of the algorithm includes the definition of objects to generate, the generation of the framework of the fiber structure, the surface representation, the quantitative description, the volume representation, and finally the file storage. 
 
 The basic element used in this task is a tube. It is a cylindrical body that ends with hemispheres. The user can set parameters for object length, object radius, and parameters that affect the direction and isotropy of objects. 
 Four different generators can be used.
 
+# Graphical User Ingerface
+
+Layout of the Graphical User Interface (GUI) is divided into three columns. 
+First column is for setting all parameters that determine application output. Some of the parameters set the behavior of the user interface. 
+
+Second column is used to trigger first and second step of generation procedure. Some of the most importatnt parameters are in this part of GUI.
+
+Third column show the outputs. The 3D visualization, graphs and tabels are displayed here.
+
+<img src="https://raw.githubusercontent.com/mjirik/teigen/master/graphics/paper/screenshots/teigen_screenshot1_400.png" width="800">
 
 
 
-#Input settings
+# Parameters and input settings
 
 * Appearance
      * `skip_volume_generation` - can be used if slice images are not required
@@ -82,3 +97,10 @@ point1: Cartesian coordinates of the initial point of a vector representing the 
 point2: Cartesian coordinates of the terminal point of a vector representing the axis of the generated cylinder
 radius: the radius of the actually generated cylinder and its corresponding hemisphere
 vector: triples of scalar components identifying the vector representing the axis of the generated cylinder
+
+
+
+
+# Command line
+
+    python teigen.__main__ -p parameters.yaml
