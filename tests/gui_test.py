@@ -24,7 +24,7 @@ class GuiTest(unittest.TestCase):
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpg
         params = teigen.dictwidgetpg.to_pyqtgraph_struct("pokus", cfg)
-        print params
+        print(params)
         self.assertDictEqual(
             params["children"][0],
             {'type': 'bool', 'name': 'bool', 'value': True, "reconstruction_type": "bool"}
@@ -98,7 +98,7 @@ class GuiTest(unittest.TestCase):
         p = Parameter.create(**params)
         # p = Parameter.create(name='params', type='group', children=params)
         t = ParameterTree()
-        print p.getValues()
+        print(p.getValues())
         lst = p.saveState()
         vals = p.getValues()
 
