@@ -71,7 +71,7 @@ class TubeTreeTest(unittest.TestCase):
 
     @unittest.skipIf(VTK_MALLOC_PROBLEM, "VTK malloc problem")
     def test_nothing(self):
-        print "skelet3d_installed", skelet3d_installed
+        print("skelet3d_installed", skelet3d_installed)
         # import ipdb; ipdb.set_trace()
         self.assertTrue(False)
 
@@ -91,7 +91,7 @@ class TubeTreeTest(unittest.TestCase):
     @unittest.skipIf(not ("skelet3d" in sys.modules), "skelet3d is not installed")
     @unittest.skipIf(not skelet3d_installed, "skelet3d is not installed")
     def test_vessel_tree_vtk_from_skeleton(self):
-        print "skelet3d_installed", skelet3d_installed
+        print("skelet3d_installed", skelet3d_installed)
 
         import skelet3d
         import skelet3d.skeleton_analyser
