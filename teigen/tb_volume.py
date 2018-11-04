@@ -20,7 +20,7 @@ import numpy as np
 import scipy.ndimage
 import sys
 
-if sys.version_info.main == 3:
+if sys.version_info.major == 3:
     xrange = range
 from . import tree
 
