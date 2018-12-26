@@ -135,7 +135,7 @@ class TubeSkeletonBuilder:
                 p2m = cyl_data['nodeB_ZYX_mm']
                 rad = cyl_data['radius_mm']
                 self.add_cylinder(p1m, p2m, rad, cyl_id)
-            except Exception, e:
+            except Exception as e:
                 # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
 
                 logger.error(
@@ -317,7 +317,7 @@ class TreeBuilder:
                 p2m = cyl_data['nodeB_ZYX_mm']
                 rad = cyl_data['radius_mm']
                 self.generator.add_cylinder(p1m, p2m, rad, cyl_id)
-            except Exception, e:
+            except Exception as e:
                 # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
 
                 logger.error(
