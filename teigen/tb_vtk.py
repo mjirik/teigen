@@ -16,7 +16,6 @@ import tree
 
 # new interface
 
-
 class TBVTK(tree.TubeSkeletonBuilder):
     """
     This generator is called by generateTree() function as a general form.
