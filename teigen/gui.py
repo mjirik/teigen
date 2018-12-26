@@ -601,7 +601,7 @@ For saving into image stack use 'filename{:06d}.jpg'")
         self.progressBar.setValue(int(10000 * level))
         if "statusbar_text" in kwargs:
             # add this in gui
-            print "statusbar_text " + kwargs["statusbar_text"]
+            print("statusbar_text " + kwargs["statusbar_text"])
             ## end of pyqtgraph tree
 
     def run_batch(self):
