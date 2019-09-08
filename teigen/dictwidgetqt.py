@@ -11,29 +11,56 @@
 """
 
 import logging
+try:
+    QString = unicode
+except NameError:
+    # Python 3
+    QString = str
 
 logger = logging.getLogger(__name__)
+
 import argparse
 
-import PyQt4
-from PyQt4.QtGui import QLabel, \
-    QPushButton, QApplication, QGridLayout, QSpinBox, QLineEdit, QCheckBox, \
-    QDoubleSpinBox, QBoxLayout, QRadioButton, QWidget, QComboBox, QBoxLayout
 
-from PyQt4 import QtGui
+import PyQt5
+
+
+from PyQt5.QtWidgets import (QLabel, QPushButton, QApplication, QGridLayout,
+                         QSpinBox, QLineEdit, QCheckBox, QDoubleSpinBox,
+                         QBoxLayout, QRadioButton, QWidget, QComboBox,
+                         QBoxLayout)
+
+
+from PyQt5 import QtGui, QtWidgets
 import sys
-import copy
 import numpy as np
 
 from pyqtconfig import ConfigManager
+import copy
+
+# class ConfigManager():
+#     # TODO check config manager
+#     def __init__(self):
+#         self.config = {}
+#         self.defaults = {}
+#         pass
+#
+#     def set_defaults(self, defaults):
+#         self.defaults = defaults
+#         self.config.update(defaults)
+#
+#     def add_handler(self, key, widget):
+#         import pdb; pdb.set_trace()
+#         value = widget.value()
+#         self.config[key] = value
 
 
-class DictWidget(QtGui.QWidget):
+class DictWidget(QtWidgets.QWidget):
+
     def __init__(self, config_in, ncols=2, captions=None, hide_keys=None,
                  horizontal=False, show_captions=True, accept_button=False,
                  config_manager=None, radiobuttons=None, dropdownboxes=None):
         """
-
         :param config_in:  dictionary
         :param ncols:
         :param captions:
@@ -89,7 +116,7 @@ class DictWidget(QtGui.QWidget):
         self._tmp_composed_keys_dict = {}
         self._tmp_composed_keys_list = []
         toappend = {}
-        for key, value in cfg.iteritems():
+        for key, value in cfg.items():
             if key in self.dropdownboxes.keys():
                 continue
             if key in self.radiobuttons.keys():
@@ -144,7 +171,7 @@ class DictWidget(QtGui.QWidget):
         # self.grid_i = 0
         grid = self.mainLayout
 
-        for key, value in self.config_in.iteritems():
+        for key, value in self.config_in.items():
 
             if key in self.hide_keys:
                 continue
@@ -239,31 +266,29 @@ class DictWidget(QtGui.QWidget):
         return row, col
 
     def btn_accept(self):
-        print ("btn_accept: " + str(self.config_as_dict()))
+        print(("btn_accept: " + str(self.config_as_dict())))
 
     def on_config_update(self):
         pass
 
     def config_as_dict(self):
         def _primitive_type(value):
-            if type(value) == PyQt4.QtCore.QString:
+            if type(value) == QString:
                 value = str(value)
             return value
 
         dictionary = self.config.as_dict()
         dictionary = copy.copy(dictionary)
-        for key, value in dictionary.iteritems():
-            from PyQt4.QtCore import pyqtRemoveInputHook
+        for key, value in dictionary.items():
+            from PyQt5.QtCore import pyqtRemoveInputHook
             #pyqtRemoveInputHook()
             # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
             # if type(key) == tuple:
             if type(key) == ComposedDictMetadata:
-
                 dict_key, value_index = key
                 dict_key = (dict_key)
                 # if dict_key not in dictionary.keys():
                 #     dictionary[dict_key] = {}
-
                 dictionary[dict_key][value_index] = _primitive_type(value)
 
             else:
@@ -274,7 +299,7 @@ class DictWidget(QtGui.QWidget):
             if type(key) == ComposedDictMetadata:
                 dictionary.pop(key)
 
-        # for key, value in dictionary.iteritems():
+        # for key, value in dictionary.items():
         #     if type(key) == tuple:
         #         dictionary
 
@@ -287,10 +312,11 @@ def complicated_to_yaml(cfg):
     :param cfg:
     :return:
     """
-    import yaml
+    from ruamel.yaml import YAML
+    yaml = YAML()
     # convert values to json
     isconverted = {}
-    for key, value in cfg.iteritems():
+    for key, value in cfg.items():
         if type(value) in (str, int, float, bool):
 
             isconverted[key] = False
@@ -322,7 +348,6 @@ def main():
     # fh.setFormatter(formatter)
     # logger.addHandler(fh)
     # logger.debug('start')
-
     # input parser
     parser = argparse.ArgumentParser(
         description=__doc__

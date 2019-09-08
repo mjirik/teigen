@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 logger = logging.getLogger(__name__)
+
+# from PyQt5.QtWidgets import *
 # import funkcí z jiného adresáře
-import os
 import os.path
-
 from nose.plugins.attrib import attr
-
 path_to_script = os.path.dirname(os.path.abspath(__file__))
 import unittest
 import numpy as np
@@ -26,13 +24,13 @@ except:
     pass
 try:
     import larcc
+
 except:
     pass
 import teigen.tree
-from teigen.tree import TreeBuilder
 
+# from teigen.tree import TreeBuilder
 
-#
 
 class TubeTreeTest(unittest.TestCase):
     def setUp(self):
@@ -42,8 +40,9 @@ class TubeTreeTest(unittest.TestCase):
 
     @attr('interactive')
     def test_qt_file_dialog(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         app = QApplication(sys.argv)
         # fname = QFileDialog.getOpenFileName(None, 'Open file',
         #  'c:\\',"Image files (*.jpg *.gif)")
@@ -54,15 +53,17 @@ class TubeTreeTest(unittest.TestCase):
             ""
             # "Image files (*.jpg *.gif)"
             # ""
-        )
+        )[0]
 
         # QFileDialog.getExistingDirectory()
 
     @attr('interactive')
     def test_qt_dictwidget(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
+
         app = QApplication(sys.argv)
         cfg = {"bool": True, "int": 5, 'str': 'strdrr', 'vs': [1.0, 2.5, 7],
                "radio": None, "dropdown": "two"}
@@ -79,11 +80,15 @@ class TubeTreeTest(unittest.TestCase):
 
     @attr('interactive')
     def test_qt_create_widget_from_generator(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
+
         from teigen.generators.unconnected_cylinders import UnconnectedCylinderGenerator
-        from imtools import dili
+
+        from imma import dili
+
         dargs = dili.get_default_args(UnconnectedCylinderGenerator)
         app = QApplication(sys.argv)
         cw = DictWidget(dargs)
@@ -93,10 +98,13 @@ class TubeTreeTest(unittest.TestCase):
 
     @attr('interactive')
     def test_qt_cylinderwidget(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
+
         from teigen.generators.cylindersqt import CylindersWidget
+
         app = QApplication(sys.argv)
         cw = CylindersWidget()
         cw.show()
@@ -106,10 +114,13 @@ class TubeTreeTest(unittest.TestCase):
     # @attr('interactive')
     @unittest.skip('some VTK problem with CylinderWidget.run()')
     def test_qt_cylinderwidget_run(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
+
         from teigen.generators.cylindersqt import CylindersWidget
+
         app = QApplication(sys.argv)
         cw = CylindersWidget()
         cw.show()
@@ -120,10 +131,13 @@ class TubeTreeTest(unittest.TestCase):
 
     @attr('interactive')
     def test_qt_set_dir_widget_interactive(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        import PyQt5
+
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         from teigen.dictwidgetqt import DictWidget
+
         from teigen.iowidgetqt import SetDirWidget
+
         app = QApplication(sys.argv)
         cfg = {"bool": True, "int": 5, 'str': 'strdrr', 'vs': [1.0, 2.5, 7]}
         captions = {"int": "toto je int"}
@@ -134,16 +148,15 @@ class TubeTreeTest(unittest.TestCase):
     # @unittest.skip('some VTK problem')
     @attr('interactive')
     def test_qt_set_dir_widget(self):
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
-        from teigen.dictwidgetqt import DictWidget
+        import PyQt5
+        from PyQt5.QtWidgets import QApplication
+        # from teigen.dictwidgetqt import DictWidget
         from teigen.iowidgetqt import SetDirWidget
         app = QApplication(sys.argv)
         cw = SetDirWidget("~/lisa_data", "output dir")
         cw.show()
         cw.deleteLater()
         app.deleteLater()
-
 
 def dist_to_vectors(v1, vlist):
     import numpy as np

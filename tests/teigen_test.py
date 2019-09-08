@@ -1,14 +1,13 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import logging
-
 logger = logging.getLogger(__name__)
 import unittest
 import sys
 
 from nose.plugins.attrib import attr
-import teigen
-import io3d
+# import teigen
+# import io3d
 
 import os.path as op
 path_to_script = op.dirname(op.abspath(__file__))
@@ -18,15 +17,14 @@ class MyTestCase(unittest.TestCase):
     @attr('interactive')
     def test_teigen_gui_interactive(self):
         import os.path as op
+
         params = None
         # params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
 
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+        from PyQt5.QtWidgets import QApplication, QFileDialog
         # from teigen.dictwidgetqt import DictWidget
-        import teigen
-        import teigen.geometry3d
         import teigen.gui
+
         app = QApplication(sys.argv)
         cw = teigen.gui.TeigenWidget(config=params)
         cw.show()
@@ -39,6 +37,7 @@ class MyTestCase(unittest.TestCase):
         :return:
         """
         import os.path as op
+
         params = None
         # params = io3d.misc.obj_from_file(op.expanduser("~/teigen_data/038/slice_parameters.yaml"))
         params = {
@@ -65,12 +64,11 @@ class MyTestCase(unittest.TestCase):
         }
         # tg.update_config(**conf)
 
-        import PyQt4
-        from PyQt4.QtGui import QApplication, QFileDialog
+
+        from PyQt5.QtWidgets import QApplication
         # from teigen.dictwidgetqt import DictWidget
-        import teigen
-        import teigen.geometry3d
         import teigen.gui
+
         app = QApplication(sys.argv)
         cw = teigen.gui.TeigenWidget(use_default_config=True, config=params)
         cw.show()
@@ -91,6 +89,7 @@ class MyTestCase(unittest.TestCase):
     @attr('interactive')
     def test_teigen_without_save(self):
         import teigen.gui
+
         tg = teigen.gui.Teigen()
         conf = {
             "generator_id": 3,
@@ -115,6 +114,7 @@ class MyTestCase(unittest.TestCase):
     @attr('interactive')
     def test_teigen_big(self):
         import teigen.gui
+
         tg = teigen.gui.Teigen()
         conf = {
             "areasampling": {
@@ -160,6 +160,7 @@ class MyTestCase(unittest.TestCase):
         """
         print("test prepare parameters and measurement")
         import teigen.gui
+
         tg = teigen.gui.Teigen()
         tg.use_default_config()
         conf = {
@@ -193,6 +194,7 @@ class MyTestCase(unittest.TestCase):
         """
         print("test read tube skeleton from file")
         import teigen.gui
+
         tg = teigen.gui.Teigen()
         tg.use_default_config()
         conf = {

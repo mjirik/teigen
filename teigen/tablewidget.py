@@ -4,13 +4,15 @@ Created on Wed Jul 17 10:50:56 2013
 @author: cmarshall
 """
 
+import logging
+logger = logging.getLogger(__name__)
 import sip
 
 sip.setapi('QString', 1)
 sip.setapi('QVariant', 1)
 
 import pandas as pd
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -19,23 +21,30 @@ class TableModel(QtCore.QAbstractTableModel):
         self.datatable = None
 
     def update(self, dataIn):
-        print 'Updating Model'
+        logger.info('Updating Model')
         self.datatable = dataIn
         self.headerdata = list(dataIn.keys())
         self.indexdata = list(dataIn.index)
-        print 'Datatable : {0}'.format(self.datatable)
-        print self.headerdata
-        print self.indexdata
+
+        print('Datatable : {0}'.format(self.datatable))
+        print(self.headerdata)
+        print(self.indexdata)
+
+
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.datatable.index)
 
     def columnCount(self, parent=QtCore.QModelIndex()):
+
         return len(self.datatable.columns.values)
 
+
+
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        # print 'Data Call'
+        # print('Data Call')
         # print index.column(), index.row()
+
         if role == QtCore.Qt.DisplayRole:
             i = index.row()
             j = index.column()
@@ -50,36 +59,31 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def headerData(self, col, orientation, role):
         # return str(self.headerdata[col])
-        from PyQt4.QtCore import QVariant, Qt
-        import PyQt4
+        from PyQt5.QtCore import QVariant, Qt
 
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
-        # print "col ", col, orientation, role
-        # return QVariant(self.headerdata[0])
-        # if orientation == Qt.Horizontal:# and role == Qt.DisplayRole:
-        #     return QVariant(str("self.indexdata[col]"))
         return QVariant()
 
-
-class TableView(QtGui.QTableView):
+class TableView(QtWidgets.QTableView):
     """
     A simple table to demonstrate the QComboBox delegate.
     """
-
     def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
+        QtWidgets.QTableView.__init__(self, *args, **kwargs)
 
 
-class TableWidget(QtGui.QWidget):
+class TableWidget(QtWidgets.QWidget):
     """
     A simple test widget to contain and own the model and table.
     """
 
-    def __init__(self, parent=None, dataframe=None):
-        QtGui.QWidget.__init__(self, parent)
 
-        l = QtGui.QVBoxLayout(self)
+
+    def __init__(self, parent=None, dataframe=None):
+
+        QtWidgets.QWidget.__init__(self, parent)
+        l = QtWidgets.QVBoxLayout(self)
         if dataframe is None:
             cdf = self.get_data_frame()
         else:
@@ -99,8 +103,7 @@ class TableWidget(QtGui.QWidget):
 
 if __name__ == "__main__":
     from sys import argv, exit
-
-    a = QtGui.QApplication(argv)
+    a = QtWidgets.QApplication(argv)
     w = TableWidget()
     w.show()
     w.raise_()

@@ -6,23 +6,17 @@
 #
 # Distributed under terms of the %LICENSE% license.
 
-"""
-
-"""
 
 import logging
-
 logger = logging.getLogger(__name__)
 import argparse
 
-from PyQt4.QtGui import QApplication
-
-from PyQt4 import QtGui
+from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtGui, QtWidgets
 import sys
 
 import collections
 import numpy as np
-
 from pyqtgraph.parametertree import ParameterTree
 import pyqtgraph.parametertree.parameterTypes as pTypes
 
@@ -31,11 +25,9 @@ class DictWidget(ParameterTree):
     def __init__(self, input_dict, opts=None):
         pass
 
-
 def to_pyqtgraph_struct(name, value, opts={}):
     """
     Prepare structure for visualization by pyqtgraph tree.
-
     :param name:
     :param value:
     :param opts:
@@ -65,11 +57,12 @@ def to_pyqtgraph_struct(name, value, opts={}):
     children_properties = {}
     if "children" in opts.keys():
         children_properties = opts.pop('children')
-
     item_properties.update(opts)
     item_properties['reconstruction_type'] = tp
 
+
     if tp in ('list', 'ndarray', 'OrderedDict', 'dict'):
+
         # key_parameters['type'] = key_parameters['type']
         item_properties['type'] = 'group'
         item_properties.pop('value')
@@ -80,6 +73,7 @@ def to_pyqtgraph_struct(name, value, opts={}):
             children_key_value = collections.OrderedDict(zip(map(str, range(len(value_list))), value_list))
         elif tp in ('dict', 'OrderedDict'):
             children_key_value = value
+
 
         children_list = []
         for keyi, vali in children_key_value.items():
@@ -92,15 +86,8 @@ def to_pyqtgraph_struct(name, value, opts={}):
         item_properties['children'] = children_list
 
         # value = value_list
-        # print key_parameters
+        # print(key_parameters)
     return item_properties
-
-    #     if ntype is not None:
-    #         key_parameters['type'] = ntype
-    #         outdict.append(key_parameters)
-    #
-    # return outdict
-
 
 def from_pyqtgraph_struct(dct):
     output = {}
@@ -125,7 +112,6 @@ def from_pyqtgraph_struct(dct):
                 keyi, valuei = from_pyqtgraph_struct(child_item)
                 children_dict[keyi] = valuei
             value = children_dict
-
 
     else:
         value = dct['value']
@@ -173,7 +159,7 @@ class ListParameter(pTypes.GroupParameter):
         if 'names' in opts.keys():
             names = opts['names']
         else:
-            names = map(str, range(len(values)))
+            names = list(map(str, range(len(values))))
 
         for i in range(len(values)):
             opts['name'] = names[i]
@@ -196,6 +182,7 @@ class ListParameter(pTypes.GroupParameter):
         new_val = self.value()
         for i in range(len(self.childs)):
             self.childs[i].setValue(new_val[i])
+
 
 
 class AreaSamplingParameter(pTypes.GroupParameter):
@@ -280,6 +267,7 @@ class ScalableGroup(pTypes.GroupParameter):
             dict(name="ScalableParam %d" % (len(self.childs) + 1), type=typ, value=val, removable=True, renamable=True))
 
 
+
 class BatchFileProcessingParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'group'
@@ -294,21 +282,18 @@ class BatchFileProcessingParameter(pTypes.GroupParameter):
         #     'float': 0.0,
         #     'int': 0
         # }[typ]
-        fname = QtGui.QFileDialog.getOpenFileName(None, 'Open file', '')
-        self.add_filename(fname=fname)
-
-    def add_filename(self, fname):
-        self.addChild(
-            dict(name="%i" % ((len(self.childs))), type='str', value=str(fname), removable=True, renamable=True))
-
-
-
+        fname = QtWidgets.QFileDialog.getOpenFileName(None, 'Open file', '')[0]
 
 from collections import Mapping, Set, Sequence
 
-# dual python 2/3 compatability, inspired by the "six" library
-string_types = (str, unicode) if str is bytes else (str, bytes)
+if sys.version_info.major == 3:
+    # dual python 2/3 compatability, inspired by the "six" library
+    string_types = (str) if str is bytes else (str, bytes)
+else:
+    # TODO remove in future
+    string_types = (str, unicode) if str is bytes else (str, bytes)
 iteritems = lambda mapping: getattr(mapping, 'iteritems', mapping.items)()
+
 
 def objwalk(obj, path=(), memo=None):
     if memo is None:
@@ -361,16 +346,6 @@ def main():
     ch = logging.StreamHandler()
     logger.addHandler(ch)
 
-    # create file handler which logs even debug messages
-    # fh = logging.FileHandler('log.txt')
-    # fh.setLevel(logging.DEBUG)
-    # formatter = logging.Formatter(
-    #     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # fh.setFormatter(formatter)
-    # logger.addHandler(fh)
-    # logger.debug('start')
-
-    # input parser
     parser = argparse.ArgumentParser(
         description=__doc__
     )
@@ -395,7 +370,6 @@ def main():
     # cw = DictWidget(cfg, captions=captions)
     # cw.show()
     # app.exec_()
-
 
 
 if __name__ == "__main__":

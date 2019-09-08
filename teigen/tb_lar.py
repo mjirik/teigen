@@ -160,7 +160,7 @@ class TBLar(tree.TubeSkeletonBuilder):
 
         # V = [[0,0,0],[5,5,1],[0,5,5],[5,5,5]]
         # CV = [[0,1,2,3]]
-        # print 'V, CV ', V, CV
+        # print('V, CV ', V, CV)
         # DRAW(self.joints_lar[0])
         VIEW(MKPOL([V, AA(AA(lambda k: k + 1))(CV), []]))
 

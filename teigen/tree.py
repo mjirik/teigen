@@ -241,7 +241,8 @@ class TreeBuilder:
         return tree_raw_data
 
     def importFromYaml(self, filename):
-        import yaml
+        from ruamel.yaml import YAML
+        yaml = YAML()
         f = open(filename, 'rb')
         rawdata = yaml.load(f)
         f.close()
@@ -398,7 +399,8 @@ def read_tube_skeleton_from_yaml(filename, tree_label=None, return_rawdata=False
     :param tree_label: label of tree. The first tree is used if None.
     :return:
     """
-    import yaml
+    from ruamel.yaml import YAML
+    yaml = YAML()
     f = open(filename, 'rb')
     rawdata = yaml.load(f)
     f.close()

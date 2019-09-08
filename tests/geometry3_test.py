@@ -250,11 +250,11 @@ class GeometryTestCase(unittest.TestCase):
     def test_polar(self):
         ptA = [[1, 2, 3]]
         dist, angle = g3.z2polar(ptA)
-        print dist
-        print angle
+        print(dist)
+        print(angle)
         ptA2 = g3.polar2z(dist, angle)
 
-        print ptA2
+        print(ptA2)
 
     def test_polygon_equivalent_radius(self):
 

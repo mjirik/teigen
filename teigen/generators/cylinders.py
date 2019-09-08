@@ -19,7 +19,7 @@ import pandas as pd
 # import ..geometry3 as g3
 # from ..geometry3d import plane_fit
 from .. import geometry3d as g3
-from general import GeneralGenerator
+from .general import GeneralGenerator
 
 
 def __half_plane(self, perp, plane_point, point):
@@ -272,7 +272,7 @@ class CylinderGenerator(GeneralGenerator):
 
     def get_stats(self):
         # self.assertTrue(False)
-        # print "Surface: ", self.surface
+        # print("Surface: ", self.surface)
         df = pd.DataFrame(self.geometry_data)
         desc = df.describe()
 

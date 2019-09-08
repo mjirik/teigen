@@ -6,13 +6,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 import numpy as nm
-import yaml
+from ruamel.yaml import YAML
 import argparse
 import sys
 import numpy as np
 import vtk
 from scipy.interpolate import InterpolatedUnivariateSpline
-import tree
+from . import tree
 
 # new interface
 
@@ -179,6 +179,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     point1 = [0.0, 0.0, 0.0]
     center = [0.0, 0.0, 0.0]
     point2 = [0.0, 0.0, 0.0]
+    logger.debug(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
 
     center[axis] = length / 2.0
     point2[axis] = length
@@ -212,7 +213,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     if not tube_shape:
         tube = move_to_position(cylinderTri, point, direction, 2, 1, 0)
         return tube.GetOutput()
-
+    logger.debug("get sphere")
     sphere1 = get_sphere(
         center=point1,
         radius=sphere_radius,
@@ -532,18 +533,26 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
                             tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
-        # print "object connected, starting addind to general space " + str(br["length"])
+        # print("object connected, starting addind to general space " + str(br["length"]))
         if something_to_add:
+            nn = tube.GetNumberOfPoints()
+            logger.debug(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
             if appended_data is None:
                 #appended_data = boolean_operation2.GetOutput()
                 appended_data = tube
+                import ipdb; ipdb.set_trace()
             else:
-                boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
-                boolean_operation3.SetOperationToUnion()
-                boolean_operation3.SetInputData(0, appended_data)
-                boolean_operation3.SetInputData(1, tube)
-                boolean_operation3.Update()
-                appended_data = boolean_operation3.GetOutput()
+                appended_data = _add_object(
+                    appended_data, tube, controlled_collision=True, collision=False)
+                # nn = appended_data.GetNumberOfPoints()
+                # logger.debug(f"appended_data number of nodes: {nn}, last point {appended_data.GetPoint(nn - 1)}")
+                # import ipdb; ipdb.set_trace()
+                # boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
+                # boolean_operation3.SetOperationToUnion()
+                # boolean_operation3.SetInputData(0, appended_data)
+                # boolean_operation3.SetInputData(1, tube)
+                # boolean_operation3.Update()
+                # appended_data = boolean_operation3.GetOutput()
 
     # import ipdb; ipdb.set_trace()
 
@@ -558,6 +567,37 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     # appendFilter.Update()
     # appended_data = appendFilter.GetOutput()
     return appended_data
+
+def _add_object(appended_data, tube, controlled_collision=False, collision=None):
+    """
+    Append object to other data. Use boolean append filter if there is no expected collision or
+    use boolean operation if there is expected collision (or no controll over collision at all)
+    :param appended_data:
+    :param tube:
+    :param controlled_collision:
+    :param collision:
+    :return:
+    """
+    logger.debug("adding object to global object")
+    nn = appended_data.GetNumberOfPoints()
+    logger.debug(f"appended_data number of nodes: {nn}, last point {appended_data.GetPoint(nn - 1)}")
+    if (not controlled_collision) or (controlled_collision and collision==True):
+
+        boolean_operation3 = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation3.SetOperationToUnion()
+        boolean_operation3.SetInputData(0, appended_data)
+        boolean_operation3.SetInputData(1, tube)
+        boolean_operation3.Update()
+        appended_data = boolean_operation3.GetOutput()
+    else:
+        append_filter = vtk.vtkAppendPolyData()
+        append_filter.AddInputData(appended_data)
+        append_filter.AddInputData(tube)
+        append_filter.Update()
+        appended_data = append_filter.GetOutput()
+
+    return appended_data
+
 
 def get_tube_old(radius, point, direction, length,
                  sphere_resolution, cylinder_resolution,
@@ -753,6 +793,7 @@ def vt_file_2_vtk_file(infile, outfile, text_label=None):
     :return:
 
     """
+    yaml = YAML()
     yaml_file = open(infile, 'r')
     tree_raw_data = yaml.load(yaml_file)
     vt2vtk_file(tree_raw_data, outfile, text_label)

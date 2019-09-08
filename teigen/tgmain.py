@@ -6,17 +6,10 @@
 #
 # Distributed under terms of the %LICENSE% license.
 
-"""
-
-"""
-
-# import click
 import logging
-
 logger = logging.getLogger(__name__)
 import logging.handlers
 import argparse
-
 # import begin
 import sys
 import os
@@ -29,17 +22,21 @@ import datetime
 import copy
 import collections
 import pandas as pd
-
-import generators.cylinders
-import generators.gensei_wrapper
-import generators.unconnected_cylinders
-from imtools import dili
+# from . import generators
+from .generators import cylinders
+from .generators import gensei_wrapper
+# import .generators.cylinders
+# from .generators.gensei_wrapper
+from .generators import unconnected_cylinders
+from imtools.dili import get_default_args
+from imma import dili
 import io3d.datawriter
 import io3d.misc
 import ndnoise
 import ndnoise.generator
-import dictwidgetqt
-from . import geometry3d as g3
+# from . import dictwidgetqt
+# from . import geometry3d as g3
+
 
 CKEY_APPEARANCE = "appearance"
 CKEY_OUTPUT = "output"
@@ -87,10 +84,10 @@ class Teigen():
             # generators.cylinders.CylinderGenerator,
             # generators.gensei_wrapper.GenseiGenerator,
             # generators.cylinders.CylinderGenerator,
-            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
-            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
-            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
-            generators.unconnected_cylinders.UnconnectedCylinderGenerator,
+            unconnected_cylinders.UnconnectedCylinderGenerator,
+            unconnected_cylinders.UnconnectedCylinderGenerator,
+            unconnected_cylinders.UnconnectedCylinderGenerator,
+            unconnected_cylinders.UnconnectedCylinderGenerator,
         ]
         self.generators_names = [
             # "Voronoi tubes",
@@ -117,7 +114,6 @@ class Teigen():
         self.polydata_volume = None
         self.dataframes = {}
         self.stats_times = {
-
             "datetime": str(datetime.datetime.now())
         }
         self.parameters_changed_before_save = True
@@ -144,10 +140,8 @@ class Teigen():
         Configuration is composed from
         :return:
         """
-
         config = collections.OrderedDict()
         # self.config["generators"] = [dictwidgetqt.get_default_args(conf) for conf in self.generators_classes]
-
         hide_keys = ["build", "gtree", "voxelsize_mm", "areasize_px", "resolution",
                      "n_slice", "dims", "intensity_profile_intensity", "intensity_profile_radius"]
         config["generators"] = collections.OrderedDict()
@@ -155,7 +149,7 @@ class Teigen():
                 self.generators_classes,
                 self.generators_names
         ):
-            generator_params = dili.get_default_args(generator_cl)
+            generator_params = get_default_args(generator_cl)
             generator_params = dili.kick_from_dict(generator_params, hide_keys)
             config["generators"][generator_name] = generator_params
 
@@ -167,7 +161,7 @@ class Teigen():
         # self.config["generator_id"] = self.generators_names[0]
         config["generator_id"] = 0
         # self.config = self.configs[0]
-        config["postprocessing"] = dili.get_default_args(self.postprocessing)
+        config["postprocessing"] = get_default_args(self.postprocessing)
         config["postprocessing"]["intensity_profile_radius"] = [0.4, 0.7, 1.0, 1.3]
         config["postprocessing"]["intensity_profile_intensity"] = [195, 190, 200, 30]
         # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
@@ -205,11 +199,6 @@ class Teigen():
         return config
 
     def update_config(self, **config):
-        import io3d.misc
-
-        # make compatible to read yaml with config in "config" key
-        if "config" in config.keys():
-            config = config["config"]
 
         if "required_teigen_version" in config.keys():
             reqired_version = config["required_teigen_version"]
@@ -267,7 +256,7 @@ class Teigen():
         # select only parameters for generator
         # generator_default_config = dictwidgetqt.get_default_args(generator_class)
         # generator_config = dictwidgetqt.subdict(config["generators"][id], generator_default_config.keys())
-        generator_config = config["generators"].items()[id][1]
+        generator_config = list(config["generators"].items())[id][1]
         generator_config.update(area_cfg)
         self.gen = generator_class(**generator_config)
         if id == 2:
@@ -280,6 +269,7 @@ class Teigen():
 
     def _step1_deinit_save_stats(self, t0):
         self.tube_skeleton = self.gen.tree_data
+        import ipdb;ipdb.set_trace()
 
         t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
@@ -326,15 +316,13 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         logger.debug("1D structure generator started")
-        # print "1D structure generator started"
+        # print("1D structure generator started")
         # import ipdb; ipdb.set_trace()
         self.gen.run()
         # logger.debug("vtk generated")
         # import ipdb; ipdb.set_trace()
-
         self._step1_deinit_save_stats(t0)
         logger.debug("step1 finished")
-        # self.prepare_stats()
 
 
     def get_aposteriori_faces_and_vertices(self):
@@ -349,11 +337,12 @@ class Teigen():
         base, ext = os.path.splitext(filepattern)
         return base + "_parameters.yaml"
 
+
     def __generate_vtk(self, vtk_file="~/tree.vtk"):
         logger.info("generating vtk for surface and volume compensated objects")
         vtk_file = op.expanduser(vtk_file)
         # from tree import TreeBuilder
-        from tb_vtk import TBVTK
+        from .tb_vtk import TBVTK
 
         if "tree_data" in dir(self.gen):
             resolution = self.config["postprocessing"]["measurement_resolution"]
@@ -390,15 +379,13 @@ class Teigen():
             # build surface tree
             if method_surf is not None:
                 logger.debug("vtk generation - surface compensated")
-                from tb_vtk import TBVTK
+                from .tb_vtk import TBVTK
                 tvg2 = TBVTK(
                     cylinder_resolution=resolution,
                     sphere_resolution=resolution,
                     polygon_radius_selection_method=method_surf,
                     tube_shape=tube_shape
                 )
-                # yaml_path = os.path.join(path_to_script, "./hist_stats_test.yaml")
-                # tvg.importFromYaml(yaml_path)
                 tvg2.voxelsize_mm = self.voxelsize_mm
                 tvg2.shape = self.gen.areasize_px
                 tvg2.tube_skeleton = self.tube_skeleton
@@ -415,13 +402,13 @@ class Teigen():
     def stop(self):
         self.stop_flag = True
 
+
     def filepattern_fill_potential_series(self):
         import io3d.datawriter
         # filepattern = self.config["filepattern"]
         filepattern = self.get_config_file_pattern()
         sn = io3d.datawriter.get_unoccupied_series_number(filepattern)
         filepattern = re.sub(r"({\s*})", r"", filepattern)
-
         filepattern = io3d.datawriter.filepattern_fill_series_number(filepattern, sn)
         return filepattern
 
@@ -518,7 +505,6 @@ class Teigen():
         self.refresh_unoccupied_series_number()
         self.save_parameters()
         self.save_log()
-        import io3d.misc
         t0 = datetime.datetime.now()
         fn_base = self.get_fn_base()
         # config["filepattern"] = filepattern
@@ -576,7 +562,6 @@ class Teigen():
 
 
     def save_surface_to_file(self, outputfile, lc_all="C"):
-
         import vtk
         logger.debug("vtk version " + str(vtk.VTK_BUILD_VERSION))
         if lc_all is not None:
@@ -638,7 +623,6 @@ class Teigen():
         if limit_negative_intensities:
             #self.data3d[self.data3d < 0] = 0
             limit_ndarray(self.data3d, minimum=0, maximum=255)
-
         self.data3d = self.data3d.astype(dt)
         # self.config["postprocessing"]["measurement_multiplier"] = measurement_multiplier
         # negative = self.config["postprocessing"]["negative"] = measurement_multiplier
@@ -666,7 +650,7 @@ class Teigen():
 
     def _aposteriori_numeric_measurement(self, fn_base):
         # import numpy as np
-        from tb_volume import TBVolume
+        from .tb_volume import TBVolume
         measurement_multiplier = self.config[CKEY_OUTPUT]["aposteriori_measurement_multiplier"]
         surface_measurement = self.config[CKEY_OUTPUT]["aposteriori_measurement"]
 
@@ -713,7 +697,7 @@ class Teigen():
         :return:
         Using one of generators to compute statistics.
         """
-        import generators.unconnected_cylinders as uncy
+        from .generators import unconnected_cylinders as uncy
         gen = uncy.UnconnectedCylinderGenerator(
             areasize_px=self.config["areasampling"]["areasize_px"],
             voxelsize_mm=self.config["areasampling"]["voxelsize_mm"],
@@ -794,10 +778,10 @@ class Teigen():
         self.dataframes["overall"] = dfoverallf
 
         st = self.stats_times
-        # print "st ", st
+        # print("st ", st)
         note_df = pd.DataFrame([st], columns=st.keys())
-        # print note_df
-        # print note_df.to_dict()
+        # print(note_df)
+        # print(note_df.to_dict())
 
         self.dataframes["processing_info"] = note_df
 
@@ -811,12 +795,8 @@ class Teigen():
         params = io3d.misc.obj_from_file(filename=filename)
         import tree
         tube_skeleton, rawdata = tree.read_tube_skeleton_from_yaml(filename, return_rawdata=True)
-
-
         area = tree.parse_area_properties(rawdata)
-
         self.config["areasampling"].update(area)
-
         self.set_tube_skeleton(tube_skeleton)
 
     def set_tube_skeleton(self, tube_skeleton):
@@ -827,7 +807,6 @@ class Teigen():
 
     def load_config(self, filename):
         """ Load config from file.
-
         :param filename:
         :return:
         """
@@ -875,7 +854,6 @@ class Teigen():
 
     def get_config_and_measurement(self):
         self.prepare_stats()
-        import pandas as pd
         dfo = self.dataframes["overall"].to_dict(orient="records")[0]
         dfd = self.dataframes["density"].to_dict(orient="records")[0]
         dfi = self.dataframes["processing_info"].to_dict(orient="records")[0]
@@ -901,7 +879,6 @@ class Teigen():
         """
         self.prepare_stats()
         filename = op.expanduser(filename)
-
         import pandas as pd
         # filename = op.expanduser(filename)
         # dfo = self.dataframes["overall"]
@@ -985,7 +962,6 @@ class Teigen():
             default_config = self.get_default_config()
             self.update_config(**default_config)
             self.update_config(**params)
-
             self.step1()
             self.step2()
 
@@ -1045,13 +1021,13 @@ def new_main(
         logfile="~/teigen.log",
 ):
     """ Run test image generator.
-    
-    :param parameterfile: 
-    :param debug: 
-    :param d: 
-    :param nointeractivity: 
-    :param logfile: 
-    :return: 
+
+    :param parameterfile:
+    :param debug:
+    :param d:
+    :param nointeractivity:
+    :param logfile:
+    :return:
     """
     logger = logging.getLogger()
 
@@ -1082,8 +1058,8 @@ def new_main(
         # tg.run(**params)
         tg.step2()
     else:
-        from PyQt4.QtGui import QApplication
-        from gui import TeigenWidget
+        from PyQt5.QtWidgets import QApplication
+        from .gui import TeigenWidget
         app = QApplication(sys.argv)
         params = None
         if parameterfile is not None:
@@ -1156,8 +1132,8 @@ def main():
         # tg.run(**params)
         tg.step2()
     else:
-        from PyQt4.QtGui import QApplication
-        from gui import TeigenWidget
+        from PyQt5.QtWidgets import QApplication
+        from .gui import TeigenWidget
         app = QApplication(sys.argv)
         params = None
         if args.parameterfile is not None:

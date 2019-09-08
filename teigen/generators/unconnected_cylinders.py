@@ -19,7 +19,7 @@ import numpy as np
 # from ..geometry3d import plane_fit
 from .. import geometry3d as g3
 import os.path
-import general
+from . import general
 
 
 def __half_plane(self, perp, plane_point, point):
@@ -293,8 +293,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             statusbar_text = str(self.iterations) + " Vv " + str(actual_volume_fraction)
             if self.progress_callback is not None:
                 self.progress_callback(self, progress, statusbar_text=statusbar_text)
-            # print progress
-            # print self.radius_generator_args
+            # print(progress)
+            # print(self.radius_generator_args)
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
                 self.generation_break_causes["radius_maximum"] += 1
@@ -376,7 +376,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         if generated:
             self.add_cylinder_to_stats(pt1, pt2, radius=radius)
         # else:
-        #     print self.generation_break_causes
+        #     print(self.generation_break_causes)
         return
 
     def pill_parameter_suggestion_for_last_object(self, first_radius, first_length):
