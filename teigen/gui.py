@@ -23,6 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import os.path as op
 import copy
 import collections
+# from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import matplotlib.pyplot as plt
