@@ -12,3 +12,4 @@ pyqtgraph
 xlsxwriter
 git # kvuli instalaci gensei
 ndnoise >=0.0.13
+imma

@@ -43,6 +43,8 @@ requirements:
     - scikit-image
     - ndnoise
     - imtools
+    - pyqt 5.*
+    - imma
 #    - pyqt 4.11.*
 
   run:
@@ -52,7 +54,7 @@ requirements:
     - io3d >=1.1.27
     - numpy >=1.10
     - scikit-image
-    - pyqt 4.11.*
+    - pyqt 5.*
     - pyqtconfig
     - pandas
     # - openpyxl
@@ -63,6 +65,7 @@ requirements:
     - pyqtgraph
     - git # kvuli instalaci gensei
     - ndnoise >=0.0.13
+    - imma
     # - begins
     # - xlsxwriter
 
