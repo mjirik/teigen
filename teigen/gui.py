@@ -711,5 +711,6 @@ class TeigenWidget(QtWidgets.QWidget):
 
         return dictionary
 
+
 if __name__ == "__main__":
     main()
