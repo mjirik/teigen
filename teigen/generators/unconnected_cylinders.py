@@ -11,7 +11,6 @@
 """
 
 import logging
-
 logger = logging.getLogger(__name__)
 import argparse
 import numpy as np
@@ -270,6 +269,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         self.geometry_data["vector"].append(vector)
         self.geometry_data["point1"].append(pt1)
         self.geometry_data["point2"].append(pt2)
+        # self.geometry_data["collide_with_prevs"].append(collide_with_prevs)
         self.surface += surf
 
     def create_cylinder(

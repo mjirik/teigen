@@ -13,6 +13,7 @@ import numpy as np
 import vtk
 from scipy.interpolate import InterpolatedUnivariateSpline
 from . import tree
+from . import geometry3d
 
 # new interface
 
@@ -474,6 +475,8 @@ def polygon_radius_compensation_factos(
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
 
+
+
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
              polygon_radius_selection_method="inscribed",
              cylinder_radius_compensation_factor=1.0,
@@ -493,6 +496,10 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     :param cylinder_radius_compensation_factor: is used to change radius of cylinder and spheres
     :return:
     """
+
+    # when building from a lot of objects we need to know whether there is a collision or not.
+    # If there is collision we need to use binary op. If there is no collision, we can use just add.
+
     import vtk
     # appendFilter = vtk.vtkAppendPolyData()
     appended_data = None
@@ -509,6 +516,11 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     cylinder_radius_compensation_factor, sphere_radius_compensation_factor,\
     cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long = factors
 
+    #this is just to say whether the tube collide (and we have to use add()) or not (and we have to use binary op.)
+    collision_model = geometry3d.CollisionModelCombined(None)
+    collision_model.do_not_check_area = True
+
+
     # import ipdb; ipdb.set_trace()
     for br in tree_data:
         # import ipdb;
@@ -518,6 +530,12 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         length = br["length"]
         direction = br["direction"]
         uv = br['upperVertex']
+        lv = np.asarray(uv) + np.asarray(direction) * length
+        # lv = br['lowerVertex']
+        collision_detected = collision_model.add_tube_if_no_collision(uv, lv, radius)
+        if collision_detected:
+            collision_model.add_tube(uv, lv, radius)
+            logger.debug("Collision detected")
 
         dbg_msg = "generating edge with length: " + str(br["length"])
         logger.debug(dbg_msg)
@@ -543,7 +561,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
                 # import ipdb; ipdb.set_trace()
             else:
                 appended_data = _add_object(
-                    appended_data, tube, controlled_collision=True, collision=False)
+                    appended_data, tube, controlled_collision=True, collision=collision_detected)
                 # nn = appended_data.GetNumberOfPoints()
                 # logger.debug(f"appended_data number of nodes: {nn}, last point {appended_data.GetPoint(nn - 1)}")
                 # import ipdb; ipdb.set_trace()

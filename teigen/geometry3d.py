@@ -788,6 +788,12 @@ class GeometricObject():
 
 class TubeObject(GeometricObject):
     def __init__(self, point1, point2, radius):
+        """
+
+        :param point1:
+        :param point2:
+        :param radius:
+        """
 
         bbox = get_bbox([point1, point2], margin=radius)
         GeometricObject.__init__(self, bbox=bbox)
@@ -907,6 +913,7 @@ class CylinderObject(GeometricObject):
 
 class CollisionModel():
     def __init__(self, areasize):
+
         self.collision_alowed = False
         if areasize is not None:
             areasize = np.asarray(areasize)
@@ -914,6 +921,7 @@ class CollisionModel():
         self.object_number = 0
         self._cylinder_end_nodes = []
         self._cylinder_end_nodes_radiuses = []
+        self.do_not_check_area = False
 
     def get_random_point(self, radius=None):
         if radius is not None:
@@ -932,6 +940,8 @@ class CollisionModel():
         node = np.asarray(node)
         if radius is None:
             radius = self.radius_maximum
+        if self.do_not_check_area:
+            return True
         return is_in_area(node, self.areasize, radius=radius)
 
     def n_closest_end_points(self, node, n):
