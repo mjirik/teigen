@@ -540,7 +540,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
             if appended_data is None:
                 #appended_data = boolean_operation2.GetOutput()
                 appended_data = tube
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
             else:
                 appended_data = _add_object(
                     appended_data, tube, controlled_collision=True, collision=False)
@@ -817,8 +817,7 @@ def vt2vtk_file(vessel_tree, outfile, text_label=None):
     tree_data = compatibility_processing(trees[text_label])
     polyData = gen_tree(tree_data)
 
-    import ipdb;
-    ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     writer = vtk.vtkPolyDataWriter()
     writer.SetFileName(outfile)
     try:

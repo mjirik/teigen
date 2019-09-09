@@ -150,6 +150,8 @@ class TeigenWidget(QtWidgets.QWidget):
         self.stats_tab_wg.addTab(self.actual_subtab_wg, '' + run_number_alpha)
         logger.debug("initiating canvas for graphs")
         if True:
+            from matplotlib.figure import Figure
+            # self.figure = Figure(figsize=(5, 3))
             self.figure = plt.figure()
             self.canvas = FigureCanvas(self.figure)
             # self.toolbar = NavigationToolbar(self.canvas, self)

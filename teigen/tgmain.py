@@ -269,7 +269,7 @@ class Teigen():
 
     def _step1_deinit_save_stats(self, t0):
         self.tube_skeleton = self.gen.tree_data
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
 
         t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
