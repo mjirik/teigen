@@ -903,7 +903,7 @@ class Teigen():
         dfout = pd.DataFrame([config_fl], columns=config_fl.keys())
         if op.exists(filename):
             dfin = pd.read_csv(filename)
-            dfout = pd.concat([dfin, dfout], axis=0)
+            dfout = pd.concat([dfin, dfout], axis=0, sort=False)
         else:
             dirname = op.dirname(filename)
             if not op.exists(dirname):
