@@ -56,7 +56,7 @@ class TubeTreeTest(unittest.TestCase):
 
     # interactivetTest = True
 
-    @pytest.mark"LAR"
+    @pytest.mark.LAR
     @unittest.skipIf(not ("larcc" in sys.modules), "larcc is not installed")
     def test_vessel_tree_lar(self):
         import teigen.tb_lar
