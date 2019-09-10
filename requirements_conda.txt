@@ -2,7 +2,7 @@ vtk
 io3d >=1.1.21
 numpy >=1.10
 scikit-image
-pyqt =5.*
+pyqt >=5
 pyqtconfig
 pandas
 simpleitk
@@ -10,6 +10,6 @@ imtools >=0.1.46
 gensei
 pyqtgraph
 xlsxwriter
-git # kvuli instalaci gensei
 ndnoise >=0.0.13
 imma
+git # kvuli instalaci gensei
