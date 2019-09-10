@@ -793,7 +793,7 @@ class Teigen():
         :return:
         """
         params = io3d.misc.obj_from_file(filename=filename)
-        import tree
+        from .import tree
         tube_skeleton, rawdata = tree.read_tube_skeleton_from_yaml(filename, return_rawdata=True)
         area = tree.parse_area_properties(rawdata)
         self.config["areasampling"].update(area)
