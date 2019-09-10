@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 import unittest
-from nose.plugins.attrib import attr
+import pytest
 
 import os
 import os.path
@@ -16,7 +16,7 @@ import numpy as np
 
 
 class VtkBooleanTestCase(unittest.TestCase):
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_vtk_example_with_my_cylinder(self):
         # sphereSource1 = vtk.vtkSphereSource()
         # sphereSource1.SetCenter(0.25, 0, 0)
@@ -97,7 +97,7 @@ class VtkBooleanTestCase(unittest.TestCase):
         ren_win_interactor.Start()
         # self.assertEqual(True, False)
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_vtk_example(self):
         sphereSource1 = vtk.vtkSphereSource()
         sphereSource1.SetCenter(0.25, 0, 0)
@@ -174,7 +174,7 @@ class VtkBooleanTestCase(unittest.TestCase):
         renWinInteractor.Start()
         # self.assertEqual(True, False)
 
-    # @attr('interactive')
+    # @pytest.mark.interactive
     def test_vtk_surface_and_volume(self):
         import teigen.geometry3d as g3
         height = 1.0

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 # from PyQt5.QtWidgets import *
 # import funkcí z jiného adresáře
 import os.path
-from nose.plugins.attrib import attr
+import pytest
 path_to_script = os.path.dirname(os.path.abspath(__file__))
 import unittest
 import numpy as np
@@ -38,7 +38,7 @@ class TubeTreeTest(unittest.TestCase):
 
     # interactivetTest = True
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_file_dialog(self):
         import PyQt5
 
@@ -57,7 +57,7 @@ class TubeTreeTest(unittest.TestCase):
 
         # QFileDialog.getExistingDirectory()
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_dictwidget(self):
         import PyQt5
 
@@ -78,7 +78,7 @@ class TubeTreeTest(unittest.TestCase):
         uu = cw.config_as_dict()
         print(uu)
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_create_widget_from_generator(self):
         import PyQt5
 
@@ -96,7 +96,7 @@ class TubeTreeTest(unittest.TestCase):
         app.exec_()
 
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_cylinderwidget(self):
         import PyQt5
 
@@ -111,7 +111,7 @@ class TubeTreeTest(unittest.TestCase):
         app.exec_()
 
     # tenhle by měl fungovat i neinteraktivně
-    # @attr('interactive')
+    # @pytest.mark.interactive
     @unittest.skip('some VTK problem with CylinderWidget.run()')
     def test_qt_cylinderwidget_run(self):
         import PyQt5
@@ -129,7 +129,7 @@ class TubeTreeTest(unittest.TestCase):
         app.deleteLater()
         # app.exec_()
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_set_dir_widget_interactive(self):
         import PyQt5
 
@@ -146,7 +146,7 @@ class TubeTreeTest(unittest.TestCase):
         app.exec_()
 
     # @unittest.skip('some VTK problem')
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_qt_set_dir_widget(self):
         import PyQt5
         from PyQt5.QtWidgets import QApplication

@@ -1,13 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-from nose.plugins.attrib import attr
+import pytest
+
 import collections
 import sys
 import pyqtgraph
 from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 class GuiTest(unittest.TestCase):
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_something(self):
         self.assertEqual(True, False)
     def test_pyqtgraph_import_dict(self):
@@ -38,7 +39,7 @@ class GuiTest(unittest.TestCase):
 
         p = Parameter.create(name='params', type='group', children=params)
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_pyqtgraph(self):
         cfg = collections.OrderedDict({
             "bool": True,

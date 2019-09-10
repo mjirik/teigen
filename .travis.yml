@@ -9,8 +9,8 @@ python:
 
 os: linux
 # Ubuntu 14.04 Trusty support
-sudo: required
-dist: trusty
+#sudo: required
+#dist: trusty
 # install new cmake
 #addons:
 #  apt:
@@ -18,44 +18,50 @@ dist: trusty
 #      - cmake
 #    sources:
 #      - kalakris-cmake
-virtualenv:
-  system_site_packages: true
+env:
+  # - CONDA_PYTHON_VERSION=2.7
+  - CONDA_PYTHON_VERSION=3.6
+  - CONDA_PYTHON_VERSION=3.7
+
+services:
+  - xvfb
+#virtualenv:
+#  system_site_packages: true
 before_script:
     # GUI
     - "export DISPLAY=:99.0"
-    - "sh -e /etc/init.d/xvfb start"
-    - sleep 3 # give xvfb sume time to start
+#    - "sh -e /etc/init.d/xvfb start"
+#    - sleep 3 # give xvfb sume time to start
 
 before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda2/bin:$PATH
-    - sudo apt-get update
+  - wget https://raw.githubusercontent.com/mjirik/discon/master/tools/install_conda.sh && source install_conda.sh
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  # - if [[ "$CONDA_PYTHON_VERSION" == "2.7" ]]; then
+  #     echo "python 2"
+  #   else
+  #     echo "python 3"
+  #   fi
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --add channels mjirik
+  - conda config --add channels conda-forge
+  #    - conda config --add channels SimpleITK
+  #    - conda config --add channels luispedro
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
 
 #    - sudo apt-get install -qq cmake libinsighttoolkit3-dev libpng12-dev libgdcm2-dev
     # - wget http://147.228.240.61/queetech/sample-extra-data/io3d_sample_data.zip && unzip io3d_sample_data.zip
 # command to install dependencies
 install:
+  - conda create --yes -n travis python=$CONDA_PYTHON_VERSION
+  - source activate travis
+  #    - Install dependencies
+  - conda install --yes --file requirements_conda.txt pytest-cov coveralls
 
-    - conda update --yes conda
-    - conda install --yes pip nose coverage
-    # Install dependencies
-    - conda install --yes -c SimpleITK -c luispedro -c mjirik --file requirements_conda.txt
-    # - pip install -r requirements_pip.txt
-#    - "echo $LD_LIBRARY_PATH"
-#    - "pip install -r requirements.txt"
-#    - 'mkdir build'
-#    - "cd build"
-#    - "cmake .."
-#    - "cmake --build ."
-#    - "sudo make install"
-#    - pip install .
-#    - "cd .."
-#    - 'echo "include /usr/local/lib" | sudo tee -a /etc/ld.so.conf'
-#    - 'sudo ldconfig -v'
-    - conda list -e
 # command to run tests
-script: nosetests -v --with-coverage --cover-package=teigen
+script: python -m pytest --cov=teigen/
 after_success:
     - coveralls

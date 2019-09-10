@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 import unittest
 import sys
 
-from nose.plugins.attrib import attr
+import pytest
 # import teigen
 # import io3d
 
@@ -14,7 +14,7 @@ path_to_script = op.dirname(op.abspath(__file__))
 
 class MyTestCase(unittest.TestCase):
     #
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_teigen_gui_interactive(self):
         import os.path as op
 
@@ -30,7 +30,7 @@ class MyTestCase(unittest.TestCase):
         cw.show()
         app.exec_()
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_teigen_gui_interactive_with_parameters(self):
         """
         reproduces undetected colision bug
@@ -86,7 +86,7 @@ class MyTestCase(unittest.TestCase):
     #     cw.deleteLater()
     #     app.deleteLater()
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_teigen_without_save(self):
         import teigen.gui
 
@@ -111,7 +111,7 @@ class MyTestCase(unittest.TestCase):
         tg.update_config(**conf)
         tg.step1()
 
-    @attr('interactive')
+    @pytest.mark.interactive
     def test_teigen_big(self):
         import teigen.gui
 
