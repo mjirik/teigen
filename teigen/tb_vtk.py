@@ -519,12 +519,13 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     #this is just to say whether the tube collide (and we have to use add()) or not (and we have to use binary op.)
     collision_model = geometry3d.CollisionModelCombined(None)
     collision_model.do_not_check_area = True
-
+    nbr = len(tree_data)
 
     # import ipdb; ipdb.set_trace()
-    for br in tree_data:
+    for ibr, br in enumerate(tree_data):
         # import ipdb;
         # ipdb.set_trace()
+        logger.debug(f"triangulating {ibr}/{nbr}")
         something_to_add = True
         radius = br['radius']
         length = br["length"]
