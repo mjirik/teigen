@@ -7,9 +7,9 @@ pyqtconfig
 pandas
 simpleitk
 imtools >=0.1.46
-gensei
+# gensei
 pyqtgraph
 xlsxwriter
 ndnoise >=0.0.13
 imma
-git # kvuli instalaci gensei
+# git # kvuli instalaci gensei

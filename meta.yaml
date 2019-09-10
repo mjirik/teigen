@@ -61,9 +61,9 @@ requirements:
     - xlsxwriter
     - simpleitk
     - imtools >=0.1.46
-    - gensei
+#    - gensei # not used
     - pyqtgraph
-    - git # kvuli instalaci gensei
+#    - git # kvuli instalaci gensei
     - ndnoise >=0.0.13
     - imma
     # - begins
