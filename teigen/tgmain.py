@@ -792,7 +792,7 @@ class Teigen():
         :param filename:
         :return:
         """
-        params = io3d.misc.obj_from_file(filename=filename)
+        # params = io3d.misc.obj_from_file(filename=filename)
         from .import tree
         tube_skeleton, rawdata = tree.read_tube_skeleton_from_yaml(filename, return_rawdata=True)
         area = tree.parse_area_properties(rawdata)
