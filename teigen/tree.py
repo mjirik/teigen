@@ -363,6 +363,7 @@ class TreeBuilder:
     def stop(self):
         self.stop_processing = True
 
+
 def parse_area_properties(rawdata):
     def find_in_general_key(general):
         area = {}
@@ -391,6 +392,7 @@ def parse_area_properties(rawdata):
     area["areasize_mm"] = np.asarray(area["areasize_px"]) * np.asarray(area["voxelsize_mm"])
     return area
 
+
 def read_tube_skeleton_from_yaml(filename, tree_label=None, return_rawdata=False):
     """ Get tube skeleton and raw data from yaml file.
 
@@ -406,7 +408,7 @@ def read_tube_skeleton_from_yaml(filename, tree_label=None, return_rawdata=False
     f.close()
     rawdataf = fix_tree_structure(rawdata)
 
-    tkeys = rawdataf['Graph'].keys()
+    tkeys = list(rawdataf['Graph'].keys())
     if (tree_label is None) or (tree_label not in tkeys):
         tree_label = tkeys[0]
     tube_skeleton = rawdataf['Graph'][tree_label]
@@ -414,6 +416,7 @@ def read_tube_skeleton_from_yaml(filename, tree_label=None, return_rawdata=False
         return tube_skeleton, rawdataf
     else:
         return tube_skeleton
+
 
 def fix_tree_structure(tree_raw_data):
     """
