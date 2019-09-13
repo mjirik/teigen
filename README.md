@@ -11,9 +11,9 @@ Test Image Generator. The basic concept of the algorithm includes the definition
 
 On Linux, OS X or Windows the conda system can be used:
 
-    conda install -c mjirik -c simpleitk teigen
+    conda install -c mjirik -c simpleitk -c conda-forge teigen
 
-Or you can use [Windows installer](http://147.228.240.61/queetech/install/setup_teigen.exe)
+Or you can use [Windows installer](http://home.zcu.cz/~mjirik/lisa/install/setup_teigen.exe)
 
 # Parameters
 
