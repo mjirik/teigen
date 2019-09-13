@@ -215,6 +215,7 @@ class MyTestCase(unittest.TestCase):
             }
         }
         tg.update_config(**conf)
+        tg.set_loglevel("DEBUG")
         tg.step1_by_load_tube_skeleton(
             op.join(path_to_script, "data_vt.yaml" ))
             #op.join(path_to_script, "vt_biodur.yaml" ))

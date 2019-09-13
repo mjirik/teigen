@@ -56,14 +56,17 @@ class TBVolume(tree.TubeSkeletonBuilder):
         if voxelsize_mm is None:
             voxelsize_mm = [1., 1., 1.]
 
+
         self.shape = np.asarray(shape, dtype=np.int)
         self.data3d = (np.ones(shape, dtype=dtype) * background_intensity).astype(dtype=dtype)
         self.voxelsize_mm = voxelsize_mm
+        logger.debug(f"volume shape: {self.shape} vxsz: {self.voxelsize_mm}")
         if intensity_profile is not None:
             self.intensity_profile = intensity_profile
         else:
             # self.intensity_profile = {1:200, 0.6: 100}
             self.intensity_profile = {1: 200}
+        logger.debug(f"intensity profile: {self.intensity_profile}")
 
         # self.intensity_profile = incollections.OrderedDict(sorted(intensity_profile, reverse=True))
         self._cylinders_params = []
@@ -78,6 +81,7 @@ class TBVolume(tree.TubeSkeletonBuilder):
         self._cylinders_params.append([p1m, p2m, rad, id])
 
     def _add_cylinder(self, p1m, p2m, rad, id):
+        logger.debug(f"volume add cylinder {p1m}, {p2m}, {rad}")
 
         cyl_data3d = np.ones(self.shape, dtype=np.bool)
         # prvni a koncovy bod, ve pixelech
@@ -85,11 +89,11 @@ class TBVolume(tree.TubeSkeletonBuilder):
               self.voxelsize_mm[1], p1m[2] / self.voxelsize_mm[2]]
         p2 = [p2m[0] / self.voxelsize_mm[0], p2m[1] /
               self.voxelsize_mm[1], p2m[2] / self.voxelsize_mm[2]]
-        logger.log(UNDERDEBUG,
+        logger.debug(
                    "p1_px: " + str(p1[0]) + " " + str(p1[1]) + " " + str(p1[2]))
-        logger.log(UNDERDEBUG,
+        logger.debug(
                    "p2_px: " + str(p2[0]) + " " + str(p2[1]) + " " + str(p2[2]))
-        logger.log(UNDERDEBUG, "radius_mm:" + str(rad))
+        logger.debug( "radius_mm:" + str(rad))
 
         # vzdalenosti mezi prvnim a koncovim bodem (pro jednotlive osy)
         pdiff = [abs(p1[0] - p2[0]), abs(p1[1] - p2[1]), abs(p1[2] - p2[2])]
@@ -135,7 +139,7 @@ class TBVolume(tree.TubeSkeletonBuilder):
             0, round(min(p1[2], p2[2]) - (rad / min(self.voxelsize_mm)) - 2))
         cut_xr = min(self.shape[2], round(
             max(p1[2], p2[2]) + (rad / min(self.voxelsize_mm)) + 2))
-        logger.log(UNDERDEBUG, "cutter_px: z_up-" + str(cut_up) + " z_down-" + str(cut_down) + " y_up-" + str(
+        logger.debug("cutter_px: z_up-" + str(cut_up) + " z_down-" + str(cut_down) + " y_up-" + str(
             cut_yu) + " y_down-" + str(cut_yd) + " x_left-" + str(cut_xl) + " x_right-" + str(cut_xr))
         cyl_data3d_cut = cyl_data3d[
                          int(cut_up):int(cut_down),
@@ -180,6 +184,7 @@ class TBVolume(tree.TubeSkeletonBuilder):
                     progress += progress_step
 
             self.data3d[self.data3d == self._temp_intensity] = radk_intensity
+            # import ipdb; ipdb.set_trace()
 
         if self.finish_progress_callback is not None:
             self.finish_progress_callback(self, 1.0)

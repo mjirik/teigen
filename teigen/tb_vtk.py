@@ -11,6 +11,7 @@ import argparse
 import sys
 import numpy as np
 import vtk
+import vtk.vtkCommonDataModelPython
 from scipy.interpolate import InterpolatedUnivariateSpline
 from . import tree
 from . import geometry3d
@@ -113,7 +114,6 @@ def move_to_position(src, upper, direction, axis0=2, axis1=1, axis2=0):
     r1[axis0] = 1.0
     r2[axis1] = 1.0
 
-
     rot1 = vtk.vtkTransform()
     fi = nm.arccos(direction[axis1])
 
@@ -175,12 +175,16 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
              cylinder_radius_compensation_factor=1.0,
              sphere_radius_compensation_factor=1.0,
              tube_shape=True, axis=1,
-             make_ladder_even=True
+             make_ladder_even=True,
+             make_ladder_odd=True
              ):
     point1 = [0.0, 0.0, 0.0]
     center = [0.0, 0.0, 0.0]
     point2 = [0.0, 0.0, 0.0]
     logger.debug(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
+    print(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
+    print(f"sphere compensation factor: {sphere_radius_compensation_factor}")
+    # import ipdb; ipdb.set_trace()
 
     center[axis] = length / 2.0
     point2[axis] = length
@@ -191,6 +195,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     direction /= nm.linalg.norm(direction)
     lv = point + direction * length
 
+    print(f"cylinder c: {center}, h: {length}, r: {cylinder_radius}, res: {cylinder_resolution}")
     cylinderTri = vtk.vtkTriangleFilter()
     sphere1Tri = vtk.vtkTriangleFilter()
     sphere2Tri = vtk.vtkTriangleFilter()
@@ -201,7 +206,16 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     cylinder.SetRadius(cylinder_radius)
     cylinder.SetResolution(cylinder_resolution)
     cylinder.Update()
-    cylinderTri.SetInputData(cylinder.GetOutput())
+
+    rot1 = vtk.vtkTransform()
+    rot1.RotateWXYZ(360 / (2 * cylinder_resolution), 0, 1, 0)
+    cyl_rot = vtk.vtkTransformFilter()
+    cyl_rot.SetInputConnection(cylinder.GetOutputPort())
+    cyl_rot.SetTransform(rot1)
+    cyl_rot.Update()
+    cylinderTri.SetInputConnection(cyl_rot.GetOutputPort())
+
+    # cylinderTri.SetInputData(cylinder.GetOutput())
     cylinderTri.Update()
 
     # make ladder even
@@ -210,11 +224,25 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
             phi_resolution = sphere_resolution + 1
         else:
             phi_resolution = sphere_resolution
+    if make_ladder_odd:
+        if sphere_resolution % 2 == 0:
+            phi_resolution = sphere_resolution
+        else:
+            phi_resolution = sphere_resolution + 1
 
     if not tube_shape:
         tube = move_to_position(cylinderTri, point, direction, 2, 1, 0)
         return tube.GetOutput()
     logger.debug("get sphere")
+
+    # paper_precision_compatibility = False
+    # if paper_precision_compatibility:
+    #     start_theta = 0
+    #     end_theta = 0
+    # else:
+    start_theta = None
+    end_theta = None
+    print("get sphere")
     sphere1 = get_sphere(
         center=point1,
         radius=sphere_radius,
@@ -223,7 +251,9 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         #end_phi=90,
         end_phi=180,
         axis=1,
-        phi_resolution=phi_resolution
+        phi_resolution=phi_resolution,
+        start_theta=start_theta,
+        end_theta=end_theta
     )
     # sphere1.Update()
 
@@ -238,29 +268,58 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
         start_phi=0,
         end_phi=180,
         axis=1,
-        phi_resolution=phi_resolution
+        phi_resolution=phi_resolution,
+        start_theta=start_theta,
+        end_theta=end_theta
 
     )
     sphere2Tri.SetInputData(sphere2)
     sphere2Tri.Update()
+    print("get_tube() setting operation")
 
     boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
     boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
     boolean_operation1.SetOperationToUnion()
     boolean_operation2.SetOperationToUnion()
+    # def print_obj_info(object):
+    # print(f"sphere2 npoint: {sphere2Tri.GetOutput().GetNumberOfPoints()} Point 0: {sphere2Tri.GetOutput().GetPoint(0)}")
+    # print(f"cylindr npoint: {cylinderTri.GetOutput().GetNumberOfPoints()} Point 0: {cylinderTri.GetOutput().GetPoint(0)}")
+    def get_info(vtkobj:vtk.vtkCommonDataModelPython.vtkPolyData, description=""):
+        npoints = vtkobj.GetNumberOfPoints()
+        pts = np.asarray([vtkobj.GetPoint(n) for n in range(0, npoints, int(npoints/10.))])
+        print(f"{description} npoint: {npoints} Points: \n{pts} ")
+        allpts = [vtkobj.GetPoint(n) for n in range(0, npoints)]
+        return allpts
 
+
+    allpts = []
+    allpts.extend(get_info(sphere1Tri.GetOutput(), "sphere1"))
+    allpts.extend(get_info(sphere2Tri.GetOutput(), "sphere2"))
+    allpts.extend(get_info(cylinderTri.GetOutput(), "cylinder"))
+    pts = np.asarray(allpts)
+    # unq_pts = np.unique(pts, return_counts=True)
+    unq = np.unique(pts, return_counts=True, axis=0)[1]
+    unq_max = np.max(unq)
+    print(f"unique max {unq_max}, unq: {unq}")
+    # import ipdb; ipdb.set_trace()
+    print("get_tube() setting operation 1")
     # booleanOperation.SetInputData(0, cyl)
     boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
+    print("get_tube() setting operation 1.3")
     boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
+    print("get_tube() setting operation 1.5")
     boolean_operation1.Update()
+    print("get_tube() setting operation 2")
     boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
     boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
     # booleanOperation.SetInputData(2, sph2)
     boolean_operation2.Update()
+    print("get_tube() setting operation 3")
     # tube_in_base_position = boolean_operation2.GetOutput()
 
     #tube = move_to_position(boolean_operation2, point, direction, 1, 2)
     tube = move_to_position(boolean_operation2, point, direction, 2, 1, 0)
+    print("get_tube() return")
     return tube.GetOutput()
 
 
@@ -268,6 +327,7 @@ def get_cylinder(upper, height, radius,
                  direction,
                  resolution=10):
     import vtk
+    print(f"cylinder pt: {upper}, h: {height}, r: {radius}")
     src = vtk.vtkCylinderSource()
     src.SetCenter((0, height / 2, 0))
     # src.SetHeight(height + radius/2.0)
@@ -282,7 +342,24 @@ def get_sphere(center, radius, resolution=10, start_phi=None, end_phi=None, axis
     #sph.Update()
     return sph
 
-def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=None, axis=0, theta_resolution=None, phi_resolution=None):
+def get_sphere_source(
+        center, radius, resolution=10, start_phi=None, end_phi=None, axis=0, theta_resolution=None, phi_resolution=None,
+        start_theta=None, end_theta=None, rotate_angle=0):
+    """
+
+    :param center:
+    :param radius:
+    :param resolution:
+    :param start_phi:
+    :param end_phi:
+    :param axis:
+    :param theta_resolution: 0-360
+    :param phi_resolution:
+    :param start_theta: 0-360
+    :param end_theta: 0-360
+    :return:
+    """
+    print(f"sphere c: {center}, r: {radius}, res: {resolution}")
     # create source
     if theta_resolution is None:
         theta_resolution=resolution
@@ -299,6 +376,15 @@ def get_sphere_source(center, radius, resolution=10, start_phi=None, end_phi=Non
         sphere.SetStartPhi(start_phi)
     if end_phi is not None:
         sphere.SetEndPhi(end_phi)
+    if start_theta is not None:
+        print(f"set start theta {start_theta}")
+        sphere.SetStartTheta(start_theta)
+    if end_theta is not None:
+        sphere.SetEndTheta(end_theta)
+    # else:
+    #     sphere.SetEndTheta(360)
+    # rotate to deny instabilities with same points
+
 
     if axis == 0:
         translate = vtk.vtkTransform()
@@ -475,13 +561,12 @@ def polygon_radius_compensation_factos(
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
 
-
-
 def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
              polygon_radius_selection_method="inscribed",
              cylinder_radius_compensation_factor=1.0,
              sphere_radius_compensation_factor=1.0,
-             tube_shape=True
+             tube_shape=True,
+             scale_factor=1
              ):
     """
 
@@ -494,6 +579,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     :param cylinder_resolution:
     :param sphere_resolution:
     :param cylinder_radius_compensation_factor: is used to change radius of cylinder and spheres
+    :param scale_factor: scale the output. Usefull when errors due to float precision appears.
     :return:
     """
 
@@ -520,17 +606,21 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     collision_model = geometry3d.CollisionModelCombined(None)
     collision_model.do_not_check_area = True
     nbr = len(tree_data)
+    logger.debug("gen_tree() start")
+    print("gen_tree() start")
 
     # import ipdb; ipdb.set_trace()
     for ibr, br in enumerate(tree_data):
         # import ipdb;
         # ipdb.set_trace()
         logger.debug(f"triangulating {ibr}/{nbr}")
+        print(f"triangulating {ibr}/{nbr}")
         something_to_add = True
-        radius = br['radius']
-        length = br["length"]
+        radius = br['radius'] * scale_factor
+        length = br["length"] * scale_factor
         direction = br["direction"]
-        uv = br['upperVertex']
+        uv = br['upperVertex'] * scale_factor
+
         lv = np.asarray(uv) + np.asarray(direction) * length
         # lv = br['lowerVertex']
         collision_detected = collision_model.add_tube_if_no_collision(uv, lv, radius)
@@ -542,6 +632,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         logger.debug(dbg_msg)
 
         # tube = get_tube_old(radius, uv, direction, length,
+        print(f"gen_tree() get tube length: {length}")
         if length == 0:
             tube = get_sphere(uv, radius * sphere_radius_compensation_factor, sphere_resolution)
         else:
@@ -553,9 +644,11 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
         # print("object connected, starting addind to general space " + str(br["length"]))
+        print(f"gen_tree something to add: {something_to_add}")
         if something_to_add:
             nn = tube.GetNumberOfPoints()
             logger.debug(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
+            print(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
             if appended_data is None:
                 #appended_data = boolean_operation2.GetOutput()
                 appended_data = tube
@@ -586,6 +679,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     # appendFilter.Update()
     # appended_data = appendFilter.GetOutput()
     return appended_data
+
 
 def _add_object(appended_data, tube, controlled_collision=False, collision=None):
     """
@@ -714,13 +808,13 @@ def gen_tree_old(tree_data):
                            br['direction'],
                            resolution=16)
 
-        for ii in xrange(cyl.GetNumberOfPoints()):
+        for ii in range(cyl.GetNumberOfPoints()):
             points.InsertPoint(poffset + ii, cyl.GetPoint(ii))
 
-        for ii in xrange(cyl.GetNumberOfCells()):
+        for ii in range(cyl.GetNumberOfCells()):
             cell = cyl.GetCell(ii)
             cellIds = cell.GetPointIds()
-            for jj in xrange(cellIds.GetNumberOfIds()):
+            for jj in range(cellIds.GetNumberOfIds()):
                 oldId = cellIds.GetId(jj)
                 cellIds.SetId(jj, oldId + poffset)
 

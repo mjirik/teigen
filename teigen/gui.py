@@ -680,6 +680,7 @@ class TeigenWidget(QtWidgets.QWidget):
 
         self.teigen.step2()
         fn_base, fn_ext = self.teigen.filepattern_split()
+        fn_base = self.teigen.config["filepattern_abspath"]
         self.figure.savefig(fn_base + "_" + "graph.pdf")
         self.figure.savefig(fn_base + "_" + "graph.png")
         self.figure.savefig(fn_base + "_" + "graph.svg")

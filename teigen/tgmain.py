@@ -107,6 +107,9 @@ class Teigen():
             self._config2generator_porosity_export,
             self._config2generator_porosity_export,
         ]
+        self._cfg_negative = [
+            False, False, True, True
+        ]
         self.use_default_config()
         self.progress_callback = None
         self.temp_vtk_file = op.expanduser("~/tree.vtk")
@@ -166,9 +169,9 @@ class Teigen():
         config["postprocessing"]["intensity_profile_intensity"] = [195, 190, 200, 30]
         # config["postprocessing"][""] = dictwidgetqt.get_default_args(self.postprocessing)
         config["areasampling"] = {
-            "voxelsize_mm": [0.2, 0.2, 0.2],
-            "areasize_mm": [10.0, 10.0, 10.0],
-            "areasize_px": [50, 50, 50]
+            "voxelsize_mm": [0.01, 0.01, 0.01],
+            "areasize_mm": [2.0, 2.0, 2.0],
+            "areasize_px": [200, 200, 200]
         }
         config["filepattern"] = "~/teigen_data/{seriesn:03d}/data{:06d}.jpg"
         config["filepattern_abspath"] = None
@@ -258,6 +261,7 @@ class Teigen():
         # generator_config = dictwidgetqt.subdict(config["generators"][id], generator_default_config.keys())
         generator_config = list(config["generators"].items())[id][1]
         generator_config.update(area_cfg)
+        # import ipdb;ipdb.set_trace()
         self.gen = generator_class(**generator_config)
         if id == 2:
             self.gen.MAKE_IT_SHORTER_CONSTANT = 0.0
@@ -265,6 +269,8 @@ class Teigen():
         self.gen.progress_callback = self.progress_callback
         if tube_skeleton is not None:
             self.gen.tree_data = tube_skeleton
+        logger.debug("step1 init generator finished")
+        print("step1 init generator finished")
         return t0
 
     def _step1_deinit_save_stats(self, t0):
@@ -471,6 +477,7 @@ class Teigen():
             if not op.exists(dirname):
                 os.makedirs(dirname)
             filename = fn_base + "_config_and_measurement.yaml"
+        logger.debug(f"save config and measurement to path: {filename}")
         config_and_measurement = self.get_config_and_measurement()
 
         io3d.misc.obj_to_file(config_and_measurement, filename=filename)
@@ -491,7 +498,15 @@ class Teigen():
             shape=self.config["areasampling"]["areasize_px"],
             tube_skeleton=self.tube_skeleton, dtype="uint8", background_intensity=background_intensity)
         # self.voxelsize_mm = self.gen.voxelsize_mm
+        # this will change negative and positive
+        id = self.config['generator_id']
+        id = self.get_generator_id_by_name_or_number(id)
+        # from pprint import pprint
+        # pprint(self.config)
+        # import ipdb; ipdb.set_trace()
+        # config = self._cfg_export_fcn[id](self.config)
         postprocessing_params = self.config["postprocessing"]
+        postprocessing_params["negative"] = self._cfg_negative[id]
         data3d = self.postprocessing(**postprocessing_params)
         self.gen.data3d = data3d
 
@@ -502,6 +517,7 @@ class Teigen():
         if len(self.tube_skeleton) == 0:
             logger.error("No data generated. 1D skeleton is empty.")
             return
+        logger.debug(f"filepattern abspath: {self.config['filepattern_abspath']}")
         self.refresh_unoccupied_series_number()
         self.save_parameters()
         self.save_log()
@@ -510,6 +526,7 @@ class Teigen():
         # config["filepattern"] = filepattern
 
         self._aposteriori_numeric_measurement(fn_base)
+        logger.debug(f"step2 save stats: {fn_base}")
         self.save_stats(fn_base)
         t1 = datetime.datetime.now()
         self.save_1d_model_to_file(fn_base + "_vt.yaml")
@@ -528,7 +545,7 @@ class Teigen():
         # self.gen.saveVolumeToFile(self.config["filepattern"])
 
             t2 = datetime.datetime.now()
-            logger.debug("before volume save " + str(t2 - t0))
+            logger.debug("volume generated in: " + str(t2 - t0))
             self.gen.saveVolumeToFile(self.config["filepattern_abspath"])
         t3 = datetime.datetime.now()
         logger.info("time before volume generate: " + str(t1 - t0))
@@ -541,14 +558,17 @@ class Teigen():
         self.stats_times["step2_total_time_s"] = (t3 - t0).total_seconds()
         self.stats_times["step2_finish_datetime"] = str(t3)
         self.stats_times["step2_finished"] = True
-        self.save_config_and_measurement()
+        # fnp_abs = self.config["filepattern_abspath"]
+        self.save_config_and_measurement(filename=fn_base + "_config_and_measurement.yaml")
 
         one_row_filename = self.config["output"]["one_row_filename"]
+        logger.debug("write stats to common spreadsheet")
         if one_row_filename != "":
             # self.prepare_stats()
             self.save_stats_to_row(one_row_filename)
         else:
             self.prepare_stats()
+        logger.debug("step2 finished")
         # self.memoryhandler.flush()
 
     def save_1d_model_to_file(self, outputfile):
@@ -580,8 +600,8 @@ class Teigen():
     def postprocessing(
             self,
             gaussian_blur=True,
-            gaussian_filter_sigma_mm=1.0,
-            add_noise=True,
+            gaussian_filter_sigma_mm=0.01,
+            add_noise=False,
             # gaussian_noise_stddev=10.0,
             # gaussian_noise_center=0.0,
             limit_negative_intensities=True,
@@ -604,21 +624,29 @@ class Teigen():
         # negative is removed because we want it hide. The tab widget is used to control this
         # property
         dt = self.data3d.dtype
+
+        logger.debug(f"len(unique(data3d)): {len(np.unique(self.data3d))}")
+        logger.debug(f"describe(data3d) before gaussian: {scipy.stats.describe(self.data3d.flatten())}")
         if gaussian_blur:
             sigma_px = gaussian_filter_sigma_mm / self.voxelsize_mm
 
             self.data3d = scipy.ndimage.filters.gaussian_filter(
                 self.data3d,
                 sigma=sigma_px)
+        logger.debug(f"describe(data3d) before noise: {scipy.stats.describe(self.data3d.flatten())}")
 
         if add_noise:
             noise = self.generate_noise()
             # noise = noise.astype(self.data3d.dtype)
             # noise = np.random.normal(loc=gaussian_noise_center, scale=gaussian_noise_stddev, size=self.data3d.shape)
+
             self.data3d = self.data3d + noise
 
+        logger.debug(f"negative: {negative}")
         if negative:
             self.data3d = 255 - self.data3d
+        logger.debug(f"after negative describe(data3d): {scipy.stats.describe(self.data3d.flatten())}")
+
 
         if limit_negative_intensities:
             #self.data3d[self.data3d < 0] = 0
@@ -682,7 +710,7 @@ class Teigen():
             filename = fn_base + "_raw_{:06d}.jpg"
             import io3d.misc
             data = {
-                'data3d': data3d.astype(np.uint8) * 70,  # * self.output_intensity,
+                'data3d': data3d.astype(np.uint8),  # * 70,  # * self.output_intensity,
                 'voxelsize_mm': vxsz,
                 # 'segmentation': np.zeros_like(self.data3d, dtype=np.int8)
             }
@@ -1137,7 +1165,12 @@ def main():
         app = QApplication(sys.argv)
         params = None
         if args.parameterfile is not None:
-            params = io3d.misc.obj_from_file(args.parameterfile)
+            try:
+                params = io3d.misc.obj_from_file(args.parameterfile)
+            except Exception as e:
+                import traceback
+                logger.warning(f"Problem with reading: {args.parameterfile}")
+                logger.warning(traceback.format_exc())
         cw = TeigenWidget(logfile=args.logfile, config=params)
         cw.show()
         app.exec_()
