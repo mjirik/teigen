@@ -40,15 +40,19 @@ ExtraDiskSpaceRequired=43
 SetupIconFile=.\graphics\teigen256.ico
 UsePreviousAppDir=False
 PrivilegesRequired=none
+DisableWelcomePage=False
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
 
+[Messages]
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt is recommended that you close all other applications and disable any anti virus before continuing.
+
 [Run]
 ;Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/AddToPath=1 /RegisterPython=1 /InstallationType=AllUsers /S /D=%UserProfile%\Miniconda3 /D={%PUBLIC}\Minicoconda2"; Flags: waituntilterminated runasoriginaluser
-Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/InstallationType=JustMe /AddToPath=1 /RegisterPython=1 "; Flags: waituntilterminated; Check: not IsCondaInstalled
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\VCForPython27.msi"""; Flags: waituntilterminated; Check: not IsVCForPythonInstalled
+;Filename: "{tmp}\Miniconda-latest-Windows-x86_64.exe"; Parameters: "/InstallationType=JustMe /AddToPath=1 /RegisterPython=1 "; Flags: waituntilterminated; Check: not IsCondaInstalled
+;Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\VCForPython27.msi"""; Flags: waituntilterminated; Check: not IsVCForPythonInstalled
 Filename: "{cmd}"; Parameters: "/C ""{tmp}\installer.bat & pause"""; WorkingDir: "{tmp}"; Flags: waituntilterminated
 ;Filename: "{cmd}"; Parameters: "/C ""conda install --yes -c SimpleITK -c mjirik lisa"""; WorkingDir: "{%HOMEPATH}\Miniconda2\Scripts"; Flags: runasoriginaluser
 ;Filename: "{cmd}"; Parameters: "/C ""pause"""
@@ -72,9 +76,34 @@ end;
 
 
 procedure InitializeWizard();
+var
+  RichViewer: TRichEditViewer;
 begin
+  RichViewer := TRichEditViewer.Create(WizardForm);
+  RichViewer.Left := WizardForm.WelcomeLabel2.Left;
+  RichViewer.Top := WizardForm.WelcomeLabel2.Top;
+  RichViewer.Width := WizardForm.WelcomeLabel2.Width;
+  RichViewer.Height := WizardForm.WelcomeLabel2.Height;
+  RichViewer.Parent := WizardForm.WelcomeLabel2.Parent;
+  RichViewer.BorderStyle := bsNone;
+  RichViewer.TabStop := False;
+  RichViewer.ReadOnly := True;
+  WizardForm.WelcomeLabel2.Visible := False;
+
+  RichViewer.RTFText :=
+    '{\rtf1 Installation requirements:\n ' +
+    '{\b {\field{\*\fldinst{HYPERLINK "https://docs.conda.io/en/latest/miniconda.html" }}' + 
+    '{\fldrslt{Miniconda for Python 3}}}} ' +
+    'Install it and restart this installer' +
+    '}'
+    ;
+    (*
+    '{\b {\field{\*\fldinst{HYPERLINK "https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2017" }}' + 
+    '{\fldrslt{MS Build tools 2017}}}} '+
+    *)
+
   idpAddFileSize('https://raw.githubusercontent.com/mjirik/teigen/master/installer.bat', ExpandConstant('{tmp}\installer.bat'), 1000);
-  if not IsCondaInstalled then
+(*  if not IsCondaInstalled then
   begin
     Log('Conda will be downloaded')
     idpAddFileSize('https://repo.continuum.io/miniconda/Miniconda2-latest-Windows-x86_64.exe', ExpandConstant('{tmp}\Miniconda-latest-Windows-x86_64.exe'), 47345664);
@@ -82,9 +111,11 @@ begin
   if not IsVCForPythonInstalled then
   begin
     idpAddFileSize('https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/VCForPython27.msi', ExpandConstant('{tmp}\VCForPython27.msi'), 87891968);
-  end;
+  end; *)
   idpDownloadAfter(wpReady);
 end;
+
+
 
 [Icons]
 Name: "{group}\Teigen"; Filename: "{cmd}"; WorkingDir: "{userdocs}"; Flags: runminimized; IconFilename: "{app}\teigen256.ico"; IconIndex: 0; Parameters: "/C ""call activate teigen & python -m teigen"""
