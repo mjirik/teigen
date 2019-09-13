@@ -182,8 +182,8 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     center = [0.0, 0.0, 0.0]
     point2 = [0.0, 0.0, 0.0]
     logger.debug(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
-    print(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
-    print(f"sphere compensation factor: {sphere_radius_compensation_factor}")
+    logger.debug(f"generating tube: r={radius}, l={length}, point={point}, direction={direction}, tube={tube_shape}")
+    logger.debug(f"sphere compensation factor: {sphere_radius_compensation_factor}")
     # import ipdb; ipdb.set_trace()
 
     center[axis] = length / 2.0
@@ -195,7 +195,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     direction /= nm.linalg.norm(direction)
     lv = point + direction * length
 
-    print(f"cylinder c: {center}, h: {length}, r: {cylinder_radius}, res: {cylinder_resolution}")
+    logger.debug(f"cylinder c: {center}, h: {length}, r: {cylinder_radius}, res: {cylinder_resolution}")
     cylinderTri = vtk.vtkTriangleFilter()
     sphere1Tri = vtk.vtkTriangleFilter()
     sphere2Tri = vtk.vtkTriangleFilter()
@@ -242,7 +242,7 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     # else:
     start_theta = None
     end_theta = None
-    print("get sphere")
+    logger.debug("get sphere")
     sphere1 = get_sphere(
         center=point1,
         radius=sphere_radius,
@@ -275,19 +275,19 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     )
     sphere2Tri.SetInputData(sphere2)
     sphere2Tri.Update()
-    print("get_tube() setting operation")
+    logger.debug("get_tube() setting operation")
 
     boolean_operation1 = vtk.vtkBooleanOperationPolyDataFilter()
     boolean_operation2 = vtk.vtkBooleanOperationPolyDataFilter()
     boolean_operation1.SetOperationToUnion()
     boolean_operation2.SetOperationToUnion()
     # def print_obj_info(object):
-    # print(f"sphere2 npoint: {sphere2Tri.GetOutput().GetNumberOfPoints()} Point 0: {sphere2Tri.GetOutput().GetPoint(0)}")
-    # print(f"cylindr npoint: {cylinderTri.GetOutput().GetNumberOfPoints()} Point 0: {cylinderTri.GetOutput().GetPoint(0)}")
+    # logger.debug(f"sphere2 npoint: {sphere2Tri.GetOutput().GetNumberOfPoints()} Point 0: {sphere2Tri.GetOutput().GetPoint(0)}")
+    # logger.debug(f"cylindr npoint: {cylinderTri.GetOutput().GetNumberOfPoints()} Point 0: {cylinderTri.GetOutput().GetPoint(0)}")
     def get_info(vtkobj:vtk.vtkCommonDataModelPython.vtkPolyData, description=""):
         npoints = vtkobj.GetNumberOfPoints()
         pts = np.asarray([vtkobj.GetPoint(n) for n in range(0, npoints, int(npoints/10.))])
-        print(f"{description} npoint: {npoints} Points: \n{pts} ")
+        logger.debug(f"{description} npoint: {npoints} Points: \n{pts} ")
         allpts = [vtkobj.GetPoint(n) for n in range(0, npoints)]
         return allpts
 
@@ -300,26 +300,26 @@ def get_tube(radius=1.0, point=[0.0, 0.0, 0.0],
     # unq_pts = np.unique(pts, return_counts=True)
     unq = np.unique(pts, return_counts=True, axis=0)[1]
     unq_max = np.max(unq)
-    print(f"unique max {unq_max}, unq: {unq}")
+    logger.debug(f"unique max {unq_max}, unq: {unq}")
     # import ipdb; ipdb.set_trace()
-    print("get_tube() setting operation 1")
+    logger.debug("get_tube() setting operation 1")
     # booleanOperation.SetInputData(0, cyl)
     boolean_operation1.SetInputData(0, cylinderTri.GetOutput())
-    print("get_tube() setting operation 1.3")
+    logger.debug("get_tube() setting operation 1.3")
     boolean_operation1.SetInputData(1, sphere1Tri.GetOutput())
-    print("get_tube() setting operation 1.5")
+    logger.debug("get_tube() setting operation 1.5")
     boolean_operation1.Update()
-    print("get_tube() setting operation 2")
+    logger.debug("get_tube() setting operation 2")
     boolean_operation2.SetInputData(0, boolean_operation1.GetOutput())
     boolean_operation2.SetInputData(1, sphere2Tri.GetOutput())
     # booleanOperation.SetInputData(2, sph2)
     boolean_operation2.Update()
-    print("get_tube() setting operation 3")
+    logger.debug("get_tube() setting operation 3")
     # tube_in_base_position = boolean_operation2.GetOutput()
 
     #tube = move_to_position(boolean_operation2, point, direction, 1, 2)
     tube = move_to_position(boolean_operation2, point, direction, 2, 1, 0)
-    print("get_tube() return")
+    logger.debug("get_tube() return")
     return tube.GetOutput()
 
 
@@ -327,7 +327,7 @@ def get_cylinder(upper, height, radius,
                  direction,
                  resolution=10):
     import vtk
-    print(f"cylinder pt: {upper}, h: {height}, r: {radius}")
+    logger.debug(f"cylinder pt: {upper}, h: {height}, r: {radius}")
     src = vtk.vtkCylinderSource()
     src.SetCenter((0, height / 2, 0))
     # src.SetHeight(height + radius/2.0)
@@ -359,7 +359,7 @@ def get_sphere_source(
     :param end_theta: 0-360
     :return:
     """
-    print(f"sphere c: {center}, r: {radius}, res: {resolution}")
+    logger.debug(f"sphere c: {center}, r: {radius}, res: {resolution}")
     # create source
     if theta_resolution is None:
         theta_resolution=resolution
@@ -377,7 +377,7 @@ def get_sphere_source(
     if end_phi is not None:
         sphere.SetEndPhi(end_phi)
     if start_theta is not None:
-        print(f"set start theta {start_theta}")
+        logger.debug(f"set start theta {start_theta}")
         sphere.SetStartTheta(start_theta)
     if end_theta is not None:
         sphere.SetEndTheta(end_theta)
@@ -556,7 +556,7 @@ def polygon_radius_compensation_factos(
 
     else:
         logger.error("Unknown compensation method '{}'".format(polygon_radius_selection_method))
-        print("Unknown compensation method '{}'".format(polygon_radius_selection_method))
+        logger.debug("Unknown compensation method '{}'".format(polygon_radius_selection_method))
 
     return cylinder_radius_compensation_factor, sphere_radius_compensation_factor, cylinder_radius_compensation_factor_long, sphere_radius_compensation_factor_long
 
@@ -607,14 +607,14 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
     collision_model.do_not_check_area = True
     nbr = len(tree_data)
     logger.debug("gen_tree() start")
-    print("gen_tree() start")
+    logger.debug("gen_tree() start")
 
     # import ipdb; ipdb.set_trace()
     for ibr, br in enumerate(tree_data):
         # import ipdb;
         # ipdb.set_trace()
         logger.debug(f"triangulating {ibr}/{nbr}")
-        print(f"triangulating {ibr}/{nbr}")
+        logger.debug(f"triangulating {ibr}/{nbr}")
         something_to_add = True
         radius = br['radius'] * scale_factor
         length = br["length"] * scale_factor
@@ -632,7 +632,7 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
         logger.debug(dbg_msg)
 
         # tube = get_tube_old(radius, uv, direction, length,
-        print(f"gen_tree() get tube length: {length}")
+        logger.debug(f"gen_tree() get tube length: {length}")
         if length == 0:
             tube = get_sphere(uv, radius * sphere_radius_compensation_factor, sphere_resolution)
         else:
@@ -643,12 +643,12 @@ def gen_tree(tree_data, cylinder_resolution=10, sphere_resolution=10,
                             tube_shape=tube_shape)
         # this is simple version
         # appendFilter.AddInputData(boolean_operation2.GetOutput())
-        # print("object connected, starting addind to general space " + str(br["length"]))
-        print(f"gen_tree something to add: {something_to_add}")
+        # logger.debug("object connected, starting addind to general space " + str(br["length"]))
+        logger.debug(f"gen_tree something to add: {something_to_add}")
         if something_to_add:
             nn = tube.GetNumberOfPoints()
             logger.debug(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
-            print(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
+            logger.debug(f"tube number of nodes: {nn}, last point {tube.GetPoint(nn - 1)}")
             if appended_data is None:
                 #appended_data = boolean_operation2.GetOutput()
                 appended_data = tube
@@ -739,7 +739,7 @@ def get_tube_old(radius, point, direction, length,
     boolean_operation1.SetOperationToUnion()
     boolean_operation2.SetOperationToUnion()
 
-    # print(dbg_msg)
+    # logger.debug(dbg_msg)
     cylinder_radius = radius * cylinder_radius_compensation_factor
     sphere_radius = radius * sphere_radius_compensation_factor
     retval = None

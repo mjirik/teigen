@@ -76,7 +76,7 @@ class TubeTreeTest(unittest.TestCase):
         cw.show()
         app.exec_()
         uu = cw.config_as_dict()
-        print(uu)
+        logger.debug(uu)
 
     @pytest.mark.interactive
     def test_qt_create_widget_from_generator(self):

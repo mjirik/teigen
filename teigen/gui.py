@@ -90,7 +90,7 @@ class TeigenWidget(QtWidgets.QWidget):
 
     def _parameters_changed(self, param, changes):
         logger.debug("parameters changed")
-        print("parameters changed")
+        logger.debug("parameters changed")
         self.teigen.parameters_changed_before_save = True
         self._ui_btn_step2.setEnabled(False)
         # self.on_config_update()
@@ -594,7 +594,7 @@ class TeigenWidget(QtWidgets.QWidget):
         self.progressBar.setValue(int(10000 * level))
         if "statusbar_text" in kwargs:
             # add this in gui
-            print("statusbar_text " + kwargs["statusbar_text"])
+            logger.debug("statusbar_text " + kwargs["statusbar_text"])
             ## end of pyqtgraph tree
 
     def run_batch(self):

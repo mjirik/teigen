@@ -165,7 +165,7 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
         self.CV.append([ln, ln + 1, ln + 2, ln + 3, ln + 4])
 
     def finish(self):
-        print('use joints? ', self.use_joints)
+        logger.debug('use joints? ', self.use_joints)
         if self.use_joints:
             for joint in self.joints.values():
                 # There is more then just one circle in this joint, so it
@@ -196,8 +196,8 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
         # left to right
         perp_lr = np.cross(perp, vec1)
 
-        print('center ', center)
-        print('circle ', circle)
+        logger.debug('center ', center)
+        logger.debug('circle ', circle)
         for vertex_id in circle:
             if ((len(curve_pts_indexes_t) > 0) and
                         (vertex_id - curve_pts_indexes_t[-1]) > 1):
@@ -225,10 +225,10 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
         ordered_pts_indexes_d = \
             curve_pts_indexes_d[brake_point_t:] + \
             curve_pts_indexes_d[:brake_point_d]
-        # print('    hp v id ', curve_pts_indexes_t)
-        # print('ord hp v id ', ordered_pts_indexes_t)
+        # logger.debug('    hp v id ', curve_pts_indexes_t)
+        # logger.debug('ord hp v id ', ordered_pts_indexes_t)
 
-        # print('hp circle ', curve_one)
+        # logger.debug('hp circle ', curve_one)
 
         # add point from oposit half-circle
         first_pt_d = ordered_curve_d[0]
@@ -265,11 +265,11 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
 
             curvelistT.append(ordered_curve_t)
             curvelistD.append(ordered_curve_d)
-            # print('  ', self.V[vertex_id], '  hp: ', hp)
+            # logger.debug('  ', self.V[vertex_id], '  hp: ', hp)
 
         Betacurve_id, Astart, Alphacurve_id, Bstart, Gammacurve_id, Cstart = self.__find_couples(curvelistT)
 
-        # print('ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart)
+        # logger.debug('ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart)
 
         dom2D = ip.TRIANGLE_DOMAIN(32, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         Cab0 = BEZIER(S1)(self.__order_curve(curvelistT[Gammacurve_id][-1:0:-1], Cstart))
@@ -282,7 +282,7 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
 
         Betacurve_id, Astart, Alphacurve_id, Bstart, Gammacurve_id, Cstart = self.__find_couples(curvelistD)
 
-        # print('ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart)
+        # logger.debug('ABC ', Betacurve_id, Astart, Alphacurve_id, Bstart)
 
         dom2D = ip.TRIANGLE_DOMAIN(32, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         Cab0 = BEZIER(S1)(self.__order_curve(curvelistD[Gammacurve_id][-1:0:-1], Cstart))
@@ -325,8 +325,8 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
                 mn_ind = i
                 output = Betacurve_id, Astart, Alphacurve_id, Bstart, i, -1
 
-        print('output')
-        print(output)
+        logger.debug('output')
+        logger.debug(output)
 
         return output
 
@@ -376,7 +376,7 @@ class TBLarSmooth(tree.TubeSkeletonBuilder):
 
         # V = [[0,0,0],[5,5,1],[0,5,5],[5,5,5]]
         # CV = [[0,1,2,3]]
-        # print('V, CV ', V, CV)
+        # logger.debug('V, CV ', V, CV)
         # for joint in self.joints_lar:
 
         # out = STRUCT([MKPOL([V, AA(AA(lambda k:k + 1))(CV), []])] + self.joints_lar)

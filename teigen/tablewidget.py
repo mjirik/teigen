@@ -26,9 +26,9 @@ class TableModel(QtCore.QAbstractTableModel):
         self.headerdata = list(dataIn.keys())
         self.indexdata = list(dataIn.index)
 
-        print('Datatable : {0}'.format(self.datatable))
-        print(self.headerdata)
-        print(self.indexdata)
+        logger.debug('Datatable : {0}'.format(self.datatable))
+        logger.debug(self.headerdata)
+        logger.debug(self.indexdata)
 
 
 
@@ -42,7 +42,7 @@ class TableModel(QtCore.QAbstractTableModel):
 
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        # print('Data Call')
+        # logger.debug('Data Call')
         # print index.column(), index.row()
 
         if role == QtCore.Qt.DisplayRole:

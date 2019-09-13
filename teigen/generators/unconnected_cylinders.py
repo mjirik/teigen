@@ -195,7 +195,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             self.create_cylinder()
         logger.info(self.generation_break_causes)
         self.get_stats()
-        print(self.generation_break_causes)
+        logger.debug(self.generation_break_causes)
         self.data3d = None
 
     def is_final_iteration(self):
@@ -293,8 +293,8 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
             statusbar_text = str(self.iterations) + " Vv " + str(actual_volume_fraction)
             if self.progress_callback is not None:
                 self.progress_callback(self, progress, statusbar_text=statusbar_text)
-            # print(progress)
-            # print(self.radius_generator_args)
+            # logger.debug(progress)
+            # logger.debug(self.radius_generator_args)
             radius = self.radius_generator(*self.radius_generator_args)
             if radius > self.radius_maximum:
                 self.generation_break_causes["radius_maximum"] += 1
@@ -376,7 +376,7 @@ class UnconnectedCylinderGenerator(general.GeneralGenerator):
         if generated:
             self.add_cylinder_to_stats(pt1, pt2, radius=radius)
         # else:
-        #     print(self.generation_break_causes)
+        #     logger.debug(self.generation_break_causes)
         return
 
     def pill_parameter_suggestion_for_last_object(self, first_radius, first_length):

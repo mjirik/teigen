@@ -120,7 +120,7 @@ class TBVolume(tree.TubeSkeletonBuilder):
             except:
                 import traceback
                 traceback.print_exc()
-                print("except in drawing line")
+                logger.debug("except in drawing line")
                 logger.warning("Cylinder drawing problem")
                 # import ipdb; ipdb.set_trace() #  noqa BREAKPOINT
 

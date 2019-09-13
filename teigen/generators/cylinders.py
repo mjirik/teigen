@@ -272,7 +272,7 @@ class CylinderGenerator(GeneralGenerator):
 
     def get_stats(self):
         # self.assertTrue(False)
-        # print("Surface: ", self.surface)
+        # logger.debug("Surface: ", self.surface)
         df = pd.DataFrame(self.geometry_data)
         desc = df.describe()
 

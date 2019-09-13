@@ -86,7 +86,7 @@ def to_pyqtgraph_struct(name, value, opts={}):
         item_properties['children'] = children_list
 
         # value = value_list
-        # print(key_parameters)
+        # logger.debug(key_parameters)
     return item_properties
 
 def from_pyqtgraph_struct(dct):

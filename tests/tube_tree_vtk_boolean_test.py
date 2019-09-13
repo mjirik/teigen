@@ -197,8 +197,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         vol_analytic = g3.cylinder_volume(radius, height)
         err_surf = np.abs(surf_analytic - surf) / surf_analytic
         err_vol = np.abs(vol_analytic - vol) / vol_analytic
-        # print(surf, surf_analytic, err_surf)
-        # print(vol, vol_analytic, err_vol)
+        # logger.debug(surf, surf_analytic, err_surf)
+        # logger.debug(vol, vol_analytic, err_vol)
 
         max_error = 0.01
         self.assertLess(err_surf, max_error)
@@ -234,8 +234,8 @@ class VtkBooleanTestCase(unittest.TestCase):
         vol_analytic = g3.cylinder_volume(radius, height)
         err_surf = np.abs(surf_analytic - surf) / surf_analytic
         err_vol = np.abs(vol_analytic - vol) / vol_analytic
-        # print(surf, surf_analytic, err_surf)
-        # print(vol, vol_analytic, err_vol)
+        # logger.debug(surf, surf_analytic, err_surf)
+        # logger.debug(vol, vol_analytic, err_vol)
 
         input2 = teigen.tb_vtk.get_tube(point=pt1,
                                         length=height,

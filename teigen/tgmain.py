@@ -270,7 +270,7 @@ class Teigen():
         if tube_skeleton is not None:
             self.gen.tree_data = tube_skeleton
         logger.debug("step1 init generator finished")
-        print("step1 init generator finished")
+        logger.debug("step1 init generator finished")
         return t0
 
     def _step1_deinit_save_stats(self, t0):
@@ -279,9 +279,9 @@ class Teigen():
 
         t1 = datetime.datetime.now()
         logger.debug("1D structure is generated")
-        print("before vtk generation")
+        logger.debug("before vtk generation")
         pdatas = self.__generate_vtk(self.temp_vtk_file)
-        print("generate vtk finished")
+        logger.debug("generate vtk finished")
         self.polydata_volume = pdatas[0]
         self.polydata_surface = pdatas[1]
         t2 = datetime.datetime.now()
@@ -309,7 +309,7 @@ class Teigen():
         logger.debug("tube skeleton loaded")
         t0 = self._step1_init_generator(self.tube_skeleton)
         logger.debug("generator initiated")
-        print("generator initiated")
+        logger.debug("generator initiated")
         # t0 = datetime.datetime.now()
         # st0 = str(t0)
         # logger.info("step1_init_datetime " + st0)
@@ -322,7 +322,7 @@ class Teigen():
         # self.gen = generators.gensei_wrapper.GenseiGenerator(**self.config2)
         # self.gen = generators.gensei_wrapper.GenseiGenerator()
         logger.debug("1D structure generator started")
-        # print("1D structure generator started")
+        # logger.debug("1D structure generator started")
         # import ipdb; ipdb.set_trace()
         self.gen.run()
         # logger.debug("vtk generated")
@@ -502,7 +502,7 @@ class Teigen():
         id = self.config['generator_id']
         id = self.get_generator_id_by_name_or_number(id)
         # from pprint import pprint
-        # pprint(self.config)
+        # plogger.debug(self.config)
         # import ipdb; ipdb.set_trace()
         # config = self._cfg_export_fcn[id](self.config)
         postprocessing_params = self.config["postprocessing"]
@@ -806,10 +806,10 @@ class Teigen():
         self.dataframes["overall"] = dfoverallf
 
         st = self.stats_times
-        # print("st ", st)
+        # logger.debug("st ", st)
         note_df = pd.DataFrame([st], columns=st.keys())
-        # print(note_df)
-        # print(note_df.to_dict())
+        # logger.debug(note_df)
+        # logger.debug(note_df.to_dict())
 
         self.dataframes["processing_info"] = note_df
 

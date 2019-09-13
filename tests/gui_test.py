@@ -21,7 +21,7 @@ class GuiTest(unittest.TestCase):
         captions = {"int": "toto je int"}
         import teigen.dictwidgetpg
         params = teigen.dictwidgetpg.to_pyqtgraph_struct("pokus", cfg)
-        print(params)
+        logger.debug(params)
         self.assertDictEqual(
             params["children"][0],
             {'type': 'bool', 'name': 'bool', 'value': True, "reconstruction_type": "bool"}
@@ -85,7 +85,7 @@ class GuiTest(unittest.TestCase):
         params = teigen.dictwidgetpg.to_pyqtgraph_struct('params', cfg, opts=opts)
         params['children'].append(
             teigen.dictwidgetpg.AreaSamplingParameter(name='Area Sampling'))
-        # print(params)
+        # logger.debug(params)
 
         # params[0]['title'] = "Pokusny title"
         # params[0]['my note'] = "poznamka"
@@ -96,7 +96,7 @@ class GuiTest(unittest.TestCase):
         p = Parameter.create(**params)
         # p = Parameter.create(name='params', type='group', children=params)
         t = ParameterTree()
-        print(p.getValues())
+        logger.debug(p.getValues())
         lst = p.saveState()
         vals = p.getValues()
 

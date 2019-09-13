@@ -75,7 +75,7 @@ def tube_radius_from_volume(volume, length):
     r = np.polynomial.polynomial.polyroots([a0, a1, a2, a3])
 
     radius = np.real(r[r > 0][0])
-    print("geometry3d.pills_radius_from_volume ", radius)
+    logger.debug("geometry3d.pills_radius_from_volume ", radius)
     return radius
 
 
@@ -547,7 +547,7 @@ def cart2spher(vectors, axis_order=[0, 1, 2]):
     @return:        spherical coordinates [[radius0,....], [theta0, ...], [phi0, ...]].
     """
 
-    # print(axis_order)
+    # logger.debug(axis_order)
     vectors = np.asarray(vectors)
     if vectors.shape[0] != 3:
         import ipdb;
